@@ -1,0 +1,22 @@
+{
+  "frontend/src/App.tsx": "Main app component with TanStack Router setup, splash screen logic, bottom navigation layout, PWA install banner, and service worker registration for the Global Tales Universe app.",
+  "frontend/src/components/StoryCard.tsx": "Reusable story card component that displays story information in both featured (large) and list (compact) formats with cover images, metadata, and navigation.",
+  "frontend/src/components/CategoryScroller.tsx": "Horizontal scrolling category selector that filters categories based on Kids/Adults mode and displays translated category names.",
+  "frontend/src/components/ContinueReadingCard.tsx": "Component that displays the last read story with progress indicator and allows users to resume reading from where they left off.",
+  "frontend/src/pages/CategoriesTab.tsx": "Categories browsing page that displays all available categories as a grid with cover images and handles Kids/Adults mode filtering.",
+  "frontend/src/index.css": "Global styles with Tailwind base layers, OKLCH color system for light/dark themes, and font classes for multi-language script support (Latin, Indic, Arabic).",
+  "frontend/src/pages/ProfileTab.tsx": "User profile page displaying engagement stats (streak, badges, challenges), account settings, login/logout controls, and premium subscription CTA with footer attribution.",
+  "frontend/src/pages/StoryReader.tsx": "Full-featured story reading screen with adjustable font size, background themes, auto-scroll, progress tracking, favorites, sharing, offline downloads, and translation support.",
+  "frontend/src/pages/GoPremium.tsx": "Premium subscription page with feature list and monthly/yearly plan options using placeholder purchase flow.",
+  "frontend/src/hooks/useAppUser.ts": "Unified user state management hook that handles both guest (localStorage) and authenticated (backend) user data with proper type handling for AppUser and UserState.",
+  "frontend/src/hooks/useReadingHistory.ts": "Reading history tracking hook with type guards to safely handle both guest and authenticated user states, storing story progress and timestamps.",
+  "frontend/src/hooks/useOfflineDownloads.ts": "Offline story download management using localStorage as a fallback for IndexedDB, handling bigint serialization for Story objects.",
+  "frontend/src/pages/HomeTab.tsx": "Home page displaying featured story, categories, latest stories, continue reading section, and ads (for non-premium users) with proper type guards for user state.",
+  "frontend/src/context/PreferencesContext.tsx": "Global preferences context managing UI language, reading mode, font settings, and user preferences with type-safe guards for backend AppUser compatibility.",
+  "frontend/public/manifest.webmanifest": "Web app manifest defining PWA metadata including name, icons, display mode (standalone), theme colors, and orientation for installable app experience.",
+  "frontend/public/sw.js": "Service worker implementing offline-first caching strategy with app shell pre-caching, network-first for navigation, and cache-first for static assets.",
+  "frontend/src/pwa/registerServiceWorker.ts": "Helper function that registers the service worker on page load and sets up periodic update checks.",
+  "frontend/src/hooks/usePwaInstallPrompt.ts": "Custom hook managing PWA install prompt state, handling beforeinstallprompt event, and persisting dismissal cooldown in localStorage.",
+  "frontend/src/components/InstallPromptBanner.tsx": "Dismissible banner component displaying PWA install prompt with Install and Dismiss actions when app is installable.",
+  "frontend/index.html": "HTML entry point with PWA meta tags, manifest link, theme colors, iOS-specific PWA tags, and mobile-optimized viewport configuration."
+}

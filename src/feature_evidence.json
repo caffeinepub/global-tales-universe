@@ -1,0 +1,103 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-progressive-web-app-pwa-configuration-so-global-tales-universe-can-be-installed-to-a-device-home-screen-and-launches-in-standalone-app-like-mode",
+      "featureTitle": "Add Progressive Web App (PWA) configuration so Global Tales Universe can be installed to a device home screen and launches in standalone (app-like) mode.",
+      "files": [
+        "frontend/index.html",
+        "frontend/public/manifest.webmanifest"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-21"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-service-worker-that-enables-offline-first-caching-for-the-app-shell-html-css-js-and-static-assets-without-breaking-existing-story-offline-downloads",
+      "featureTitle": "Add a service worker that enables offline-first caching for the app shell (HTML/CSS/JS) and static assets, without breaking existing story offline downloads.",
+      "files": [
+        "frontend/public/sw.js",
+        "frontend/src/App.tsx",
+        "frontend/src/pwa/registerServiceWorker.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-22"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-install-ux-detect-when-the-app-is-installable-where-supported-and-show-a-non-intrusive-in-app-prompt-to-install-allow-dismissal-and-do-not-repeatedly-nag-after-dismissal",
+      "featureTitle": "Add install UX: detect when the app is installable (where supported) and show a non-intrusive in-app prompt to install; allow dismissal and do not repeatedly nag after dismissal.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/InstallPromptBanner.tsx",
+        "frontend/src/hooks/usePwaInstallPrompt.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-23"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-enhance-mobile-web-app-like-presentation-in-frontend-index-html-add-appropriate-meta-tags-for-pwa-ios-apple-touch-icon-status-bar-style-and-ensure-the-viewport-is-configured-for-a-mobile-first-experience",
+      "featureTitle": "Enhance mobile-web “app-like” presentation in frontend/index.html: add appropriate meta tags for PWA + iOS (apple-touch icon, status bar style) and ensure the viewport is configured for a mobile-first experience.",
+      "files": [
+        "frontend/index.html"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-24"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-required-generated-image-assets-under-frontend-public-assets-generated-and-ensure-the-app-references-them-as-static-files-not-served-by-the-backend",
+      "featureTitle": "Add required generated image assets under frontend/public/assets/generated and ensure the app references them as static files (not served by the backend).",
+      "files": [],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-25"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "kind": "build_request",
+  "title": "Add PWA packaging for mobile-look Global Tales Universe web app",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-21",
+      "text": "Add Progressive Web App (PWA) configuration so Global Tales Universe can be installed to a device home screen and launches in standalone (app-like) mode.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Mobile-look web app (PWA style)  this version generate"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A web app manifest is present and linked from frontend/index.html.",
+        "The manifest sets: name \"Global Tales Universe\", short_name \"Global Tales\", display \"standalone\", start_url \"/\", theme_color, background_color, and appropriate icon entries (including a 512x512 icon).",
+        "When opened via the installed icon, the app runs in standalone mode (no browser UI) in supporting browsers."
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Add a service worker that enables offline-first caching for the app shell (HTML/CSS/JS) and static assets, without breaking existing story offline downloads.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Mobile-look web app (PWA style)  this version generate"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A service worker is registered from the frontend (without modifying any immutable paths).",
+        "With the network disconnected after the first successful load, the app shell still loads and renders the main UI routes (e.g., Home tab frame).",
+        "Existing offline story download behavior (localStorage-based downloads) continues to function as before."
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Add install UX: detect when the app is installable (where supported) and show a non-intrusive in-app prompt to install; allow dismissal and do not repeatedly nag after dismissal.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Mobile-look web app (PWA style)  this version generate"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On supporting browsers, an install prompt UI appears after the install event is available.",
+        "Clicking the prompt triggers the browser install flow.",
+        "Dismissing the prompt prevents it from reappearing for a reasonable period (persisted locally)."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Enhance mobile-web “app-like” presentation in frontend/index.html: add appropriate meta tags for PWA + iOS (apple-touch icon, status bar style) and ensure the viewport is configured for a mobile-first experience.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Mobile-look web app (PWA style)  this version generate"
+        ]
+      },
+      "acceptanceCriteria": [
+        "frontend/index.html includes meta/link tags for manifest, theme color, and common iOS PWA tags.",
+        "An apple-touch-icon is provided and referenced.",
+        "The app does not appear zoomed-out on mobile; it renders as a phone-style layout with the existing max-width container behavior."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Add required generated image assets under frontend/public/assets/generated and ensure the app references them as static files (not served by the backend).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Mobile-look web app (PWA style)  this version generate"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All required images listed in this build request exist under frontend/public/assets/generated with the exact filenames.",
+        "Splash screen logo reference (/assets/generated/gtu-logo.dim_512x512.png) continues to load correctly.",
+        "Cover image references used by frontend/src/lib/covers.ts resolve correctly at runtime."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything under frontend/src/components/ui (compose them instead).",
+    "Keep the backend as a single Motoko actor; add backend changes only if strictly required for PWA support (generally not required).",
+    "Use English for any new user-facing UI text."
+  ],
+  "nonGoals": [
+    "Implement real push notifications (PWA push) or any server-driven notification delivery.",
+    "Integrate any external services for translation, analytics, ads, or payments as part of PWA work.",
+    "Replace existing offline story download storage strategy (localStorage) with a new persistence mechanism."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Elegant globe + open book mark, modern flat with subtle gradient (gtu-logo.dim_512x512.png)",
+      "Global map-inspired abstract gradient with soft shapes, dark-friendly (gtu-splash-bg.dim_1080x1920.png)",
+      "Abstract literary-themed illustration, adult-neutral (cover-default.dim_1200x1600.png)",
+      "Playful friendly illustration style, safe and cheerful (cover-kids-default.dim_1200x1600.png)",
+      "Romance-themed cover illustration (cover-romance.dim_1200x1600.png)",
+      "Horror-themed cover illustration (cover-horror.dim_1200x1600.png)",
+      "Comedy-themed cover illustration (cover-comedy.dim_1200x1600.png)",
+      "Mythology-themed cover illustration (cover-mythology.dim_1200x1600.png)",
+      "Educational-themed cover illustration (cover-educational.dim_1200x1600.png)",
+      "Superhero-themed cover illustration (cover-superhero.dim_1200x1600.png)"
+    ],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Build \"Global Tales Universe\" as a mobile-look web app (PWA style): a multi-language short stories reading experience for Adults/Kids with daily featured content, rich reading experience, search/categories, user profiles (guest/login), favorites/history, notifications (placeholder), monetization placeholders (ads + premium subscription/IAP placeholders), offline downloads, and engagement mechanics (streaks/badges/leaderboards/challenges) with 100 dummy stories.",
+  "architectural_notes": [
+    "Use React Native + Expo best practices and provide complete code structure/files.",
+    "Use placeholder integrations for translation (e.g., Google Translate), ads (e.g., AdMob), and in-app purchases/subscriptions.",
+    "Support multilingual fonts (e.g., Noto Sans for Indic scripts) and translated UI strings across the app.",
+    "Implement Adults/Kids content filtering as a core content-layer rule.",
+    "Offline downloads require local persistence/caching strategy for story content and metadata.",
+    "Project direction change: generate a mobile-look web app with PWA capabilities (web-first, installable) rather than React Native + Expo."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Elegant globe + open book mark, modern flat with subtle gradient (gtu-logo.dim_512x512.png)\n- Global map-inspired abstract gradient with soft shapes, dark-friendly (gtu-splash-bg.dim_1080x1920.png)\n- Abstract literary-themed illustration, adult-neutral (cover-default.dim_1200x1600.png)\n- Playful friendly illustration style, safe and cheerful (cover-kids-default.dim_1200x1600.png)\n- Romance-themed cover illustration (cover-romance.dim_1200x1600.png)\n- Horror-themed cover illustration (cover-horror.dim_1200x1600.png)\n- Comedy-themed cover illustration (cover-comedy.dim_1200x1600.png)\n- Mythology-themed cover illustration (cover-mythology.dim_1200x1600.png)\n- Educational-themed cover illustration (cover-educational.dim_1200x1600.png)\n- Superhero-themed cover illustration (cover-superhero.dim_1200x1600.png)",
+  "existing_features": [
+    {
+      "id": "feature-create-the-core-app-shell-for-global-tales-universe-with-a-mobile-first-responsive-layout-including-a-splash-landing-experience-and-a-persistent-bottom-navigation-with-tabs-home-categories-search-favorites-profile",
+      "title": "Create the core app shell for “Global Tales Universe” with a mobile-first responsive layout, including a splash/landing experience and a persistent bottom navigation with tabs: Home, Categories, Search, Favorites, Profile.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-light-dark-theming-with-automatic-system-preference-detection-and-a-consistent-modern-clean-colorful-but-family-friendly-visual-style-using-gradients-cards-and-subtle-animations-across-the-app",
+      "title": "Implement light/dark theming with automatic system preference detection and a consistent modern, clean, colorful-but-family-friendly visual style using gradients, cards, and subtle animations across the app.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-multi-language-support-for-ui-strings-categories-and-story-display-language-including-a-language-selector-with-these-options-english-tamil-hindi-telugu-malayalam-kannada-bengali-gujarati-punjabi-marathi-odia-urdu-spanish-french-arabic-default-to-english-and-auto-detect-device-browser-language-when-possible",
+      "title": "Add multi-language support for UI strings, categories, and story display language, including a language selector with these options: English, Tamil, Hindi, Telugu, Malayalam, Kannada, Bengali, Gujarati, Punjabi, Marathi, Odia, Urdu, Spanish, French, Arabic. Default to English and auto-detect device/browser language when possible.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-and-persist-a-content-model-for-stories-that-supports-adults-vs-kids-suitability-category-author-name-read-time-likes-ratings-premium-locked-flag-cover-image-and-multi-language-content-fields-at-least-english-tamil-hindi-provide-placeholder-duplicated-content-for-additional-languages",
+      "title": "Create and persist a content model for stories that supports: Adults vs Kids suitability, category, author name, read time, likes, ratings, premium-locked flag, cover image, and multi-language content fields (at least English, Tamil, Hindi). Provide placeholder/duplicated content for additional languages.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-home-screen-with-adults-kids-mode-toggle-language-selector-a-daily-featured-story-card-cover-image-title-category-3-line-preview-in-selected-language-horizontal-scrolling-categories-translated-a-continue-reading-section-from-reading-history-and-a-vertical-latest-stories-list-showing-small-image-title-author-read-time-and-likes",
+      "title": "Implement the Home screen with: Adults/Kids mode toggle, language selector, a daily featured story card (cover image, title, category, 3-line preview in selected language), horizontal scrolling categories (translated), a “Continue reading” section from reading history, and a vertical “Latest stories” list showing small image, title, author, read time, and likes.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-story-reading-screen-with-adjustable-font-size-small-medium-large-background-color-options-white-sepia-dark-grey-pure-black-continuous-auto-scroll-mode-a-progress-indicator-completed-like-favorite-button-share-action-web-share-copy-link-placeholder-and-next-previous-story-navigation",
+      "title": "Implement the Story Reading screen with: adjustable font size (small/medium/large), background color options (white/sepia/dark grey/pure black), continuous auto-scroll mode, a progress indicator (% completed), like/favorite button, share action (web share / copy link placeholder), and Next/Previous story navigation.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-auto-translate-ux-for-when-a-story-is-not-available-in-the-currently-selected-language-show-a-clear-translate-control-that-uses-a-placeholder-translation-implementation-no-external-api-calls-and-marks-the-result-as-translated",
+      "title": "Add an auto-translate UX for when a story is not available in the currently selected language: show a clear “Translate” control that uses a placeholder translation implementation (no external API calls) and marks the result as translated.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-categories-browsing-a-categories-tab-showing-all-categories-with-translated-names-category-detail-pages-listing-stories-in-that-category-and-filters-for-adults-kids-mode-and-language",
+      "title": "Implement Categories browsing: a Categories tab showing all categories with translated names, category detail pages listing stories in that category, and filters for Adults/Kids mode and language.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-search-with-keyword-search-across-title-content-keywords-author-optional-language-filter-and-advanced-sorting-filter-controls-popularity-newest-read-time-ratings",
+      "title": "Implement Search with: keyword search across title/content keywords/author, optional language filter, and advanced sorting/filter controls: popularity, newest, read time, ratings.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-user-modes-guest-mode-by-default-with-optional-sign-in-via-internet-identity-persist-user-preferences-preferred-language-s-preferred-categories-adults-kids-mode-and-reading-settings-font-size-reading-background-per-user",
+      "title": "Implement user modes: guest mode by default with optional sign-in via Internet Identity; persist user preferences (preferred language(s), preferred categories, Adults/Kids mode) and reading settings (font size, reading background) per user.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-favorites-bookmarks-allow-users-to-favorite-stories-from-the-story-reading-screen-and-manage-them-in-a-favorites-tab-favorites-must-persist-for-signed-in-users-and-persist-locally-for-guests",
+      "title": "Implement Favorites/Bookmarks: allow users to favorite stories from the Story Reading screen and manage them in a Favorites tab. Favorites must persist for signed-in users and persist locally for guests.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-reading-history-and-continue-reading-track-last-opened-story-and-scroll-progress-position-show-a-continue-reading-module-on-home-and-expose-reading-history-in-profile-or-a-dedicated-section",
+      "title": "Implement Reading history and “Continue reading”: track last opened story and scroll/progress position, show a continue-reading module on Home, and expose reading history in Profile (or a dedicated section).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-offline-support-allow-users-to-download-for-offline-reading-on-stories-store-downloaded-story-content-locally-and-provide-an-offline-ready-reading-experience-for-downloaded-items",
+      "title": "Add offline support: allow users to “Download for offline reading” on stories, store downloaded story content locally, and provide an offline-ready reading experience for downloaded items.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-engagement-mechanics-daily-streak-counter-badges-for-milestones-e-g-read-x-stories-x-days-reading-challenges-e-g-read-5-stories-this-week-and-a-leaderboard-for-most-reads-include-a-simple-social-sharing-reward-that-unlocks-a-bonus-story-after-a-share-action-is-recorded",
+      "title": "Add engagement mechanics: daily streak counter, badges for milestones (e.g., read X stories / X days), reading challenges (e.g., read 5 stories this week), and a leaderboard for most reads. Include a simple “social sharing reward” that unlocks a bonus story after a share action is recorded.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-monetization-placeholders-banner-ad-slot-on-home-and-optional-inline-ad-slots-between-story-list-items-interstitial-ad-placeholder-after-every-3-4-stories-opened-rewarded-ad-placeholder-to-unlock-a-premium-story-premium-gating-for-some-stories-and-a-go-premium-flow-with-monthly-yearly-subscription-placeholders-that-removes-ad-placeholders-and-unlocks-premium-stories-and-all-languages",
+      "title": "Implement monetization placeholders: banner ad slot on Home and optional inline ad slots between story list items, interstitial ad placeholder after every 3–4 stories opened, rewarded ad placeholder to unlock a premium story, premium gating for some stories, and a “Go Premium” flow with monthly/yearly subscription placeholders that removes ad placeholders and unlocks premium stories and all languages.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-daily-content-mechanic-select-a-daily-featured-story-deterministically-per-day-and-per-language-mode-when-applicable-and-ensure-it-changes-day-to-day-without-requiring-manual-updates",
+      "title": "Add a daily content mechanic: select a “Daily Featured Story” deterministically per day (and per language/mode when applicable) and ensure it changes day-to-day without requiring manual updates.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-notifications-placeholder-ux-allow-the-user-to-configure-daily-new-story-reminders-by-preferred-language-category-and-show-an-in-app-scheduled-reminder-simulation-no-real-push-notifications",
+      "title": "Implement a notifications placeholder UX: allow the user to configure “daily new story reminders” by preferred language/category and show an in-app scheduled reminder simulation (no real push notifications).",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-kids-mode-safety-rules-are-enforced-throughout-the-app-kids-mode-must-exclude-mature-categories-at-minimum-horror-romance-thriller-and-only-show-kid-safe-stories-kids-categories-should-include-at-minimum-fairy-tales-educational-superhero",
+      "title": "Ensure Kids mode safety rules are enforced throughout the app: Kids mode must exclude mature categories (at minimum Horror, Romance, Thriller) and only show kid-safe stories; Kids categories should include at minimum Fairy Tales, Educational, Superhero.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-font-handling-so-indic-arabic-scripts-render-correctly-by-using-appropriate-web-fonts-e-g-noto-sans-families-and-apply-them-based-on-the-selected-language-script",
+      "title": "Add font handling so Indic/Arabic scripts render correctly by using appropriate web fonts (e.g., Noto Sans families) and apply them based on the selected language/script.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-and-use-a-set-of-high-quality-static-placeholder-cover-images-for-featured-stories-and-category-story-thumbnails-including-kid-friendly-variants-and-wire-them-into-the-dummy-story-dataset",
+      "title": "Create and use a set of high-quality static placeholder cover images for featured stories and category/story thumbnails, including kid-friendly variants, and wire them into the dummy story dataset.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-progressive-web-app-pwa-configuration-so-global-tales-universe-can-be-installed-to-a-device-home-screen-and-launches-in-standalone-app-like-mode",
+      "title": "Add Progressive Web App (PWA) configuration so Global Tales Universe can be installed to a device home screen and launches in standalone (app-like) mode.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-service-worker-that-enables-offline-first-caching-for-the-app-shell-html-css-js-and-static-assets-without-breaking-existing-story-offline-downloads",
+      "title": "Add a service worker that enables offline-first caching for the app shell (HTML/CSS/JS) and static assets, without breaking existing story offline downloads.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-install-ux-detect-when-the-app-is-installable-where-supported-and-show-a-non-intrusive-in-app-prompt-to-install-allow-dismissal-and-do-not-repeatedly-nag-after-dismissal",
+      "title": "Add install UX: detect when the app is installable (where supported) and show a non-intrusive in-app prompt to install; allow dismissal and do not repeatedly nag after dismissal.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enhance-mobile-web-app-like-presentation-in-frontend-index-html-add-appropriate-meta-tags-for-pwa-ios-apple-touch-icon-status-bar-style-and-ensure-the-viewport-is-configured-for-a-mobile-first-experience",
+      "title": "Enhance mobile-web “app-like” presentation in frontend/index.html: add appropriate meta tags for PWA + iOS (apple-touch icon, status bar style) and ensure the viewport is configured for a mobile-first experience.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-required-generated-image-assets-under-frontend-public-assets-generated-and-ensure-the-app-references-them-as-static-files-not-served-by-the-backend",
+      "title": "Add required generated image assets under frontend/public/assets/generated and ensure the app references them as static files (not served by the backend).",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "App shell/navigation with splash screen, bottom tabs (Home, Categories, Search, Favorites, Profile), modern themed UI (light/dark auto-detect)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Multilingual support: language selector, auto-detect device language, translated UI strings, category labels per language, font support (e.g., Noto Sans for Indic)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Home screen: daily featured story card, horizontal categories, latest stories list, Adults/Kids mode tabs with content filtering",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Story reading screen: adjustable font size, background themes, auto-scroll, progress bar, like/favorite, share, next/previous, auto-translate placeholder",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Categories and Search: category pages with Adults/Kids + language filters, search by title/keyword/author/language, sorting (popularity/newest/read time/ratings)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "User features: guest mode + optional email/Google login, favorites/bookmarks, reading history/continue reading, profile preferences (languages/categories/age mode)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Notifications: daily new story notifications based on preferred language/categories (placeholder implementation)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Monetization: banner/interstitial/rewarded ads placeholders (e.g., AdMob), premium gating for some stories, Go Premium (remove ads + unlock), subscription placeholders (monthly/yearly)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Offline support: download stories for offline reading",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Engagement features: daily streak counter, badges, leaderboards, reading challenges, social sharing rewards (unlock bonus story)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Dummy content: generate 100 sample short stories (adults + kids), 400–1500 words, at least English/Tamil/Hindi with placeholder translations for other languages; fake authors/read times/likes/ratings; kid-safe content",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Generate full source code for a mobile-look web app (PWA style) version of Global Tales Universe",
+      "reqIds": [],
+      "status": "in_progress"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Global Tales Universe",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

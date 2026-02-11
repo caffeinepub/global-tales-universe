@@ -1,0 +1,162 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "PWA packaging (manifest, service worker, install UX) for Global Tales Universe",
+  "requirements": [
+    {
+      "id": "REQ-21",
+      "summary": "Add PWA manifest and wire it from index.html so the app can be installed and launches standalone.",
+      "acceptanceCriteria": [
+        "A web app manifest is present and linked from frontend/index.html.",
+        "The manifest sets: name \"Global Tales Universe\", short_name \"Global Tales\", display \"standalone\", start_url \"/\", theme_color, background_color, and appropriate icon entries (including a 512x512 icon).",
+        "When opened via the installed icon, the app runs in standalone mode (no browser UI) in supporting browsers."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/manifest.webmanifest",
+          "operation": "create",
+          "description": "Create the web app manifest with the required name/short_name, standalone display mode, start_url, theme/background colors, and icon entries referencing frontend/public/assets/generated/gtu-logo.dim_512x512.png."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Link the manifest file and provide baseline PWA metadata (including theme-color) so browsers detect installability and standalone configuration."
+        }
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "summary": "Add and register a service worker for offline-first caching of the app shell and static assets without affecting localStorage story downloads.",
+      "acceptanceCriteria": [
+        "A service worker is registered from the frontend (without modifying any immutable paths).",
+        "With the network disconnected after the first successful load, the app shell still loads and renders the main UI routes (e.g., Home tab frame).",
+        "Existing offline story download behavior (localStorage-based downloads) continues to function as before."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/sw.js",
+          "operation": "create",
+          "description": "Create a service worker that pre-caches the app shell and uses safe runtime caching for static assets; ensure navigation requests can render routes offline (e.g., by serving cached app shell) and avoid interfering with localStorage-based offline downloads."
+        },
+        {
+          "path": "frontend/src/pwa/registerServiceWorker.ts",
+          "operation": "create",
+          "description": "Add a small helper that registers the service worker (e.g., /sw.js) when supported and handles basic registration lifecycle logging/guards."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the service worker from the app (e.g., via a useEffect in RootLayout or App) by calling the helper in frontend/src/pwa/registerServiceWorker.ts, without changing any restricted files."
+        }
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "summary": "Implement a dismissible in-app install prompt that appears only when installable and respects a local dismissal cooldown.",
+      "acceptanceCriteria": [
+        "On supporting browsers, an install prompt UI appears after the install event is available.",
+        "Clicking the prompt triggers the browser install flow.",
+        "Dismissing the prompt prevents it from reappearing for a reasonable period (persisted locally)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/usePwaInstallPrompt.ts",
+          "operation": "create",
+          "description": "Create a hook that listens for the installability event, stores the deferred prompt, exposes actions to trigger install, and persists a dismissal timestamp in localStorage to prevent repeated prompting."
+        },
+        {
+          "path": "frontend/src/components/InstallPromptBanner.tsx",
+          "operation": "create",
+          "description": "Create a non-intrusive banner component that uses the usePwaInstallPrompt hook to show an Install action and a Dismiss action with locally persisted cooldown behavior."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the install prompt banner into the existing app layout (e.g., near ReminderBanner in RootLayout) so it can appear across main routes without creating new routes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "summary": "Improve mobile app-like presentation by adding PWA/iOS meta tags, apple-touch icon, and a mobile-first viewport configuration in index.html.",
+      "acceptanceCriteria": [
+        "frontend/index.html includes meta/link tags for manifest, theme color, and common iOS PWA tags.",
+        "An apple-touch-icon is provided and referenced.",
+        "The app does not appear zoomed-out on mobile; it renders as a phone-style layout with the existing max-width container behavior."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Add/adjust meta and link tags for PWA + iOS (manifest link, theme-color, apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-mobile-web-app-title) and set a mobile-first viewport configuration; reference the apple-touch-icon at frontend/public/assets/generated/gtu-logo.dim_512x512.png."
+        }
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "summary": "Ensure required generated images exist under frontend/public/assets/generated and are referenced as static frontend assets.",
+      "acceptanceCriteria": [
+        "All required images listed in this build request exist under frontend/public/assets/generated with the exact filenames.",
+        "Splash screen logo reference (/assets/generated/gtu-logo.dim_512x512.png) continues to load correctly.",
+        "Cover image references used by frontend/src/lib/covers.ts resolve correctly at runtime."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/gtu-logo.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/gtu-splash-bg.dim_1080x1920.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-default.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-kids-default.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-romance.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-horror.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-comedy.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-mythology.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-educational.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/public/assets/generated/cover-superhero.dim_1200x1600.png",
+          "operation": "create",
+          "description": "Add the generated image asset at the exact path and filename so it can be referenced as a static file."
+        },
+        {
+          "path": "frontend/src/lib/covers.ts",
+          "operation": "modify",
+          "description": "Verify that all category cover mappings point to the exact static asset paths under /assets/generated and adjust only if needed to match the required filenames."
+        }
+      ]
+    }
+  ]
+}
