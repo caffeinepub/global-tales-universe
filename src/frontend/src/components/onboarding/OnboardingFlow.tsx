@@ -28,13 +28,17 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const handleNext = () => {
     setDirection('forward');
+    
     if (step === 1) {
+      // Persist language and advance to step 2
       setLanguage(selectedLanguage);
       setStep(2);
     } else if (step === 2) {
+      // Persist mode and advance to step 3
       setMode(selectedMode);
       setStep(3);
     } else if (step === 3) {
+      // Persist theme, mark complete, and exit
       setTheme(selectedTheme);
       setOnboardingCompleted();
       onComplete();
@@ -42,14 +46,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   };
 
   const handleBack = () => {
+    if (step <= 1) return;
+    
     setDirection('backward');
-    if (step > 1) {
-      setStep(step - 1);
-    }
+    setStep(step - 1);
   };
 
   const handleSkip = () => {
-    // Persist current selections (or defaults if not changed)
+    // Persist current selections
     setLanguage(selectedLanguage);
     setMode(selectedMode);
     setTheme(selectedTheme);
@@ -57,7 +61,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     // Mark onboarding as completed
     setOnboardingCompleted();
     
-    // Enter the main app immediately
+    // Exit onboarding immediately
     onComplete();
   };
 
@@ -89,7 +93,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full onboarding-progress-indicator ${
+                className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === step ? 'w-8 bg-primary' : 'w-1.5 bg-muted'
                 }`}
               />
@@ -109,23 +113,23 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
                 <RadioGroup value={selectedLanguage} onValueChange={(val) => setSelectedLanguage(val as UILanguage)}>
                   <div className="space-y-2">
-                    <div className="onboarding-option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="en" id="lang-en" />
                       <Label htmlFor="lang-en" className="flex-1 cursor-pointer">English</Label>
                     </div>
-                    <div className="onboarding-option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="hi" id="lang-hi" />
                       <Label htmlFor="lang-hi" className="flex-1 cursor-pointer">हिन्दी (Hindi)</Label>
                     </div>
-                    <div className="onboarding-option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="ta" id="lang-ta" />
                       <Label htmlFor="lang-ta" className="flex-1 cursor-pointer">தமிழ் (Tamil)</Label>
                     </div>
-                    <div className="onboarding-option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="te" id="lang-te" />
                       <Label htmlFor="lang-te" className="flex-1 cursor-pointer">తెలుగు (Telugu)</Label>
                     </div>
-                    <div className="onboarding-option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="es" id="lang-es" />
                       <Label htmlFor="lang-es" className="flex-1 cursor-pointer">Español (Spanish)</Label>
                     </div>
@@ -144,7 +148,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
                 <RadioGroup value={selectedMode} onValueChange={(val) => setSelectedMode(val as AgeMode)}>
                   <div className="space-y-3">
-                    <div className="onboarding-option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="kids" id="mode-kids" className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor="mode-kids" className="cursor-pointer font-medium">
@@ -155,7 +159,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="onboarding-option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="adults" id="mode-adults" className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor="mode-adults" className="cursor-pointer font-medium">
@@ -181,7 +185,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
                 <RadioGroup value={selectedTheme} onValueChange={setSelectedTheme}>
                   <div className="space-y-3">
-                    <div className="onboarding-option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="light" id="theme-light" className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor="theme-light" className="cursor-pointer font-medium">
@@ -192,7 +196,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="onboarding-option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="dark" id="theme-dark" className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor="theme-dark" className="cursor-pointer font-medium">
@@ -203,7 +207,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="onboarding-option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
+                    <div className="option-row flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer">
                       <RadioGroupItem value="system" id="theme-system" className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor="theme-system" className="cursor-pointer font-medium">

@@ -3,6 +3,8 @@ import { usePreferences } from '../context/PreferencesContext';
 import { getFilteredCategories } from '../lib/kidsMode';
 import { translateCategory, t } from '../lib/i18n';
 import { getCoverUrl } from '../lib/covers';
+import PageLayout from '../components/PageLayout';
+import { cardRadius, cardElevation, transitions, focusRing } from '../lib/uiPolish';
 
 export default function CategoriesTab() {
   const navigate = useNavigate();
@@ -10,8 +12,7 @@ export default function CategoriesTab() {
   const categories = getFilteredCategories(mode === 'kids');
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">{t('categories', language)}</h1>
+    <PageLayout title={t('categories', language)}>
       <div className="grid grid-cols-2 gap-4">
         {categories.map((category) => {
           const coverUrl = getCoverUrl(category, mode === 'kids');
@@ -19,7 +20,15 @@ export default function CategoriesTab() {
             <div
               key={category}
               onClick={() => navigate({ to: '/categories/$categoryId', params: { categoryId: category } })}
-              className="relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-105 shadow-md"
+              className={`relative aspect-[3/4] ${cardRadius.medium} overflow-hidden cursor-pointer hover:scale-105 motion-reduce:hover:scale-100 ${transitions.transform} ${cardElevation.medium} ${focusRing}`}
+              tabIndex={0}
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate({ to: '/categories/$categoryId', params: { categoryId: category } });
+                }
+              }}
             >
               <img src={coverUrl} alt={category} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -32,6 +41,6 @@ export default function CategoriesTab() {
           );
         })}
       </div>
-    </div>
+    </PageLayout>
   );
 }

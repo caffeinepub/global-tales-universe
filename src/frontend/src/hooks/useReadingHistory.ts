@@ -61,6 +61,10 @@ export function useReadingHistory() {
     }
   };
 
+  const updateProgress = (storyId: bigint, progress: number) => {
+    addToHistory(storyId, progress);
+  };
+
   const getProgress = (storyId: bigint): number => {
     const entry = history.find((e: any) => e.storyId === storyId);
     return entry ? (entry as HistoryEntry).progress : 0;
@@ -73,6 +77,7 @@ export function useReadingHistory() {
   return {
     history: history as HistoryEntry[],
     addToHistory,
+    updateProgress,
     getProgress,
     getLastRead,
   };

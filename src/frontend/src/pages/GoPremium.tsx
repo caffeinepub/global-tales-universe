@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { ArrowLeft, Check, Crown } from 'lucide-react';
 import { Separator } from '../components/ui/separator';
 import { iconSizes, cardPadding, rowSpacing, separatorMargin } from '../lib/uiPolish';
+import ButtonStyleRegressionCheck from '../components/ButtonStyleRegressionCheck';
 
 export default function GoPremium() {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ export default function GoPremium() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
+      <ButtonStyleRegressionCheck />
+      
       <div className="flex items-center gap-3 mb-6">
         <Button 
           variant="ghost" 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState } from '@tanstack/react-router';
+import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState, NotFoundRoute } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import SplashScreen from './components/SplashScreen';
 import BottomNav from './components/BottomNav';
@@ -13,12 +13,14 @@ import SearchTab from './pages/SearchTab';
 import FavoritesTab from './pages/FavoritesTab';
 import ProfileTab from './pages/ProfileTab';
 import StoryReader from './pages/StoryReader';
+import StoryEditor from './pages/StoryEditor';
 import GoPremium from './pages/GoPremium';
 import PremiumSuccess from './pages/PremiumSuccess';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import HelpAndSupport from './pages/HelpAndSupport';
 import AboutUs from './pages/AboutUs';
+import RouteErrorFallback from './components/RouteErrorFallback';
 import { PreferencesProvider } from './context/PreferencesContext';
 import { Toaster } from './components/ui/sonner';
 import ReminderBanner from './components/ReminderBanner';
@@ -35,8 +37,9 @@ function RootLayout() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
-  // Check if current route is StoryReader (full-screen experience)
-  const isStoryReader = currentPath.startsWith('/story/');
+  // Check if current route is StoryReader or StoryEditor (full-screen experience)
+  const isStoryReader = currentPath.startsWith('/story/') && !currentPath.includes('/editor');
+  const isStoryEditor = currentPath.startsWith('/story/editor');
   const isPremiumSuccess = currentPath === '/premium/success';
 
   useEffect(() => {
@@ -63,6 +66,21 @@ function RootLayout() {
     }
   }, []);
 
+  useEffect(() => {
+    // Dev-only: Log button style verification checklist
+    if (import.meta.env.DEV) {
+      console.log(
+        '%c🔍 Button Style Regression Check',
+        'background: #4338ca; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;',
+        '\n\nVerify button styling on these screens after Preview/Production builds:\n' +
+        '1. Premium page (/premium) - Check default & outline button variants\n' +
+        '2. Error fallback (navigate to /nonexistent) - Check default button variant\n' +
+        '\nExpected: Buttons should have visible padding, background, border, hover & focus states.\n' +
+        'If buttons look like plain text, CSS variable tokens may be broken.\n'
+      );
+    }
+  }, []);
+
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setOnboardingCompleted(true);
@@ -76,8 +94,8 @@ function RootLayout() {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
-  // StoryReader and PremiumSuccess have their own layouts
-  if (isStoryReader || isPremiumSuccess) {
+  // StoryReader, StoryEditor, and PremiumSuccess have their own layouts
+  if (isStoryReader || isStoryEditor || isPremiumSuccess) {
     return <Outlet />;
   }
 
@@ -97,6 +115,8 @@ function RootLayout() {
 
 const rootRoute = createRootRoute({
   component: RootLayout,
+  errorComponent: RouteErrorFallback,
+  notFoundComponent: RouteErrorFallback,
 });
 
 const homeRoute = createRoute({
@@ -139,6 +159,12 @@ const storyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/story/$storyId',
   component: StoryReader,
+});
+
+const storyEditorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/story/editor/$storyId',
+  component: StoryEditor,
 });
 
 const premiumRoute = createRoute({
@@ -185,6 +211,7 @@ const routeTree = rootRoute.addChildren([
   favoritesRoute,
   profileRoute,
   storyRoute,
+  storyEditorRoute,
   premiumRoute,
   premiumSuccessRoute,
   privacyPolicyRoute,
@@ -193,7 +220,10 @@ const routeTree = rootRoute.addChildren([
   aboutUsRoute,
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({ 
+  routeTree,
+  defaultNotFoundComponent: RouteErrorFallback,
+});
 
 declare module '@tanstack/react-router' {
   interface Register {

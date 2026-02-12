@@ -50,3 +50,12 @@ export function useDailyFeaturedStory(language: Language = Language.english) {
     enabled: !!actor && !actorFetching,
   });
 }
+
+// Export query key helpers for invalidation
+export const storyQueryKeys = {
+  all: ['stories'] as const,
+  lists: () => [...storyQueryKeys.all, 'list'] as const,
+  list: (filters: any) => [...storyQueryKeys.lists(), filters] as const,
+  details: () => [...storyQueryKeys.all, 'detail'] as const,
+  detail: (id: string) => [...storyQueryKeys.details(), id] as const,
+};

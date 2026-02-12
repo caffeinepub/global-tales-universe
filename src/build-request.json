@@ -1,113 +1,51 @@
 {
   "kind": "build_request",
-  "title": "Iterative polish pass across Premium, Sharing, and Notifications (one-by-one)",
+  "title": "Fix regression where buttons render as plain text (no visible button styling)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
+      "text": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "All want one by one you polished"
+          "Again this two only show no button only text why please help and create please solve my problem"
         ]
       },
       "acceptanceCriteria": [
-        "Go Premium page has clearer plan selection state and comparison (e.g., visual emphasis, selected indicator) before/while subscribing, without changing the placeholder subscription behavior.",
-        "Subscribe actions are protected against accidental repeated taps (no duplicate navigations / repeated state changes when tapped quickly).",
-        "Premium status surfaces in Profile and Drawer use consistent wording and hierarchy (e.g., “Premium Active”, “Premium Member”) and cancellation action is clearly labeled.",
-        "All user-facing text introduced/updated for this polish is in English."
+        "On pages where primary CTAs exist (e.g., Premium subscribe actions, error fallback navigation, install prompt), the CTAs render as visually distinct buttons (not just plain text) with clear hit targets.",
+        "Buttons show visible focus styling when tabbed to (keyboard navigation) and remain readable in both light and dark themes.",
+        "The fix is verified in both Preview and Production builds (not only in local/dev mode)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+      "text": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "All want one by one you polished"
+          "Again this two only show no button only text why please help and create please solve my problem"
         ]
       },
       "acceptanceCriteria": [
-        "When the user is premium, ad UI elements do not render in any known placements (including banner/inline/interstitial placeholder surfaces).",
-        "When the user is not premium, ad placeholders render consistently and do not cause layout jumps when toggling premium state.",
-        "Any premium-only story indicators or locked states have a consistent, intentional presentation (clear label/CTA), without blank or broken-looking spaces."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Polish app sharing UX for both “Share App” and “Share Story”: improve user feedback, handle cancellations/errors gracefully, and make the copy-link fallback more explicit and discoverable when system sharing is unavailable.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "All want one by one you polished"
-        ]
-      },
-      "acceptanceCriteria": [
-        "If system share succeeds, the user gets a clear success toast/message; if the user cancels or sharing fails, the UI responds gracefully (no silent failure, no console-only errors).",
-        "When Web Share API is unavailable, the UI explicitly offers a visible copy-link action and communicates the result (copied/failed).",
-        "Share buttons show a clear loading/disabled state while share is in progress and return to normal after completion."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "All want one by one you polished"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The notifications toggle cannot appear enabled when browser permission is denied; the UI clearly explains how to enable notifications in browser settings when denied.",
-        "When permission is granted, enabling notifications provides clear confirmation; when permission is not granted, the UI clearly communicates the outcome (granted/denied/dismissed).",
-        "The “New story today!” banner styling matches the app theme and no longer uses a clashing gradient; spacing/typography aligns with other top-of-screen banners.",
-        "All notification-related user-facing text introduced/updated for this polish is in English."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "All want one by one you polished"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Across Go Premium, Premium Success, Profile, Drawer premium upsell, sharing UI, and notifications UI: button variants and sizes are consistent for similar actions (primary vs secondary vs destructive).",
-        "Icon sizes and spacing are consistent within cards/rows (no mismatched icon sizing between adjacent actions).",
-        "Card padding, separators, and typography scale look consistent across the polished screens.",
-        "Microcopy tone is consistent and professional in English (no mixed tone like playful in one place and formal elsewhere unless intentionally applied consistently)."
+        "There is a documented/manual checklist (or lightweight dev-only verification step) that developers can use to confirm buttons are visibly styled on the chosen screens after builds.",
+        "The selected screens include at least two distinct button variants (e.g., default and outline/secondary/ghost) to catch missing styles across variants."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under frontend/src/components/ui (compose existing Shadcn components instead).",
-    "Do not edit immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx.",
-    "Preserve the existing placeholder subscription behavior (no real payments / no external payment integrations).",
-    "Backend remains single-actor in backend/main.mo; only introduce backend changes if strictly required for the UI polish (otherwise keep scope frontend-only)."
+    "Do not edit any files under frontend/src/components/ui (read-only UI component sources must be composed/used, not modified).",
+    "Do not modify frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx."
   ],
   "nonGoals": [
-    "Implementing real payments or integrating payment providers.",
-    "Adding third-party authentication methods beyond Internet Identity.",
-    "Adding real-time chat, push notifications, or server-side scheduled notifications.",
-    "Redesigning unrelated areas outside Premium, Sharing, and Notifications surfaces."
+    "Do not add new product features or new pages beyond what is required to restore button visibility/styling.",
+    "Do not change authentication behavior or backend logic as part of this fix."
   ],
   "imageRequirements": {
     "required": [],

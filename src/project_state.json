@@ -1,61 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Polish and refine the live app iteratively, improving visuals and related UX areas one-by-one.",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "UI regression: two elements/pages display only text and no button is visible (buttons not rendering)."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-polish-the-premium-experience-end-to-end-across-go-premium-premium-success-profile-and-the-app-drawer-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-placeholder-fake-subscription-behavior-no-real-payments",
-      "title": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
+      "id": "feature-investigate-and-fix-the-ui-regression-where-some-pages-components-display-only-button-text-no-visible-button-styling-ensuring-buttons-render-with-the-expected-padding-border-background-hover-focus-states-and-are-clearly-recognizable-as-buttons-in-both-preview-and-production-builds",
+      "title": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-is-consistently-hidden-for-premium-users-and-make-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
-      "title": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+      "id": "feature-add-a-minimal-repeatable-regression-check-in-the-ui-to-confirm-button-styling-is-present-on-at-least-two-representative-screens-that-previously-exhibited-the-issue-for-example-the-premium-page-subscribe-button-and-the-routeerrorfallback-go-to-home-button",
+      "title": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-polish-app-sharing-ux-for-both-share-app-and-share-story-improve-user-feedback-handle-cancellations-errors-gracefully-and-make-the-copy-link-fallback-more-explicit-and-discoverable-when-system-sharing-is-unavailable",
-      "title": "Polish app sharing UX for both “Share App” and “Share Story”: improve user feedback, handle cancellations/errors gracefully, and make the copy-link fallback more explicit and discoverable when system sharing is unavailable.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-restyle-the-in-app-new-story-today-simulation-banner-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
-      "title": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
-      "title": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Iteratively polish the live app one area at a time (visuals, animations, premium flow, share flow, notifications).",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Iterative polish pass across Premium, Sharing, and Notifications (one-by-one)",
+  "new_feature_requests": [],
+  "projectName": "Fix regression where buttons render as plain text (no visible button styling)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

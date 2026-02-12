@@ -2,13 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-polish-the-premium-experience-end-to-end-across-go-premium-premium-success-profile-and-the-app-drawer-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-placeholder-fake-subscription-behavior-no-real-payments",
-      "featureTitle": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
+      "featureId": "feature-investigate-and-fix-the-ui-regression-where-some-pages-components-display-only-button-text-no-visible-button-styling-ensuring-buttons-render-with-the-expected-padding-border-background-hover-focus-states-and-are-clearly-recognizable-as-buttons-in-both-preview-and-production-builds",
+      "featureTitle": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
       "files": [
-        "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/pages/GoPremium.tsx",
-        "frontend/src/pages/PremiumSuccess.tsx",
-        "frontend/src/pages/ProfileTab.tsx"
+        "frontend/src/components/InstallPromptBanner.tsx",
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -25,13 +24,13 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-is-consistently-hidden-for-premium-users-and-make-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
-      "featureTitle": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+      "featureId": "feature-add-a-minimal-repeatable-regression-check-in-the-ui-to-confirm-button-styling-is-present-on-at-least-two-representative-screens-that-previously-exhibited-the-issue-for-example-the-premium-page-subscribe-button-and-the-routeerrorfallback-go-to-home-button",
+      "featureTitle": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
       "files": [
-        "frontend/src/components/AdPlaceholder.tsx",
-        "frontend/src/components/InterstitialAdModal.tsx",
-        "frontend/src/components/StoryCard.tsx",
-        "frontend/src/pages/StoryReader.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/ButtonStyleRegressionCheck.tsx",
+        "frontend/src/components/RouteErrorFallback.tsx",
+        "frontend/src/pages/GoPremium.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -44,77 +43,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-polish-app-sharing-ux-for-both-share-app-and-share-story-improve-user-feedback-handle-cancellations-errors-gracefully-and-make-the-copy-link-fallback-more-explicit-and-discoverable-when-system-sharing-is-unavailable",
-      "featureTitle": "Polish app sharing UX for both “Share App” and “Share Story”: improve user feedback, handle cancellations/errors gracefully, and make the copy-link fallback more explicit and discoverable when system sharing is unavailable.",
-      "files": [
-        "frontend/src/components/ShareSheetPlaceholder.tsx",
-        "frontend/src/lib/share.ts",
-        "frontend/src/pages/ProfileTab.tsx",
-        "frontend/src/pages/StoryReader.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-restyle-the-in-app-new-story-today-simulation-banner-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
-      "featureTitle": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
-      "files": [
-        "frontend/src/components/DailyStoryNotificationBanner.tsx",
-        "frontend/src/lib/notifications.ts",
-        "frontend/src/pages/ProfileTab.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
-      "featureTitle": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
-      "files": [
-        "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/components/DailyStoryNotificationBanner.tsx",
-        "frontend/src/components/ShareSheetPlaceholder.tsx",
-        "frontend/src/lib/uiPolish.ts",
-        "frontend/src/pages/GoPremium.tsx",
-        "frontend/src/pages/PremiumSuccess.tsx",
-        "frontend/src/pages/ProfileTab.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

@@ -1,11 +1,10 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
-import { Button } from './ui/button';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppUser } from '../hooks/useAppUser';
+import { Home, Search, Heart, User, Crown, BookOpen, HelpCircle, Info, PenSquare } from 'lucide-react';
 import PremiumBadge from './PremiumBadge';
-import { Home, BookOpen, Heart, User, HelpCircle, FileText, Shield, Info, Crown } from 'lucide-react';
-import { Separator } from './ui/separator';
-import { iconSizes, rowSpacing } from '../lib/uiPolish';
+import { Button } from './ui/button';
+import { iconSizes, cardRadius, cardPadding, cardElevation, focusRing, transitions } from '../lib/uiPolish';
 
 interface AppDrawerProps {
   isOpen: boolean;
@@ -14,25 +13,31 @@ interface AppDrawerProps {
 
 export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
   const navigate = useNavigate();
-  const { isPremium } = useAppUser();
+  const { isPremium, isAuthenticated } = useAppUser();
 
-  const handleNavigation = (path: string) => {
-    navigate({ to: path });
-    onClose();
+  const handleNavigate = (path: string) => {
+    try {
+      navigate({ to: path as any });
+      onClose();
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to home if navigation fails
+      navigate({ to: '/' });
+      onClose();
+    }
   };
 
   const menuItems = [
     { icon: Home, label: 'Home', path: '/' },
     { icon: BookOpen, label: 'Categories', path: '/categories' },
+    { icon: Search, label: 'Search', path: '/search' },
     { icon: Heart, label: 'Favorites', path: '/favorites' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
-  const supportItems = [
-    { icon: HelpCircle, label: 'Help & Support', path: '/help' },
-    { icon: FileText, label: 'Terms & Conditions', path: '/terms' },
-    { icon: Shield, label: 'Privacy Policy', path: '/privacy' },
-    { icon: Info, label: 'About Us', path: '/about' },
+  const secondaryItems = [
+    { icon: HelpCircle, label: 'Help & Support', path: '/help-and-support' },
+    { icon: Info, label: 'About Us', path: '/about-us' },
   ];
 
   return (
@@ -41,61 +46,71 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
         <SheetHeader>
           <SheetTitle className="text-left">Menu</SheetTitle>
         </SheetHeader>
-
+        
         <div className="mt-6 space-y-6">
-          {/* Premium Status / Upsell */}
-          {isPremium ? (
-            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-              <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-400 shrink-0`} />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-yellow-900 dark:text-yellow-100">Premium Active</p>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300">Enjoying ad-free stories</p>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => handleNavigation('/premium')}
-              className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800 hover:shadow-md transition-shadow"
-            >
-              <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-400 shrink-0`} />
-              <div className="flex-1 text-left min-w-0">
-                <p className="font-medium text-sm text-yellow-900 dark:text-yellow-100">Go Premium</p>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300">Unlock all stories</p>
-              </div>
-            </button>
-          )}
-
-          <Separator />
-
           {/* Main Navigation */}
-          <nav className={rowSpacing.tight}>
+          <nav className="space-y-1">
             {menuItems.map((item) => (
-              <Button
+              <button
                 key={item.path}
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => handleNavigation(item.path)}
+                onClick={() => handleNavigate(item.path)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent ${transitions.colors} ${focusRing} text-left`}
               >
-                <item.icon className={`${iconSizes.md} mr-3`} />
-                {item.label}
-              </Button>
+                <item.icon className={iconSizes.md} />
+                <span className="font-medium">{item.label}</span>
+              </button>
             ))}
           </nav>
 
-          <Separator />
-
-          {/* Support Links */}
-          <nav className={rowSpacing.tight}>
-            {supportItems.map((item) => (
-              <Button
-                key={item.path}
-                variant="ghost"
-                className="w-full justify-start text-muted-foreground"
-                onClick={() => handleNavigation(item.path)}
+          {/* Create Story (Authenticated Only) */}
+          {isAuthenticated && (
+            <>
+              <div className="h-px bg-border" />
+              <button
+                onClick={() => handleNavigate('/story/editor/new')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent ${transitions.colors} ${focusRing} text-left`}
               >
-                <item.icon className={`${iconSizes.md} mr-3`} />
-                {item.label}
-              </Button>
+                <PenSquare className={iconSizes.md} />
+                <span className="font-medium">Create Story</span>
+              </button>
+            </>
+          )}
+
+          {/* Premium Upsell */}
+          {!isPremium && (
+            <>
+              <div className="h-px bg-border" />
+              <div className={`${cardRadius.medium} ${cardPadding.default} bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 ${cardElevation.low}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-500`} />
+                  <PremiumBadge variant="compact" />
+                </div>
+                <p className="text-sm mb-3">
+                  Unlock ad-free reading and exclusive premium stories.
+                </p>
+                <Button
+                  onClick={() => handleNavigate('/premium')}
+                  size="sm"
+                  className={`w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 ${focusRing}`}
+                >
+                  Go Premium
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Secondary Navigation */}
+          <div className="h-px bg-border" />
+          <nav className="space-y-1">
+            {secondaryItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => handleNavigate(item.path)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent ${transitions.colors} ${focusRing} text-left`}
+              >
+                <item.icon className={iconSizes.md} />
+                <span className="font-medium">{item.label}</span>
+              </button>
             ))}
           </nav>
         </div>

@@ -1,17 +1,20 @@
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppUser } from '../hooks/useAppUser';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useMyStories } from '../hooks/useMyStories';
 import { t } from '../lib/i18n';
 import LoginButton from '../components/LoginButton';
 import UserAvatar from '../components/UserAvatar';
 import PremiumBadge from '../components/PremiumBadge';
+import MyStoryCard from '../components/MyStoryCard';
+import PageLayout from '../components/PageLayout';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useNavigate } from '@tanstack/react-router';
 import { getEngagementData } from '../lib/engagement';
 import { Badge } from '../components/ui/badge';
-import { Flame, Award, Target, Upload, Crown, Share2, Bell, BellOff, AlertCircle, Copy, ExternalLink } from 'lucide-react';
+import { Flame, Award, Target, Upload, Crown, Share2, Bell, BellOff, AlertCircle, Copy, ExternalLink, Plus } from 'lucide-react';
 import { Separator } from '../components/ui/separator';
 import { Switch } from '../components/ui/switch';
 import { useState, useEffect, useRef } from 'react';
@@ -37,12 +40,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { iconSizes, cardPadding, rowSpacing, separatorMargin } from '../lib/uiPolish';
+import { iconSizes, cardPadding, rowSpacing, separatorMargin, cardRadius, cardElevation, focusRing } from '../lib/uiPolish';
 
 export default function ProfileTab() {
   const { language } = usePreferences();
   const { isAuthenticated, isPremium, dailyNotificationsEnabled, updateUserState } = useAppUser();
   const { profile: getProfile, saveProfile, isLoading: profileLoading, isSaving, isFetched } = useUserProfile();
+  const { data: myStories, isLoading: storiesLoading } = useMyStories();
   const navigate = useNavigate();
   const engagement = getEngagementData();
 
@@ -243,14 +247,14 @@ export default function ProfileTab() {
   const hasWebShareApi = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <PageLayout>
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{t('profile', language)}</h1>
         <LoginButton />
       </div>
 
       {/* Profile Edit Section */}
-      <div className={`bg-card rounded-xl ${cardPadding.default} space-y-6 border shadow-sm`}>
+      <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} ${rowSpacing.default} border ${cardElevation.low}`}>
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <UserAvatar 
@@ -279,25 +283,22 @@ export default function ProfileTab() {
                 value={editedName}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="Enter your username"
-                className={nameError ? 'border-destructive' : ''}
+                className={focusRing}
               />
-              {nameError && (
-                <p className="text-sm text-destructive">{nameError}</p>
-              )}
+              {nameError && <p className="text-xs text-destructive">{nameError}</p>}
             </div>
 
             <div className="space-y-2">
               <Label>Profile Picture</Label>
-              
               <div className="flex gap-2">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1"
-                  disabled={isSaving}
+                  className={`flex-1 ${focusRing}`}
                 >
                   <Upload className={`${iconSizes.sm} mr-2`} />
-                  Upload Image
+                  Upload
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -307,35 +308,24 @@ export default function ProfileTab() {
                   className="hidden"
                 />
               </div>
-
               <div className="flex gap-2">
                 <Input
                   placeholder="Or paste image URL"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  disabled={isSaving}
+                  className={`flex-1 ${focusRing}`}
                 />
-                <Button
-                  variant="outline"
-                  onClick={handleUrlSubmit}
-                  disabled={!imageUrl.trim() || isSaving}
-                >
+                <Button variant="outline" size="sm" onClick={handleUrlSubmit} className={focusRing}>
                   Add
                 </Button>
               </div>
-
-              {imageError && (
-                <p className="text-sm text-destructive">{imageError}</p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                JPG or PNG, max 2MB
-              </p>
+              {imageError && <p className="text-xs text-destructive">{imageError}</p>}
             </div>
 
             <Button
               onClick={handleSave}
               disabled={!canSave}
-              className="w-full"
+              className={`w-full ${focusRing}`}
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -343,90 +333,94 @@ export default function ProfileTab() {
         </div>
       </div>
 
-      {/* Engagement Stats */}
-      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
-        <h3 className="font-semibold text-lg mb-4">Your Stats</h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Flame className={`${iconSizes.lg} text-orange-500`} />
+      {/* My Stories Section */}
+      {isAuthenticated && (
+        <>
+          <Separator className={separatorMargin.default} />
+          <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} space-y-4`}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">My Stories</h2>
+              <Button
+                onClick={() => navigate({ to: '/story/editor/$storyId', params: { storyId: 'new' } })}
+                size="sm"
+                className={focusRing}
+              >
+                <Plus className={`${iconSizes.sm} mr-2`} />
+                Create Story
+              </Button>
             </div>
-            <p className="text-2xl font-bold">{engagement.streak}</p>
-            <p className="text-xs text-muted-foreground">Day Streak</p>
+            
+            {storiesLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading your stories...
+              </div>
+            ) : myStories && myStories.length > 0 ? (
+              <div className="space-y-3">
+                {myStories.map((story) => (
+                  <MyStoryCard key={story.id.toString()} story={story} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 space-y-3">
+                <p className="text-muted-foreground">You haven't created any stories yet.</p>
+                <p className="text-sm text-muted-foreground">
+                  Share your creativity with the world!
+                </p>
+              </div>
+            )}
           </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Award className={`${iconSizes.lg} text-yellow-500`} />
-            </div>
-            <p className="text-2xl font-bold">{engagement.badges.length}</p>
-            <p className="text-xs text-muted-foreground">Badges</p>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Target className={`${iconSizes.lg} text-blue-500`} />
-            </div>
-            <p className="text-2xl font-bold">{engagement.challengeProgress}%</p>
-            <p className="text-xs text-muted-foreground">Challenge</p>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
+      {!isAuthenticated && (
+        <>
+          <Separator className={separatorMargin.default} />
+          <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} text-center space-y-4`}>
+            <Upload className={`${iconSizes.lg} mx-auto text-muted-foreground`} />
+            <div>
+              <h3 className="font-semibold mb-2">Create Your Own Stories</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Login to start writing and sharing your stories with the community.
+              </p>
+            </div>
+            <LoginButton />
+          </div>
+        </>
+      )}
+
+      {/* Premium Status Section */}
       <Separator className={separatorMargin.default} />
-
-      {/* Premium Section */}
-      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
+      <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} ${rowSpacing.default} border ${cardElevation.low}`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg">Premium Status</h3>
-          {isPremium && <PremiumBadge variant="compact" />}
+          <h2 className="text-lg font-semibold">Premium Status</h2>
+          {isPremium && <PremiumBadge />}
         </div>
         
         {isPremium ? (
-          <div className={rowSpacing.default}>
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-              <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5`} />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20">
+              <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-500`} />
               <div className="flex-1">
-                <p className="font-medium text-yellow-900 dark:text-yellow-100">Premium Active</p>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">Enjoy ad-free reading and unlimited premium stories</p>
+                <p className="font-medium">Premium Active</p>
+                <p className="text-xs text-muted-foreground">Enjoying ad-free experience</p>
               </div>
             </div>
-            
-            <div className={`${rowSpacing.default} text-sm`}>
-              <div className="flex items-center gap-2">
-                <div className={`${iconSizes.sm} rounded-full bg-green-500 flex items-center justify-center shrink-0`}>
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Ad-free reading experience</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className={`${iconSizes.sm} rounded-full bg-green-500 flex items-center justify-center shrink-0`}>
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Unlimited premium stories</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className={`${iconSizes.sm} rounded-full bg-green-500 flex items-center justify-center shrink-0`}>
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <span>Exclusive content access</span>
-              </div>
-            </div>
-
             <Button
-              variant="destructive"
+              variant="outline"
               onClick={() => setShowCancelDialog(true)}
-              className="w-full"
+              className={`w-full ${focusRing}`}
             >
               Cancel Subscription
             </Button>
           </div>
         ) : (
-          <div className={rowSpacing.default}>
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Upgrade to Premium for ad-free reading and unlimited access to exclusive stories.
+              Upgrade to Premium for an ad-free experience and exclusive content.
             </p>
             <Button
               onClick={() => navigate({ to: '/premium' })}
-              className="w-full"
+              className={`w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 ${focusRing}`}
             >
               <Crown className={`${iconSizes.sm} mr-2`} />
               Go Premium
@@ -435,23 +429,80 @@ export default function ProfileTab() {
         )}
       </div>
 
+      {/* Engagement Stats */}
       <Separator className={separatorMargin.default} />
-
-      {/* Share App Section */}
-      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
-        <div className="flex items-center gap-3 mb-4">
-          <Share2 className={iconSizes.md} />
-          <h3 className="font-semibold text-lg">Share GTU</h3>
+      <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low}`}>
+        <h2 className="text-lg font-semibold mb-4">Your Stats</h2>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Flame className={`${iconSizes.md} text-orange-500`} />
+            </div>
+            <p className="text-2xl font-bold">{engagement.streak}</p>
+            <p className="text-xs text-muted-foreground">Day Streak</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Award className={`${iconSizes.md} text-yellow-500`} />
+            </div>
+            <p className="text-2xl font-bold">{engagement.badges.length}</p>
+            <p className="text-xs text-muted-foreground">Badges</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Target className={`${iconSizes.md} text-blue-500`} />
+            </div>
+            <p className="text-2xl font-bold">{engagement.challengeProgress}%</p>
+            <p className="text-xs text-muted-foreground">Challenge</p>
+          </div>
         </div>
+      </div>
+
+      {/* Notifications */}
+      <Separator className={separatorMargin.default} />
+      <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low}`}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            {notificationsEnabled ? (
+              <Bell className={iconSizes.md} />
+            ) : (
+              <BellOff className={`${iconSizes.md} text-muted-foreground`} />
+            )}
+            <div>
+              <h3 className="font-semibold">Daily Story Notifications</h3>
+              <p className="text-xs text-muted-foreground">Get notified about new stories</p>
+            </div>
+          </div>
+          <Switch
+            checked={notificationsEnabled}
+            onCheckedChange={handleNotificationToggle}
+            disabled={!notificationSupported}
+          />
+        </div>
+        
+        {notificationDenied && (
+          <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+            <AlertCircle className={`${iconSizes.sm} text-destructive shrink-0 mt-0.5`} />
+            <p className="text-xs text-destructive">
+              Notifications are blocked. Please enable them in your browser settings.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Share App */}
+      <Separator className={separatorMargin.default} />
+      <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low}`}>
+        <h2 className="text-lg font-semibold mb-4">Share Global Tales Universe</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Share GTU with friends and unlock bonus stories!
+          Help others discover amazing stories. Share with friends and family!
         </p>
         <div className="flex gap-2">
           {hasWebShareApi ? (
             <Button
               onClick={handleShareApp}
               disabled={isSharing}
-              className="flex-1"
+              className={`flex-1 ${focusRing}`}
             >
               <Share2 className={`${iconSizes.sm} mr-2`} />
               {isSharing ? 'Sharing...' : 'Share App'}
@@ -459,83 +510,50 @@ export default function ProfileTab() {
           ) : (
             <Button
               onClick={handleCopyLink}
-              className="flex-1"
+              className={`flex-1 ${focusRing}`}
             >
               <Copy className={`${iconSizes.sm} mr-2`} />
               Copy Link
             </Button>
           )}
         </div>
-        {!hasWebShareApi && (
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Web Share API not available. Use copy link instead.
-          </p>
-        )}
       </div>
 
+      {/* Legal Links */}
       <Separator className={separatorMargin.default} />
-
-      {/* Notifications Section */}
-      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
-        <div className="flex items-center gap-3 mb-4">
-          {notificationsEnabled ? (
-            <Bell className={iconSizes.md} />
-          ) : (
-            <BellOff className={iconSizes.md} />
-          )}
-          <h3 className="font-semibold text-lg">Daily Notifications</h3>
-        </div>
-        
-        {!notificationSupported ? (
-          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
-            <AlertCircle className={`${iconSizes.md} text-muted-foreground shrink-0 mt-0.5`} />
-            <p className="text-sm text-muted-foreground">
-              Notifications are not supported in your browser.
-            </p>
-          </div>
-        ) : notificationDenied ? (
-          <div className={rowSpacing.default}>
-            <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-              <AlertCircle className={`${iconSizes.md} text-destructive shrink-0 mt-0.5`} />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-destructive mb-1">Permission Denied</p>
-                <p className="text-sm text-muted-foreground">
-                  Notifications are blocked. To enable them, please allow notifications in your browser settings.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                toast.info('Please enable notifications in your browser settings, then refresh the page.');
-              }}
-              className="w-full"
-            >
-              <ExternalLink className={`${iconSizes.sm} mr-2`} />
-              How to Enable
-            </Button>
-          </div>
-        ) : (
-          <div className={rowSpacing.default}>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium mb-1">Get notified about new stories</p>
-                <p className="text-sm text-muted-foreground">
-                  Receive a daily notification when new stories are available
-                </p>
-              </div>
-              <Switch
-                checked={notificationsEnabled}
-                onCheckedChange={handleNotificationToggle}
-              />
-            </div>
-            {notificationPermission === 'default' && (
-              <p className="text-xs text-muted-foreground">
-                You will be asked for permission when enabling notifications.
-              </p>
-            )}
-          </div>
-        )}
+      <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} space-y-2`}>
+        <Button
+          variant="ghost"
+          onClick={() => navigate({ to: '/privacy-policy' })}
+          className={`w-full justify-between ${focusRing}`}
+        >
+          Privacy Policy
+          <ExternalLink className={iconSizes.sm} />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate({ to: '/terms-and-conditions' })}
+          className={`w-full justify-between ${focusRing}`}
+        >
+          Terms & Conditions
+          <ExternalLink className={iconSizes.sm} />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate({ to: '/help-and-support' })}
+          className={`w-full justify-between ${focusRing}`}
+        >
+          Help & Support
+          <ExternalLink className={iconSizes.sm} />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate({ to: '/about-us' })}
+          className={`w-full justify-between ${focusRing}`}
+        >
+          About Us
+          <ExternalLink className={iconSizes.sm} />
+        </Button>
       </div>
 
       {/* Cancel Subscription Dialog */}
@@ -544,17 +562,17 @@ export default function ProfileTab() {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Premium Subscription?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will lose access to premium features including ad-free reading and exclusive stories. You can resubscribe anytime.
+              You will lose access to ad-free reading and premium stories. You can resubscribe anytime.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Premium</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleCancelSubscription}>
               Cancel Subscription
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageLayout>
   );
 }

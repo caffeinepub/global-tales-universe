@@ -1,4 +1,4 @@
-const CACHE_NAME = 'global-tales-v2';
+const CACHE_NAME = 'global-tales-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -62,11 +62,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For navigation requests, try network first, fallback to cached app shell
+  // For navigation requests (HTML pages), try network first, fallback to cached app shell on any error or 404
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
+        .then((response) => {
+          // If we get a 404 or other error status for a navigation request, serve the app shell
+          // This allows the client-side router to handle the route
+          if (!response.ok && response.status === 404) {
+            return caches.match('/index.html').then((cachedResponse) => {
+              return cachedResponse || response;
+            });
+          }
+          return response;
+        })
         .catch(() => {
+          // Network failure - serve cached app shell
           return caches.match('/index.html');
         })
     );

@@ -6,6 +6,19 @@ export function registerServiceWorker(): void {
         .then((registration) => {
           console.log('Service Worker registered:', registration.scope);
 
+          // Handle updates - when a new service worker is waiting, activate it immediately
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New service worker available, skip waiting and reload
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+
           // Check for updates periodically
           setInterval(() => {
             registration.update();
@@ -14,6 +27,15 @@ export function registerServiceWorker(): void {
         .catch((error) => {
           console.warn('Service Worker registration failed:', error);
         });
+
+      // Reload page when new service worker takes control
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     });
   }
 }

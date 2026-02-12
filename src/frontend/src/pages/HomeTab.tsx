@@ -8,8 +8,10 @@ import CategoryScroller from '../components/CategoryScroller';
 import ContinueReadingCard from '../components/ContinueReadingCard';
 import AdPlaceholder from '../components/AdPlaceholder';
 import DailyStoryNotificationBanner from '../components/DailyStoryNotificationBanner';
+import PageLayout from '../components/PageLayout';
 import { t } from '../lib/i18n';
 import { canShowNotifications } from '../lib/notifications';
+import { pageLayout } from '../lib/uiPolish';
 
 export default function HomeTab() {
   const { actor } = useActor();
@@ -43,52 +45,60 @@ export default function HomeTab() {
   const showNotificationBanner = dailyNotificationsEnabled && !canShowNotifications();
 
   return (
-    <div className="space-y-6 pb-6">
+    <>
       {/* Daily Story Notification Banner */}
       {showNotificationBanner && <DailyStoryNotificationBanner show={true} />}
 
-      {/* Ad Banner - only for non-premium users */}
-      {!isPremium && (
-        <div className="px-4 pt-4">
-          <AdPlaceholder variant="banner" />
+      <PageLayout>
+        {/* Ad Banner - only for non-premium users */}
+        {!isPremium && (
+          <div>
+            <AdPlaceholder variant="banner" />
+          </div>
+        )}
+
+        {/* Featured Story */}
+        {featuredStory && (
+          <div>
+            <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
+              {t('featuredStory', language)}
+            </h2>
+            <StoryCard story={featuredStory} featured />
+          </div>
+        )}
+
+        {/* Categories */}
+        <div>
+          <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
+            {t('categories', language)}
+          </h2>
+          <CategoryScroller />
         </div>
-      )}
 
-      {/* Featured Story */}
-      {featuredStory && (
-        <div className="px-4">
-          <h2 className="text-xl font-bold mb-4">{t('featuredStory', language)}</h2>
-          <StoryCard story={featuredStory} featured />
+        {/* Continue Reading */}
+        <div>
+          <ContinueReadingCard />
         </div>
-      )}
 
-      {/* Categories */}
-      <div>
-        <h2 className="text-xl font-bold mb-4 px-4">{t('categories', language)}</h2>
-        <CategoryScroller />
-      </div>
+        {/* Inline Ad - only for non-premium users */}
+        {!isPremium && (
+          <div>
+            <AdPlaceholder variant="inline" />
+          </div>
+        )}
 
-      {/* Continue Reading */}
-      <div className="px-4">
-        <ContinueReadingCard />
-      </div>
-
-      {/* Inline Ad - only for non-premium users */}
-      {!isPremium && (
-        <div className="px-4">
-          <AdPlaceholder variant="inline" />
+        {/* Latest Stories */}
+        <div>
+          <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
+            {t('latestStories', language)}
+          </h2>
+          <div className="space-y-4">
+            {latestStories.slice(0, 10).map((story) => (
+              <StoryCard key={Number(story.id)} story={story} />
+            ))}
+          </div>
         </div>
-      )}
-
-      {/* Latest Stories */}
-      <div className="px-4">
-        <h2 className="text-xl font-bold mb-4">{t('latestStories', language)}</h2>
-        <div className="space-y-4">
-          {latestStories.slice(0, 10).map((story) => (
-            <StoryCard key={Number(story.id)} story={story} />
-          ))}
-        </div>
-      </div>
-    </div>
+      </PageLayout>
+    </>
   );
 }

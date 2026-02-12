@@ -67,7 +67,7 @@ export default function HelpAndSupport() {
 
           <section className="bg-muted/30 rounded-lg p-4 mt-6">
             <p className="text-muted-foreground leading-relaxed flex items-center gap-1.5">
-              Made with <Heart className="w-4 h-4 fill-red-500 text-red-500 inline" /> in Tiruchirappalli, Tamil Nadu.
+              Made with <Heart className="w-4 h-4 fill-red-500 text-red-500 inline" /> in Tirunelveli, Tamil Nadu.
             </p>
           </section>
         </div>

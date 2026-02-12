@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
 import UserAvatar from './UserAvatar';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { iconSizes, focusRing } from '../lib/uiPolish';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -19,8 +20,14 @@ export default function AppHeader({ onMenuClick }: AppHeaderProps) {
 
   return (
     <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
-      <Button variant="ghost" size="icon" onClick={onMenuClick} aria-label="Open menu">
-        <Menu className="w-5 h-5" />
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={onMenuClick} 
+        aria-label="Open menu"
+        className={focusRing}
+      >
+        <Menu className={iconSizes.md} />
       </Button>
       <div className="flex-1 flex items-center justify-center">
         {!imageError ? (

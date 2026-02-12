@@ -2,6 +2,7 @@ import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Home, Layers, Search, Heart, User } from 'lucide-react';
 import { usePreferences } from '../context/PreferencesContext';
 import { t } from '../lib/i18n';
+import { iconSizes, focusRing, transitions } from '../lib/uiPolish';
 
 export default function BottomNav() {
   const navigate = useNavigate();
@@ -17,8 +18,18 @@ export default function BottomNav() {
     { path: '/profile', icon: User, label: t('profile', language) },
   ];
 
+  const handleNavigation = (path: string) => {
+    try {
+      navigate({ to: path as any });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to home if navigation fails
+      navigate({ to: '/' });
+    }
+  };
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 shadow-lg">
       <div className="flex justify-around items-center h-16 max-w-2xl mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -26,13 +37,15 @@ export default function BottomNav() {
           return (
             <button
               key={tab.path}
-              onClick={() => navigate({ to: tab.path })}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+              onClick={() => handleNavigation(tab.path)}
+              className={`flex flex-col items-center justify-center flex-1 h-full ${transitions.colors} ${focusRing} ${
+                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               }`}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="w-5 h-5 mb-1" />
-              <span className="text-xs">{tab.label}</span>
+              <Icon className={`${iconSizes.md} mb-1`} />
+              <span className={`text-xs ${isActive ? 'font-semibold' : 'font-normal'}`}>{tab.label}</span>
             </button>
           );
         })}

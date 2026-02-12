@@ -1,105 +1,45 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T07:38:11.060Z",
+  "generatedAt": "2026-02-12T10:35:21.373Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
+        "summary": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/GoPremium.tsx",
-          "frontend/src/pages/PremiumSuccess.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/AppDrawer.tsx"
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/components/InstallPromptBanner.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/GoPremium.tsx",
-          "frontend/src/pages/PremiumSuccess.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/AppDrawer.tsx"
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/components/InstallPromptBanner.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+        "summary": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/InterstitialAdModal.tsx",
-          "frontend/src/components/AdPlaceholder.tsx",
-          "frontend/src/pages/HomeTab.tsx",
-          "frontend/src/pages/StoryReader.tsx",
-          "frontend/src/components/StoryCard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/InterstitialAdModal.tsx",
-          "frontend/src/components/AdPlaceholder.tsx",
-          "frontend/src/pages/StoryReader.tsx",
-          "frontend/src/components/StoryCard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Polish app sharing UX for both “Share App” and “Share Story”: improve user feedback, handle cancellations/errors gracefully, and make the copy-link fallback more explicit and discoverable when system sharing is unavailable.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/lib/share.ts",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/ShareSheetPlaceholder.tsx",
-          "frontend/src/pages/StoryReader.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/lib/share.ts",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/ShareSheetPlaceholder.tsx",
-          "frontend/src/pages/StoryReader.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/lib/notifications.ts",
-          "frontend/src/components/DailyStoryNotificationBanner.tsx",
-          "frontend/src/pages/HomeTab.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/lib/notifications.ts",
-          "frontend/src/components/DailyStoryNotificationBanner.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/lib/uiPolish.ts",
+          "frontend/src/components/ButtonStyleRegressionCheck.tsx",
           "frontend/src/pages/GoPremium.tsx",
-          "frontend/src/pages/PremiumSuccess.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/AppDrawer.tsx",
-          "frontend/src/components/ShareSheetPlaceholder.tsx",
-          "frontend/src/components/DailyStoryNotificationBanner.tsx",
-          "frontend/src/index.css"
+          "frontend/src/components/RouteErrorFallback.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/lib/uiPolish.ts",
+          "frontend/src/components/ButtonStyleRegressionCheck.tsx",
           "frontend/src/pages/GoPremium.tsx",
-          "frontend/src/pages/PremiumSuccess.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/AppDrawer.tsx",
-          "frontend/src/components/ShareSheetPlaceholder.tsx",
-          "frontend/src/components/DailyStoryNotificationBanner.tsx"
+          "frontend/src/components/RouteErrorFallback.tsx",
+          "frontend/src/App.tsx"
         ]
       }
     ]
@@ -110,19 +50,12 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/App.tsx",
-    "frontend/src/components/AdPlaceholder.tsx",
-    "frontend/src/components/AppDrawer.tsx",
-    "frontend/src/components/DailyStoryNotificationBanner.tsx",
-    "frontend/src/components/InterstitialAdModal.tsx",
-    "frontend/src/components/ShareSheetPlaceholder.tsx",
-    "frontend/src/components/StoryCard.tsx",
-    "frontend/src/lib/notifications.ts",
-    "frontend/src/lib/share.ts",
-    "frontend/src/lib/uiPolish.ts",
+    "frontend/src/components/ButtonStyleRegressionCheck.tsx",
+    "frontend/src/components/InstallPromptBanner.tsx",
+    "frontend/src/components/RouteErrorFallback.tsx",
+    "frontend/src/index.css",
     "frontend/src/pages/GoPremium.tsx",
-    "frontend/src/pages/PremiumSuccess.tsx",
-    "frontend/src/pages/ProfileTab.tsx",
-    "frontend/src/pages/StoryReader.tsx",
+    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,19 +1,20 @@
 import Map "mo:core/Map";
 import Array "mo:core/Array";
 import Text "mo:core/Text";
+import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import Iter "mo:core/Iter";
 import Time "mo:core/Time";
 import Order "mo:core/Order";
 import List "mo:core/List";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-// Data migration module imported to the top.
+// Specify the data migration function in with-clause.
 
 actor {
   // Initialize the user system state

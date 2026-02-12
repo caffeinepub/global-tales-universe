@@ -1,13 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Apply an iterative UI/UX polish pass across Premium, Sharing, and Notifications to improve clarity, consistency, and feedback while preserving the existing placeholder (fake) subscription behavior.
+**Goal:** Fix the UI regression where buttons appear as plain text by restoring expected button styling across affected screens in both Preview and Production builds.
 
 **Planned changes:**
-- Polish the Premium flow (Go Premium, Premium Success, Profile, App Drawer): improve copy/layout hierarchy, add clearer plan comparison and selected-state feedback, protect Subscribe from accidental double-taps, and clarify Premium status + cancellation wording.
-- Ensure premium gating polish: consistently hide all ad placements for premium users; keep non-premium ad placeholders consistent without layout jumps; make premium-only/locked story states intentional with clear labels/CTAs (no awkward blank spaces).
-- Improve sharing UX for “Share App” and “Share Story”: add success/cancel/failure feedback, handle errors gracefully, provide a clear copy-link fallback when system share is unavailable, and show loading/disabled states during share.
-- Polish Notifications UX: keep toggle state aligned with browser permission state, clearly explain outcomes (granted/denied/dismissed) and how to enable when denied, and restyle the “New story today!” simulation banner to match the app theme.
-- Apply consistent UI styling across these surfaces: align button variants/sizes, icon sizing/spacing, card padding/separators, typography scale, and microcopy tone (English).
+- Identify why button styles are not being applied on affected pages/components and adjust usage/composition so buttons render with padding, background/border, hover, and focus styles (without modifying read-only UI component source files).
+- Verify and restore visible focus styling and readability in both light and dark themes on key CTA locations (e.g., Premium subscribe, RouteErrorFallback navigation, install prompt).
+- Add a minimal, repeatable regression check (manual checklist or dev-only verification step) covering at least two representative screens and at least two button variants to confirm styling remains present after builds.
 
-**User-visible outcome:** Premium, sharing, and notifications screens feel more consistent and understandable, provide clearer feedback for actions and permission states, avoid accidental repeat actions, and present premium/ad/locked states more intentionally—without adding real payments.
+**User-visible outcome:** Buttons across the previously affected pages render as clearly recognizable, properly styled buttons (not plain text) with appropriate hover/focus states in both Preview and Production builds.
