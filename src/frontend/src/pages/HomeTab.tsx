@@ -1,8 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { useActor } from '../hooks/useActor';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppUser } from '../hooks/useAppUser';
-import { Story, Language } from '../backend';
+import { useGetFeaturedStory, useGetAllStories } from '../hooks/useStories';
+import { Language } from '../backend';
 import StoryCard from '../components/StoryCard';
 import CategoryScroller from '../components/CategoryScroller';
 import ContinueReadingCard from '../components/ContinueReadingCard';
@@ -15,44 +14,12 @@ import { pageLayout } from '../lib/uiPolish';
 import { isPreviewMode } from '../lib/urlParams';
 
 export default function HomeTab() {
-  const { actor, isFetching: actorFetching } = useActor();
   const { language, mode } = usePreferences();
   const { isPremium, dailyNotificationsEnabled } = useAppUser();
 
-  const { data: featuredStory, isLoading: featuredLoading, isError: featuredError } = useQuery<Story | null>({
-    queryKey: ['featuredStory', language],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getDailyFeaturedStoryByLanguage(language as Language);
-      } catch (error) {
-        console.error('Failed to fetch featured story:', error);
-        return null;
-      }
-    },
-    enabled: !!actor && !actorFetching,
-    retry: false,
-  });
+  const { data: featuredStory, isLoading: featuredLoading } = useGetFeaturedStory();
 
-  const { data: latestStories = [], isLoading: storiesLoading, isError: storiesError } = useQuery<Story[]>({
-    queryKey: ['latestStories', language, mode],
-    queryFn: async () => {
-      if (!actor) return [];
-      try {
-        return await actor.getFilteredSortedStories(
-          language as Language,
-          true,
-          null,
-          mode === 'kids' ? true : null
-        );
-      } catch (error) {
-        console.error('Failed to fetch latest stories:', error);
-        return [];
-      }
-    },
-    enabled: !!actor && !actorFetching,
-    retry: false,
-  });
+  const { data: latestStories = [], isLoading: storiesLoading } = useGetAllStories();
 
   // Show notification banner if user wants notifications but can't receive them
   const showNotificationBanner = dailyNotificationsEnabled && !canShowNotifications();
@@ -70,30 +37,20 @@ export default function HomeTab() {
         {showAds && <AdPlaceholder variant="banner" />}
 
         {/* Featured Story */}
-        {featuredLoading ? (
-          <div>
-            <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
-              {t('featuredStory', language)}
-            </h2>
+        <div>
+          <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
+            {t('featuredStory', language)}
+          </h2>
+          {featuredLoading ? (
             <div className="aspect-[16/9] bg-muted animate-pulse rounded-lg" />
-          </div>
-        ) : featuredError ? (
-          <div>
-            <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
-              {t('featuredStory', language)}
-            </h2>
+          ) : featuredStory ? (
+            <StoryCard story={featuredStory} />
+          ) : (
             <div className="text-center py-8 text-muted-foreground">
-              Failed to load featured story
+              No featured story available at the moment.
             </div>
-          </div>
-        ) : featuredStory ? (
-          <div>
-            <h2 className={`${pageLayout.subtitleSize} ${pageLayout.subtitleWeight} ${pageLayout.subtitleMargin}`}>
-              {t('featuredStory', language)}
-            </h2>
-            <StoryCard story={featuredStory} featured />
-          </div>
-        ) : null}
+          )}
+        </div>
 
         {/* Categories */}
         <div>
@@ -122,10 +79,6 @@ export default function HomeTab() {
                 <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
               ))}
             </div>
-          ) : storiesError ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Failed to load stories
-            </div>
           ) : latestStories.length > 0 ? (
             <div className="space-y-4">
               {latestStories.slice(0, 10).map((story) => (
@@ -134,7 +87,7 @@ export default function HomeTab() {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              No stories available
+              No stories available at the moment.
             </div>
           )}
         </div>

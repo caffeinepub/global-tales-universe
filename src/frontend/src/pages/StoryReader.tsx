@@ -1,101 +1,84 @@
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { useStory } from '../hooks/useStories';
+import { useGetStoryById } from '../hooks/useStories';
 import { usePreferences } from '../context/PreferencesContext';
-import { useAppUser } from '../hooks/useAppUser';
+import { useFavorites } from '../hooks/useFavorites';
 import { useReadingHistory } from '../hooks/useReadingHistory';
 import { useOfflineDownloads } from '../hooks/useOfflineDownloads';
-import { ArrowLeft, Heart, Share2, Download, Check, Lock, Settings } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { useStorySocial } from '../hooks/useStorySocial';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Heart, Share2, Download, BookOpen, Type, MessageCircle, ThumbsUp } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Slider } from '../components/ui/slider';
+import { Input } from '../components/ui/input';
 import { shareStory, ShareResult } from '../lib/share';
 import { toast } from 'sonner';
-import { useFavorites } from '../hooks/useFavorites';
-import { iconSizes, cardRadius, focusRing, transitions } from '../lib/uiPolish';
-import { saveReadingProgress, loadReadingProgress, calculateScrollPercentage } from '../lib/readingProgress';
-import { Progress } from '../components/ui/progress';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from '../components/ui/dropdown-menu';
+import { iconSizes, focusRing } from '../lib/uiPolish';
+import { getStoryCoverUrl } from '../hooks/useStories';
+import type { FontSize, ReadingBackground } from '../context/PreferencesContext';
 
-type ReadingBackground = 'default' | 'sepia' | 'dark';
-type FontSize = 'small' | 'medium' | 'large';
+// Font size mapping
+const FONT_SIZE_MAP: Record<FontSize, number> = {
+  small: 14,
+  medium: 18,
+  large: 22,
+};
+
+const FONT_SIZE_REVERSE_MAP: Record<number, FontSize> = {
+  14: 'small',
+  18: 'medium',
+  22: 'large',
+};
 
 export default function StoryReader() {
-  const params = useParams({ from: '/story/$storyId' });
+  const { storyId } = useParams({ from: '/story/$storyId' });
   const navigate = useNavigate();
-  const { language } = usePreferences();
-  const { isPremium } = useAppUser();
-  const { isFavorite, toggleFavorite, isToggling } = useFavorites();
+  const { data: story, isLoading } = useGetStoryById(BigInt(storyId));
+  const { language, fontSize, setFontSize, readingBackground, setReadingBackground } = usePreferences();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { updateProgress } = useReadingHistory();
   const { isDownloaded, downloadStory, removeDownload } = useOfflineDownloads();
-
+  const { likeOverlay, comments, toggleLike, addComment } = useStorySocial(storyId);
+  const { profileData } = useUserProfile();
+  
+  const [showControls, setShowControls] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
   const [isSharing, setIsSharing] = useState(false);
-  const [isDownloadingStory, setIsDownloadingStory] = useState(false);
-  const [background, setBackground] = useState<ReadingBackground>('default');
-  const [fontSize, setFontSize] = useState<FontSize>('medium');
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Parse storyId safely - do this before calling useStory
-  let storyId: bigint | null = null;
-  let parseError = false;
-  try {
-    storyId = BigInt(params.storyId);
-  } catch (error) {
-    parseError = true;
-  }
+  const isFav = story ? isFavorite(story.id) : false;
+  const isOffline = story ? isDownloaded(story.id) : false;
+  const effectiveLikes = story ? Number(story.likes) + likeOverlay : 0;
+  const isLiked = likeOverlay > 0;
 
-  // Call useStory with a valid bigint or 0n as fallback
-  const { data: story, isLoading, isError } = useStory(storyId || 0n);
-
-  const content = story?.languages[language as keyof typeof story.languages];
-  const title = content?.title || story?.languages.english.title || '';
-  const body = content?.body || story?.languages.english.body || '';
-  const summary = content?.summary || story?.languages.english.summary || '';
-  const isPremiumLocked = story?.isPremium && !isPremium;
-  const downloaded = story ? isDownloaded(story.id) : false;
-  const favorite = story ? isFavorite(story.id) : false;
-
-  // Load saved reading progress
+  // Track reading progress
   useEffect(() => {
-    if (story) {
-      const progress = loadReadingProgress(story.id.toString());
-      if (progress && contentRef.current) {
-        contentRef.current.scrollTop = progress.scrollPosition;
-      }
-    }
-  }, [story]);
+    if (!story) return;
 
-  // Track scroll progress
-  useEffect(() => {
     const handleScroll = () => {
-      if (contentRef.current && story) {
-        const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
-        const percentage = calculateScrollPercentage(scrollTop, scrollHeight, clientHeight);
-        setScrollProgress(percentage);
-        saveReadingProgress(story.id.toString(), percentage, scrollTop);
-        updateProgress(story.id, percentage);
-      }
+      if (!contentRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
+      const progress = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      updateProgress(story.id, Math.min(progress, 100));
     };
 
     const ref = contentRef.current;
-    if (ref) {
-      ref.addEventListener('scroll', handleScroll);
-      return () => ref.removeEventListener('scroll', handleScroll);
-    }
+    ref?.addEventListener('scroll', handleScroll);
+    return () => ref?.removeEventListener('scroll', handleScroll);
   }, [story, updateProgress]);
 
   const handleShare = async () => {
     if (!story) return;
-    
     setIsSharing(true);
     try {
-      const result: ShareResult = await shareStory(story.id.toString(), title, summary);
+      const content = story.languages[language];
+      const result: ShareResult = await shareStory(
+        story.id.toString(),
+        content.title,
+        content.summary
+      );
       
       if (result === 'success') {
         toast.success('Story shared successfully!');
@@ -105,223 +88,268 @@ export default function StoryReader() {
         toast.error('Failed to share story');
       }
     } catch (error) {
-      console.error('Share error:', error);
       toast.error('Failed to share story');
     } finally {
       setIsSharing(false);
     }
   };
 
-  const handleToggleFavorite = async () => {
-    if (!story) return;
-    
-    try {
-      await toggleFavorite(story.id);
-      toast.success(favorite ? 'Removed from favorites' : 'Added to favorites');
-    } catch (error) {
-      console.error('Toggle favorite error:', error);
-      toast.error('Failed to update favorites');
-    }
-  };
-
   const handleDownload = async () => {
     if (!story) return;
-    
-    setIsDownloadingStory(true);
+    setIsDownloading(true);
     try {
-      if (downloaded) {
+      if (isOffline) {
         await removeDownload(story.id);
-        toast.success('Download removed');
+        toast.success('Story removed from offline storage');
       } else {
         await downloadStory(story);
         toast.success('Story downloaded for offline reading');
       }
     } catch (error) {
-      console.error('Download error:', error);
-      toast.error('Failed to manage download');
+      toast.error('Failed to manage offline download');
     } finally {
-      setIsDownloadingStory(false);
+      setIsDownloading(false);
     }
   };
 
-  // Now handle the parse error after all hooks have been called
-  if (parseError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Invalid Story ID</h1>
-          <p className="text-muted-foreground mb-4">The story you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate({ to: '/' })}>Go Home</Button>
-        </div>
-      </div>
-    );
-  }
+  const handleFontSizeChange = (value: number[]) => {
+    const pixelSize = value[0];
+    const fontSizeKey = FONT_SIZE_REVERSE_MAP[pixelSize] || 'medium';
+    setFontSize(fontSizeKey);
+  };
+
+  const handleLike = () => {
+    toggleLike();
+    toast.success(isLiked ? 'Like removed' : 'Story liked!');
+  };
+
+  const handleAddComment = () => {
+    if (!commentText.trim()) return;
+    addComment(profileData.displayName, commentText.trim());
+    setCommentText('');
+    toast.success('Comment added!');
+  };
+
+  const currentFontSizePixels = FONT_SIZE_MAP[fontSize];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading story...</p>
-        </div>
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     );
   }
 
-  if (isError || !story) {
+  if (!story) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Story Not Found</h1>
-          <p className="text-muted-foreground mb-4">Coming soon</p>
-          <Button onClick={() => navigate({ to: '/' })}>Go Home</Button>
-        </div>
+      <div className="h-screen flex flex-col items-center justify-center gap-4 p-4">
+        <p className="text-muted-foreground">Story not found</p>
+        <Button onClick={() => navigate({ to: '/' })}>Go Home</Button>
       </div>
     );
   }
 
-  const backgroundClasses = {
-    default: 'bg-background text-foreground',
-    sepia: 'bg-[#f4ecd8] text-[#5c4a3a]',
-    dark: 'bg-gray-900 text-gray-100',
-  };
+  const content = story.languages[language];
+  const coverUrl = getStoryCoverUrl(story);
 
-  const fontSizeClasses = {
-    small: 'text-base',
-    medium: 'text-lg',
-    large: 'text-xl',
-  };
+  // Background color based on reading background preference
+  const bgColorClass = {
+    white: 'bg-white text-black',
+    sepia: 'bg-[#f4ecd8] text-[#5c4a3a]',
+    darkGrey: 'bg-[#2d2d2d] text-[#e0e0e0]',
+    black: 'bg-black text-white',
+  }[readingBackground] || 'bg-background text-foreground';
 
   return (
-    <div className={`min-h-screen ${backgroundClasses[background]}`}>
+    <div className="h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/' })}>
-            <ArrowLeft className={iconSizes.md} />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleToggleFavorite}
-              disabled={isToggling}
-              className={favorite ? 'text-red-500' : ''}
-            >
-              <Heart className={iconSizes.md} fill={favorite ? 'currentColor' : 'none'} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleShare}
-              disabled={isSharing}
-            >
-              <Share2 className={iconSizes.md} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleDownload}
-              disabled={isDownloadingStory}
-            >
-              {downloaded ? (
-                <Check className={iconSizes.md} />
-              ) : (
-                <Download className={iconSizes.md} />
-              )}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Settings className={iconSizes.md} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Reading Settings</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                  Background
-                </DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setBackground('default')}>
-                  {background === 'default' && '✓ '}Default
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setBackground('sepia')}>
-                  {background === 'sepia' && '✓ '}Sepia
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setBackground('dark')}>
-                  {background === 'dark' && '✓ '}Dark
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                  Font Size
-                </DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setFontSize('small')}>
-                  {fontSize === 'small' && '✓ '}Small
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFontSize('medium')}>
-                  {fontSize === 'medium' && '✓ '}Medium
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFontSize('large')}>
-                  {fontSize === 'large' && '✓ '}Large
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+      <header className="flex items-center gap-3 px-4 py-3 border-b bg-card shrink-0">
+        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/' })} className={focusRing}>
+          <ArrowLeft className={iconSizes.md} />
+        </Button>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-semibold truncate">{content.title}</h1>
+          <p className="text-xs text-muted-foreground truncate">{story.author}</p>
         </div>
-        <Progress value={scrollProgress} className="h-1 rounded-none" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => toggleFavorite(story.id)}
+          className={focusRing}
+        >
+          <Heart className={`${iconSizes.md} ${isFav ? 'fill-red-500 text-red-500' : ''}`} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowControls(!showControls)}
+          className={focusRing}
+        >
+          <BookOpen className={iconSizes.md} />
+        </Button>
       </header>
 
-      {/* Content */}
-      <div ref={contentRef} className="max-w-2xl mx-auto px-4 py-8 overflow-auto">
-        {/* Cover Image */}
-        {story.coverImageUrl && (
-          <div className={`mb-6 ${cardRadius.medium} overflow-hidden`}>
-            <img
-              src={story.coverImageUrl}
-              alt={title}
-              className="w-full aspect-[16/9] object-cover"
-              onError={(e) => {
-                e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
-              }}
+      {/* Reading Controls */}
+      {showControls && (
+        <div className="px-4 py-3 border-b bg-card space-y-3 shrink-0">
+          <div className="flex items-center gap-3">
+            <Type className={iconSizes.sm} />
+            <Slider
+              value={[currentFontSizePixels]}
+              onValueChange={handleFontSizeChange}
+              min={14}
+              max={22}
+              step={4}
+              className="flex-1"
             />
+            <span className="text-sm w-12 text-right">{currentFontSizePixels}px</span>
           </div>
-        )}
-
-        {/* Title */}
-        <h1 className="text-3xl font-bold mb-4">{title}</h1>
-
-        {/* Meta */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-          <span>{story.author}</span>
-          <span>•</span>
-          <span>{Number(story.readTimeMinutes)} min read</span>
-          <span>•</span>
-          <span>{story.category}</span>
-        </div>
-
-        {/* Premium Lock */}
-        {isPremiumLocked && (
-          <div className={`${cardRadius.medium} bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 mb-6`}>
-            <div className="flex items-center gap-2 mb-2">
-              <Lock className={iconSizes.sm} />
-              <h3 className="font-semibold">Premium Story</h3>
-            </div>
-            <p className="text-sm mb-3">This story is only available to premium members.</p>
-            <Button onClick={() => navigate({ to: '/premium' })} size="sm">
-              Go Premium
+          <div className="grid grid-cols-4 gap-2">
+            <Button
+              variant={readingBackground === 'white' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setReadingBackground('white')}
+              className="text-xs"
+            >
+              White
+            </Button>
+            <Button
+              variant={readingBackground === 'sepia' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setReadingBackground('sepia')}
+              className="text-xs"
+            >
+              Sepia
+            </Button>
+            <Button
+              variant={readingBackground === 'darkGrey' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setReadingBackground('darkGrey')}
+              className="text-xs"
+            >
+              Grey
+            </Button>
+            <Button
+              variant={readingBackground === 'black' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setReadingBackground('black')}
+              className="text-xs"
+            >
+              Black
             </Button>
           </div>
-        )}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              disabled={isSharing}
+              className="flex-1"
+            >
+              <Share2 className={`${iconSizes.sm} mr-2`} />
+              {isSharing ? 'Sharing...' : 'Share'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="flex-1"
+            >
+              <Download className={`${iconSizes.sm} mr-2`} />
+              {isDownloading ? 'Loading...' : isOffline ? 'Remove' : 'Download'}
+            </Button>
+          </div>
+        </div>
+      )}
 
-        {/* Body */}
-        <div className={`prose prose-lg max-w-none ${fontSizeClasses[fontSize]}`}>
-          {isPremiumLocked ? (
-            <p className="text-muted-foreground italic">
-              {body.substring(0, 200)}...
-            </p>
-          ) : (
-            <div className="whitespace-pre-wrap">{body}</div>
-          )}
+      {/* Story Content */}
+      <div
+        ref={contentRef}
+        className={`flex-1 overflow-y-auto px-4 py-6 ${bgColorClass}`}
+        style={{ fontSize: `${currentFontSizePixels}px` }}
+      >
+        <div className="max-w-2xl mx-auto">
+          <img
+            src={coverUrl}
+            alt={content.title}
+            className="w-full aspect-[3/4] object-cover rounded-lg mb-6"
+            onError={(e) => {
+              e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
+            }}
+          />
+          <h1 className="text-3xl font-bold mb-2">{content.title}</h1>
+          <p className="text-muted-foreground mb-6">By {story.author}</p>
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            {content.body.split('\n').map((paragraph, i) => (
+              <p key={i} className="mb-4 leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          {/* Social Actions */}
+          <div className="mt-8 pt-6 border-t space-y-4">
+            <div className="flex gap-3">
+              <Button
+                variant={isLiked ? 'default' : 'outline'}
+                size="sm"
+                onClick={handleLike}
+                className="flex-1"
+              >
+                <ThumbsUp className={`${iconSizes.sm} mr-2 ${isLiked ? 'fill-current' : ''}`} />
+                Like ({effectiveLikes})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowComments(!showComments)}
+                className="flex-1"
+              >
+                <MessageCircle className={`${iconSizes.sm} mr-2`} />
+                Comments ({comments.length})
+              </Button>
+            </div>
+
+            {/* Comments Section */}
+            {showComments && (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAddComment();
+                      }
+                    }}
+                  />
+                  <Button onClick={handleAddComment} disabled={!commentText.trim()}>
+                    Post
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {comments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="p-3 rounded-lg bg-muted">
+                        <p className="text-sm font-semibold">{comment.author}</p>
+                        <p className="text-sm mt-1">{comment.text}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(comment.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

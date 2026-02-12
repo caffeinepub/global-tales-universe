@@ -31,9 +31,9 @@ export const Language = IDL.Variant({
 });
 export const AppUser = IDL.Record({
   'favoriteStoryIds' : IDL.Vec(IDL.Nat),
+  'languagePreference' : Language,
   'readingHistory' : IDL.Vec(IDL.Nat),
   'lastReadStoryId' : IDL.Opt(IDL.Nat),
-  'language' : Language,
   'readingChallengeProgress' : IDL.Nat,
   'searchHistory' : IDL.Vec(IDL.Text),
   'dailyStreak' : IDL.Nat,
@@ -43,7 +43,8 @@ export const AppUser = IDL.Record({
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const UserProfile = IDL.Record({
-  'name' : IDL.Text,
+  'username' : IDL.Text,
+  'displayName' : IDL.Text,
   'image' : IDL.Opt(ExternalBlob),
 });
 export const Content = IDL.Record({
@@ -53,7 +54,6 @@ export const Content = IDL.Record({
 });
 export const Story = IDL.Record({
   'id' : IDL.Nat,
-  'coverImageUrl' : IDL.Text,
   'isPremium' : IDL.Bool,
   'languages' : IDL.Record({
     'tamil' : Content,
@@ -62,6 +62,7 @@ export const Story = IDL.Record({
   }),
   'author' : IDL.Text,
   'likes' : IDL.Nat,
+  'coverImage' : IDL.Opt(ExternalBlob),
   'timestamp' : IDL.Int,
   'category' : IDL.Text,
   'rating' : IDL.Nat,
@@ -123,7 +124,7 @@ export const idlService = IDL.Service({
         IDL.Text,
         IDL.Nat,
         IDL.Bool,
-        IDL.Text,
+        IDL.Opt(ExternalBlob),
         Content,
         Content,
         Content,
@@ -131,9 +132,9 @@ export const idlService = IDL.Service({
       [IDL.Nat],
       [],
     ),
-  'saveAppUser' : IDL.Func([AppUser], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'toggleFavoriteStory' : IDL.Func([IDL.Nat], [], []),
+  'updateAppUser' : IDL.Func([AppUser], [], []),
 });
 
 export const idlInitArgs = [];
@@ -162,9 +163,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const AppUser = IDL.Record({
     'favoriteStoryIds' : IDL.Vec(IDL.Nat),
+    'languagePreference' : Language,
     'readingHistory' : IDL.Vec(IDL.Nat),
     'lastReadStoryId' : IDL.Opt(IDL.Nat),
-    'language' : Language,
     'readingChallengeProgress' : IDL.Nat,
     'searchHistory' : IDL.Vec(IDL.Text),
     'dailyStreak' : IDL.Nat,
@@ -174,7 +175,8 @@ export const idlFactory = ({ IDL }) => {
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
   const UserProfile = IDL.Record({
-    'name' : IDL.Text,
+    'username' : IDL.Text,
+    'displayName' : IDL.Text,
     'image' : IDL.Opt(ExternalBlob),
   });
   const Content = IDL.Record({
@@ -184,7 +186,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const Story = IDL.Record({
     'id' : IDL.Nat,
-    'coverImageUrl' : IDL.Text,
     'isPremium' : IDL.Bool,
     'languages' : IDL.Record({
       'tamil' : Content,
@@ -193,6 +194,7 @@ export const idlFactory = ({ IDL }) => {
     }),
     'author' : IDL.Text,
     'likes' : IDL.Nat,
+    'coverImage' : IDL.Opt(ExternalBlob),
     'timestamp' : IDL.Int,
     'category' : IDL.Text,
     'rating' : IDL.Nat,
@@ -258,7 +260,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Nat,
           IDL.Bool,
-          IDL.Text,
+          IDL.Opt(ExternalBlob),
           Content,
           Content,
           Content,
@@ -266,9 +268,9 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Nat],
         [],
       ),
-    'saveAppUser' : IDL.Func([AppUser], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'toggleFavoriteStory' : IDL.Func([IDL.Nat], [], []),
+    'updateAppUser' : IDL.Func([AppUser], [], []),
   });
 };
 

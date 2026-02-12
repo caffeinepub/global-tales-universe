@@ -1,7 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
-import { useStories } from '../hooks/useStories';
-import { uiLangToBackendLang } from '../lib/storyLanguage';
+import { useGetStoriesByCategory } from '../hooks/useStories';
 import { translateCategory, t } from '../lib/i18n';
 import { decodeCategoryId } from '../lib/urlParams';
 import StoryCard from '../components/StoryCard';
@@ -14,17 +13,14 @@ export default function CategoryDetail() {
   const { categoryId: encodedCategoryId } = useParams({ from: '/categories/$categoryId' });
   const navigate = useNavigate();
   const { language, mode } = usePreferences();
-  const backendLang = uiLangToBackendLang(language);
   
   // Decode the category ID from URL
   const categoryId = decodeCategoryId(encodedCategoryId);
   
-  const { data: stories = [], isLoading, isError } = useStories(
-    backendLang,
-    true,
-    categoryId,
-    mode === 'kids' ? true : undefined
-  );
+  const { data: stories = [], isLoading } = useGetStoriesByCategory(categoryId);
+
+  // Limit to 5-10 stories per category display
+  const displayStories = stories.slice(0, 10);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -45,19 +41,15 @@ export default function CategoryDetail() {
             <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
-      ) : isError ? (
-        <div className="text-center py-12 text-muted-foreground">
-          Coming soon
-        </div>
-      ) : stories.length > 0 ? (
+      ) : displayStories.length > 0 ? (
         <div className="space-y-2">
-          {stories.map((story) => (
+          {displayStories.map((story) => (
             <StoryCard key={story.id.toString()} story={story} />
           ))}
         </div>
       ) : (
         <div className="text-center py-12 text-muted-foreground">
-          {t('noResults', language)}
+          No stories available in this category yet.
         </div>
       )}
     </div>

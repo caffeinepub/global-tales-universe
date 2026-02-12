@@ -11,6 +11,7 @@ import { useStoryEditor } from '../hooks/useStoryEditor';
 import { iconSizes, cardRadius, cardPadding, cardElevation, focusRing } from '../lib/uiPolish';
 import { calculateReadTime, countWords, validateStoryForm } from '../lib/storyDraft';
 import RequireAuth from '../components/RequireAuth';
+import { getStoryCoverUrl } from '../hooks/useStories';
 
 const CATEGORIES = [
   'Romance',
@@ -63,7 +64,9 @@ export default function StoryEditor() {
           setContent(langContent.body);
           setSummary(langContent.summary);
           setCategory(story.category);
-          setCoverPreview(story.coverImageUrl);
+          // Get cover URL from story
+          const coverUrl = getStoryCoverUrl(story);
+          setCoverPreview(coverUrl);
           setReadTime(Number(story.readTimeMinutes));
           setManualReadTime(String(story.readTimeMinutes));
         }
@@ -140,74 +143,57 @@ export default function StoryEditor() {
       const finalCoverUrl = coverImage
         ? typeof coverImage === 'string'
           ? coverImage
-          : coverPreview
-        : coverPreview || 'https://via.placeholder.com/300x200?text=Story+Cover';
+          : URL.createObjectURL(coverImage)
+        : coverPreview;
 
       await saveStory({
-        id: storyId,
         title,
         category,
-        language,
         content,
         summary,
-        coverImageUrl: finalCoverUrl,
-        readTimeMinutes: readTime,
-        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        coverUrl: finalCoverUrl,
+        readTime,
+        language,
       });
 
-      toast.success(isEditMode ? 'Story updated successfully!' : 'Story added successfully!');
+      toast.success(isEditMode ? 'Story updated!' : 'Story published!');
       navigate({ to: '/profile' });
     } catch (error: any) {
-      console.error('Failed to save story:', error);
-      toast.error(error.message || 'Failed to save story. Please try again.');
+      toast.error(error.message || 'Failed to save story');
     }
   };
-
-  const wordCount = countWords(content);
-  const autoReadTime = calculateReadTime(wordCount);
 
   return (
     <RequireAuth>
       <div className="min-h-screen bg-background">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate({ to: '/profile' })}
-              className={focusRing}
-            >
-              <ArrowLeft className={`${iconSizes.sm} mr-2`} />
-              Back
-            </Button>
-            <h1 className="text-xl font-bold">
-              {isEditMode ? 'Edit Story' : 'Create Story'}
-            </h1>
-            <div className="w-20" />
-          </div>
-        </div>
+        <header className="border-b bg-card px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/profile' })}>
+            <ArrowLeft className={iconSizes.md} />
+          </Button>
+          <h1 className="text-lg font-semibold flex-1">
+            {isEditMode ? 'Edit Story' : 'Create Story'}
+          </h1>
+          <Button onClick={handleSubmit} disabled={isSaving || isLoading}>
+            {isSaving ? 'Saving...' : 'Publish'}
+          </Button>
+        </header>
 
-        {/* Form */}
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
           {/* Cover Image */}
-          <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} space-y-4`}>
-            <Label>Cover Image *</Label>
+          <div>
+            <Label>Cover Image</Label>
             {coverPreview ? (
-              <div className="relative">
+              <div className="relative mt-2">
                 <img
                   src={coverPreview}
                   alt="Cover preview"
-                  className={`w-full h-64 object-cover ${cardRadius.small}`}
-                  onError={(e) => {
-                    e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
-                  }}
+                  className={`w-full aspect-[3/4] object-cover ${cardRadius.medium}`}
                 />
                 <Button
                   variant="destructive"
-                  size="sm"
-                  onClick={handleRemoveCover}
+                  size="icon"
                   className="absolute top-2 right-2"
+                  onClick={handleRemoveCover}
                 >
                   <X className={iconSizes.sm} />
                 </Button>
@@ -215,162 +201,112 @@ export default function StoryEditor() {
             ) : (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed ${cardRadius.small} p-12 text-center cursor-pointer hover:border-primary transition-colors ${focusRing}`}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    fileInputRef.current?.click();
-                  }
-                }}
+                className={`mt-2 border-2 border-dashed ${cardRadius.medium} p-8 text-center cursor-pointer hover:border-primary transition-colors`}
               >
-                <Upload className={`${iconSizes.lg} mx-auto mb-4 text-muted-foreground`} />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload cover image (JPG/PNG, max 2MB)
-                </p>
+                <Upload className={`${iconSizes.lg} mx-auto mb-2 text-muted-foreground`} />
+                <p className="text-sm text-muted-foreground">Click to upload cover image</p>
+                <p className="text-xs text-muted-foreground mt-1">JPG or PNG, max 2MB</p>
               </div>
             )}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png"
-              onChange={handleFileSelect}
               className="hidden"
+              onChange={handleFileSelect}
             />
-            {errors.cover && <p className="text-xs text-destructive">{errors.cover}</p>}
+            {errors.cover && <p className="text-sm text-destructive mt-1">{errors.cover}</p>}
           </div>
 
-          {/* Basic Info */}
-          <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} space-y-4`}>
-            <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter story title"
-                className={focusRing}
-              />
-              {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="category" className={focusRing}>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.category && <p className="text-xs text-destructive">{errors.category}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="language">Language *</Label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger id="language" className={focusRing}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="summary">Summary</Label>
-              <Textarea
-                id="summary"
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                placeholder="Brief summary of your story"
-                rows={3}
-                className={focusRing}
-              />
-            </div>
+          {/* Language */}
+          <div>
+            <Label>Language</Label>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Story Content */}
-          <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} space-y-4`}>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="content">Story Content *</Label>
-              <div className="text-sm text-muted-foreground">
-                {wordCount} words {wordCount < 400 && '(min 400)'} {wordCount > 2000 && '(max 2000)'}
-              </div>
-            </div>
+          {/* Title */}
+          <div>
+            <Label>Title</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter story title"
+              className="mt-2"
+            />
+            {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
+          </div>
+
+          {/* Category */}
+          <div>
+            <Label>Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.category && <p className="text-sm text-destructive mt-1">{errors.category}</p>}
+          </div>
+
+          {/* Summary */}
+          <div>
+            <Label>Summary</Label>
             <Textarea
-              id="content"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              placeholder="Brief summary of your story"
+              className="mt-2"
+              rows={3}
+            />
+            {errors.summary && <p className="text-sm text-destructive mt-1">{errors.summary}</p>}
+          </div>
+
+          {/* Content */}
+          <div>
+            <Label>Story Content</Label>
+            <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your story here (400-2000 words)"
-              rows={20}
-              className={focusRing}
+              placeholder="Write your story here..."
+              className="mt-2 min-h-[400px]"
             />
-            {errors.content && <p className="text-xs text-destructive">{errors.content}</p>}
+            <div className="flex justify-between text-sm text-muted-foreground mt-1">
+              <span>{countWords(content)} words</span>
+              <span>{readTime} min read</span>
+            </div>
+            {errors.content && <p className="text-sm text-destructive mt-1">{errors.content}</p>}
           </div>
 
-          {/* Read Time & Tags */}
-          <div className={`bg-card ${cardRadius.medium} ${cardPadding.default} border ${cardElevation.low} space-y-4`}>
-            <div className="space-y-2">
-              <Label htmlFor="readTime">Read Time (minutes)</Label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  id="readTime"
-                  type="number"
-                  value={manualReadTime}
-                  onChange={(e) => handleManualReadTimeChange(e.target.value)}
-                  placeholder={`Auto: ${autoReadTime} min`}
-                  className={`flex-1 ${focusRing}`}
-                />
-                <span className="text-sm text-muted-foreground">
-                  {manualReadTime ? 'Manual' : `Auto: ${autoReadTime} min`}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags (optional)</Label>
-              <Input
-                id="tags"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="adventure, magic, friendship (comma-separated)"
-                className={focusRing}
-              />
-              <p className="text-xs text-muted-foreground">
-                Add keywords to help readers find your story
-              </p>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate({ to: '/profile' })}
-              className={`flex-1 ${focusRing}`}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSaving || isLoading}
-              className={`flex-1 ${focusRing}`}
-            >
-              {isSaving ? 'Saving...' : isEditMode ? 'Update Story' : 'Publish Story'}
-            </Button>
+          {/* Manual Read Time */}
+          <div>
+            <Label>Read Time (minutes) - Optional</Label>
+            <Input
+              type="number"
+              value={manualReadTime}
+              onChange={(e) => handleManualReadTimeChange(e.target.value)}
+              placeholder="Auto-calculated"
+              className="mt-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Leave empty for automatic calculation
+            </p>
           </div>
         </div>
       </div>

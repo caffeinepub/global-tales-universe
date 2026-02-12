@@ -1,7 +1,8 @@
 // Guest profile persistence utilities using localStorage
 
 export interface GuestProfile {
-  name: string;
+  displayName: string;
+  username: string;
   image?: string; // data URL or remote URL
 }
 
@@ -11,15 +12,26 @@ export function getGuestProfile(): GuestProfile {
   try {
     const stored = localStorage.getItem(GUEST_PROFILE_KEY);
     if (!stored) {
-      return { name: 'Guest' };
+      return { displayName: 'Guest', username: 'guest' };
     }
     const parsed = JSON.parse(stored);
+    
+    // Migration: handle old format with 'name' field
+    if (parsed.name && !parsed.displayName) {
+      return {
+        displayName: parsed.name,
+        username: parsed.name.toLowerCase().replace(/\s+/g, '_'),
+        image: parsed.image,
+      };
+    }
+    
     return {
-      name: parsed.name || 'Guest',
+      displayName: parsed.displayName || 'Guest',
+      username: parsed.username || 'guest',
       image: parsed.image,
     };
   } catch {
-    return { name: 'Guest' };
+    return { displayName: 'Guest', username: 'guest' };
   }
 }
 

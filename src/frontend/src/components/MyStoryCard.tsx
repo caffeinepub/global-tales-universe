@@ -4,6 +4,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { Clock, Edit } from 'lucide-react';
 import { Button } from './ui/button';
 import { iconSizes, cardRadius, cardElevation, transitions, focusRing } from '../lib/uiPolish';
+import { getStoryCoverUrl } from '../hooks/useStories';
 
 interface MyStoryCardProps {
   story: Story;
@@ -25,6 +26,9 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
     navigate({ to: '/story/$storyId', params: { storyId: String(story.id) } });
   };
 
+  // Get cover image URL (handles both ExternalBlob and fallback)
+  const coverImageUrl = getStoryCoverUrl(story);
+
   return (
     <div
       className={`flex gap-4 bg-card ${cardRadius.small} p-4 border ${cardElevation.low} ${focusRing}`}
@@ -32,7 +36,7 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
     >
       <div className={`w-24 h-32 shrink-0 ${cardRadius.small} overflow-hidden bg-muted`}>
         <img
-          src={story.coverImageUrl}
+          src={coverImageUrl}
           alt={title}
           className="w-full h-full object-cover"
           onError={(e) => {

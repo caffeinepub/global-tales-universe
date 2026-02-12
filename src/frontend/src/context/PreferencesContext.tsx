@@ -23,55 +23,79 @@ interface PreferencesContextType {
 
 const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'gtu_preferences';
+
+interface StoredPreferences {
+  language?: UILanguage;
+  mode?: AgeMode;
+  fontSize?: FontSize;
+  readingBackground?: ReadingBackground;
+  autoScroll?: boolean;
+  preferredCategories?: string[];
+}
+
+function loadStoredPreferences(): StoredPreferences {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveStoredPreferences(prefs: StoredPreferences): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+  } catch (e) {
+    console.warn('Failed to save preferences', e);
+  }
+}
+
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const { userState, updateUserState } = useAppUser();
-  const [language, setLanguageState] = useState<UILanguage>('en');
-  const [mode, setModeState] = useState<AgeMode>('adults');
-  const [fontSize, setFontSizeState] = useState<FontSize>('medium');
-  const [readingBackground, setReadingBackgroundState] = useState<ReadingBackground>('white');
-  const [autoScroll, setAutoScrollState] = useState(false);
-  const [preferredCategories, setPreferredCategoriesState] = useState<string[]>([]);
+  
+  // Initialize from localStorage first
+  const stored = loadStoredPreferences();
+  
+  const [language, setLanguageState] = useState<UILanguage>(() => {
+    return stored.language || 'en';
+  });
+  const [mode, setModeState] = useState<AgeMode>(() => {
+    return stored.mode || 'adults';
+  });
+  const [fontSize, setFontSizeState] = useState<FontSize>(() => {
+    return stored.fontSize || 'medium';
+  });
+  const [readingBackground, setReadingBackgroundState] = useState<ReadingBackground>(() => {
+    return stored.readingBackground || 'white';
+  });
+  const [autoScroll, setAutoScrollState] = useState(() => {
+    return stored.autoScroll ?? false;
+  });
+  const [preferredCategories, setPreferredCategoriesState] = useState<string[]>(() => {
+    return stored.preferredCategories || [];
+  });
 
-  // Auto-detect browser language on first load
+  // Auto-detect browser language on first load if not set
   useEffect(() => {
-    const browserLang = navigator.language.toLowerCase();
-    const langMap: Record<string, UILanguage> = {
-      'en': 'en', 'ta': 'ta', 'hi': 'hi', 'te': 'te', 'ml': 'ml',
-      'kn': 'kn', 'bn': 'bn', 'gu': 'gu', 'pa': 'pa', 'mr': 'mr',
-      'or': 'or', 'ur': 'ur', 'es': 'es', 'fr': 'fr', 'ar': 'ar',
-    };
-    const detectedLang = langMap[browserLang.split('-')[0]] || 'en';
-    
-    // Type guard to check if userState has preferences
-    const hasPreferences = (state: any): state is { preferences: any } => {
-      return state && 'preferences' in state;
-    };
-
-    if (hasPreferences(userState) && userState.preferences?.language) {
-      setLanguageState(userState.preferences.language as UILanguage);
-    } else {
+    if (!stored.language) {
+      const browserLang = navigator.language.toLowerCase();
+      const langMap: Record<string, UILanguage> = {
+        'en': 'en', 'ta': 'ta', 'hi': 'hi', 'te': 'te', 'ml': 'ml',
+        'kn': 'kn', 'bn': 'bn', 'gu': 'gu', 'pa': 'pa', 'mr': 'mr',
+        'or': 'or', 'ur': 'ur', 'es': 'es', 'fr': 'fr', 'ar': 'ar',
+      };
+      const detectedLang = langMap[browserLang.split('-')[0]] || 'en';
       setLanguageState(detectedLang);
+      saveStoredPreferences({ ...stored, language: detectedLang });
     }
-
-    if (hasPreferences(userState) && userState.preferences?.mode) {
-      setModeState(userState.preferences.mode as AgeMode);
-    }
-    if (hasPreferences(userState) && userState.preferences?.fontSize) {
-      setFontSizeState(userState.preferences.fontSize as FontSize);
-    }
-    if (hasPreferences(userState) && userState.preferences?.readingBackground) {
-      setReadingBackgroundState(userState.preferences.readingBackground as ReadingBackground);
-    }
-    if (hasPreferences(userState) && userState.preferences?.autoScroll !== undefined) {
-      setAutoScrollState(userState.preferences.autoScroll);
-    }
-    if (hasPreferences(userState) && userState.preferences?.preferredCategories) {
-      setPreferredCategoriesState(userState.preferences.preferredCategories);
-    }
-  }, [userState]);
+  }, []);
 
   const setLanguage = (lang: UILanguage) => {
     setLanguageState(lang);
+    const newPrefs = { ...loadStoredPreferences(), language: lang };
+    saveStoredPreferences(newPrefs);
+    
     const hasPreferences = (state: any): state is { preferences: any } => {
       return state && 'preferences' in state;
     };
@@ -81,6 +105,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setMode = (newMode: AgeMode) => {
     setModeState(newMode);
+    const newPrefs = { ...loadStoredPreferences(), mode: newMode };
+    saveStoredPreferences(newPrefs);
+    
     const hasPreferences = (state: any): state is { preferences: any } => {
       return state && 'preferences' in state;
     };
@@ -90,6 +117,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setFontSize = (size: FontSize) => {
     setFontSizeState(size);
+    const newPrefs = { ...loadStoredPreferences(), fontSize: size };
+    saveStoredPreferences(newPrefs);
+    
     const hasPreferences = (state: any): state is { preferences: any } => {
       return state && 'preferences' in state;
     };
@@ -99,6 +129,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setReadingBackground = (bg: ReadingBackground) => {
     setReadingBackgroundState(bg);
+    const newPrefs = { ...loadStoredPreferences(), readingBackground: bg };
+    saveStoredPreferences(newPrefs);
+    
     const hasPreferences = (state: any): state is { preferences: any } => {
       return state && 'preferences' in state;
     };
@@ -108,6 +141,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setAutoScroll = (enabled: boolean) => {
     setAutoScrollState(enabled);
+    const newPrefs = { ...loadStoredPreferences(), autoScroll: enabled };
+    saveStoredPreferences(newPrefs);
+    
     const hasPreferences = (state: any): state is { preferences: any } => {
       return state && 'preferences' in state;
     };
@@ -117,6 +153,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setPreferredCategories = (categories: string[]) => {
     setPreferredCategoriesState(categories);
+    const newPrefs = { ...loadStoredPreferences(), preferredCategories: categories };
+    saveStoredPreferences(newPrefs);
+    
     const hasPreferences = (state: any): state is { preferences: any } => {
       return state && 'preferences' in state;
     };

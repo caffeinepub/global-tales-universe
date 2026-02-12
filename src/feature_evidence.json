@@ -2,11 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-onboarding-screen-so-its-action-buttons-work-reliably-tapping-clicking-next-must-advance-to-the-next-onboarding-step-get-started-must-complete-onboarding-and-skip-must-exit-onboarding-immediately",
-      "featureTitle": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
+      "featureId": "feature-fix-adults-kids-mode-so-it-is-correctly-persisted-and-consistently-applied-across-the-app-home-categories-category-detail-story-reader-to-filter-kid-friendly-vs-adult-stories-and-categories",
+      "featureTitle": "Fix Adults/Kids mode so it is correctly persisted and consistently applied across the app (Home, Categories, Category Detail, Story Reader) to filter kid-friendly vs adult stories and categories.",
       "files": [
-        "frontend/src/components/onboarding/OnboardingFlow.tsx",
-        "frontend/src/components/onboarding/StepTransition.tsx"
+        "frontend/src/context/PreferencesContext.tsx",
+        "frontend/src/hooks/useStories.ts",
+        "frontend/src/pages/StoryReader.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,11 +24,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-that-after-onboarding-completion-via-get-started-or-skip-the-app-reliably-renders-the-next-screen-instead-of-appearing-stuck-on-the-prior-page-if-needed-update-the-post-onboarding-behavior-to-navigate-to-the-home-route-so-users-always-land-on-a-visible-main-page",
-      "featureTitle": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
+      "featureId": "feature-ensure-stories-are-reliably-available-and-rendered-no-empty-feed-by-aligning-frontend-story-fetching-with-current-ui-preferences-language-mode-and-providing-robust-fallbacks-when-backend-calls-fail",
+      "featureTitle": "Ensure stories are reliably available and rendered (no empty feed) by aligning frontend story fetching with current UI preferences (language + mode) and providing robust fallbacks when backend calls fail.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/lib/onboarding.ts"
+        "frontend/src/hooks/useStories.ts",
+        "frontend/src/lib/seededStories.ts",
+        "frontend/src/pages/StoryReader.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -44,12 +46,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-any-pwa-service-worker-caching-behavior-that-can-cause-client-side-route-transitions-to-show-stale-content-e-g-appearing-to-repeat-the-previous-page-after-deployments-updates-ensuring-in-app-navigation-consistently-renders-the-correct-route-content",
-      "featureTitle": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
+      "featureId": "feature-implement-story-social-actions-like-share-and-comment-including-ui-controls-on-story-reader-and-persistence-behavior-like-state-like-count-and-comments-per-story",
+      "featureTitle": "Implement story social actions: Like, Share, and Comment, including UI controls on Story Reader and persistence behavior (like state, like count, and comments per story).",
       "files": [
-        "frontend/public/sw.js",
-        "frontend/src/App.tsx",
-        "frontend/src/pwa/registerServiceWorker.ts"
+        "frontend/src/components/StoryCard.tsx",
+        "frontend/src/hooks/useFavorites.ts",
+        "frontend/src/hooks/useStorySocial.ts",
+        "frontend/src/lib/storySocialStorage.ts",
+        "frontend/src/pages/StoryReader.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -62,6 +66,50 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-profile-fields-so-the-app-correctly-supports-and-displays-profile-name-and-username-including-editing-saving-and-consistent-display-in-profile-and-header-avatar-areas",
+      "featureTitle": "Fix profile fields so the app correctly supports and displays profile name and username, including editing/saving and consistent display in Profile and header/avatar areas.",
+      "files": [
+        "frontend/src/components/AppHeader.tsx",
+        "frontend/src/components/UserAvatar.tsx",
+        "frontend/src/hooks/useUserProfile.ts",
+        "frontend/src/lib/userProfileStorage.ts",
+        "frontend/src/pages/ProfileTab.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-ensure-generated-static-image-assets-app-icon-default-covers-placeholder-avatar-are-placed-under-frontend-public-assets-generated-and-are-used-as-reliable-fallbacks-anywhere-covers-avatars-icons-would-otherwise-fail-to-load",
+      "featureTitle": "Add/ensure generated static image assets (app icon, default covers, placeholder avatar) are placed under frontend/public/assets/generated and are used as reliable fallbacks anywhere covers/avatars/icons would otherwise fail to load.",
+      "files": [
+        "frontend/src/lib/seededStories.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

@@ -3,9 +3,11 @@ import { useInternetIdentity } from './useInternetIdentity';
 import { useActor } from './useActor';
 import { UserProfile, ExternalBlob } from '../backend';
 import { getGuestProfile, saveGuestProfile, GuestProfile } from '../lib/userProfileStorage';
+import { useMemo } from 'react';
 
 export interface ProfileData {
-  name: string;
+  displayName: string;
+  username: string;
   image?: string; // For display: data URL or direct URL
 }
 
@@ -39,8 +41,8 @@ export function useUserProfile() {
   // Fetch guest profile (synchronous from localStorage)
   const guestProfile = !isAuthenticated ? getGuestProfile() : null;
 
-  // Determine current profile
-  const getCurrentProfile = async (): Promise<ProfileData> => {
+  // Stable profile data derived from query state
+  const profileData: ProfileData = useMemo(() => {
     if (isAuthenticated) {
       if (authenticatedQuery.data) {
         // Convert ExternalBlob to URL if present
@@ -48,30 +50,32 @@ export function useUserProfile() {
           ? authenticatedQuery.data.image.getDirectURL()
           : undefined;
         return {
-          name: authenticatedQuery.data.name || 'User',
+          displayName: authenticatedQuery.data.displayName || 'User',
+          username: authenticatedQuery.data.username || 'user',
           image: imageUrl,
         };
       } else if (authenticatedQuery.isFetched && authenticatedQuery.data === null) {
         // No profile yet, use principal-derived default
         const principal = identity?.getPrincipal().toString() || 'User';
         const shortName = principal.substring(0, 8);
-        return { name: `User-${shortName}` };
+        return { displayName: `User-${shortName}`, username: `user-${shortName}` };
       } else if (authenticatedQuery.isError) {
         // Error fetching profile, use fallback
-        return { name: 'Guest' };
+        return { displayName: 'Guest', username: 'guest' };
       }
-      return { name: 'Loading...' };
+      return { displayName: 'Loading...', username: 'loading' };
     } else {
       return {
-        name: guestProfile?.name || 'Guest',
+        displayName: guestProfile?.displayName || 'Guest',
+        username: guestProfile?.username || 'guest',
         image: guestProfile?.image,
       };
     }
-  };
+  }, [isAuthenticated, authenticatedQuery.data, authenticatedQuery.isFetched, authenticatedQuery.isError, identity, guestProfile]);
 
   // Save profile mutation
   const saveMutation = useMutation({
-    mutationFn: async (profile: { name: string; image?: string | File }) => {
+    mutationFn: async (profile: { displayName: string; username: string; image?: string | File }) => {
       if (isAuthenticated) {
         if (!actor) throw new Error('Actor not available');
         
@@ -90,7 +94,8 @@ export function useUserProfile() {
         }
         
         const backendProfile: UserProfile = {
-          name: profile.name,
+          displayName: profile.displayName,
+          username: profile.username,
           image: imageBlob,
         };
         
@@ -114,7 +119,8 @@ export function useUserProfile() {
         }
         
         const guestProfile: GuestProfile = {
-          name: profile.name,
+          displayName: profile.displayName,
+          username: profile.username,
           image: imageUrl,
         };
         
@@ -129,7 +135,7 @@ export function useUserProfile() {
   });
 
   return {
-    profile: getCurrentProfile,
+    profileData, // Stable, render-safe profile data
     saveProfile: saveMutation.mutateAsync,
     isLoading: isAuthenticated ? (actorFetching || authenticatedQuery.isLoading) : false,
     isSaving: saveMutation.isPending,

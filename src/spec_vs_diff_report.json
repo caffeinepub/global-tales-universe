@@ -1,55 +1,106 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T13:25:37.427Z",
-  "summary": "The diff implements onboarding step advancement/completion/skip handlers, adds a step transition wrapper, persists onboarding completion in localStorage, forces post-onboarding navigation/render refresh behavior in App, and updates PWA service worker registration and fetch caching logic to reduce stale-route issues. The diff summary also indicates multiple unrelated UI/feature changes beyond the onboarding/navigation/PWA fix scope.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-12T18:28:08.354Z",
+  "summary": "The diff implements parts of Adults/Kids preference persistence, seeded-story fallbacks, local-only social actions, and profile displayName/username changes. However, language-aligned fetching is not implemented (backend calls are hardcoded to English), social actions lack backend persistence for authenticated users, and the required generated image assets are referenced but not evidenced as added under the specified public assets path. Several unrelated PWA/routing/styling/premium/offline changes also appear.",
+  "missing_requirements": [
     {
-      "description": "Dev-only console logging for a \"Button Style Regression Check\" in the main App component.",
-      "reason": "Not requested by REQ-1/2/3; the request is about onboarding button functionality and route/PWA caching correctness, not adding dev diagnostics for button styling.",
+      "id": "REQ-2",
+      "requirement": "Align frontend story fetching with current UI preferences (language + mode) so Home/feeds reflect selected language, with robust fallbacks.",
+      "reason": "Story fetching uses the UI language in query keys but calls backend methods with Language.english regardless of the selected UI language, so it is not actually aligned with the language preference.",
       "evidence": [
-        "frontend/src/App.tsx"
+        "frontend/src/hooks/useStories.ts (calls actor.getFilteredSortedStories(Language.english, ...) and actor.getDailyFeaturedStoryByLanguage(Language.english) while reading { language } from preferences)"
       ]
     },
     {
-      "description": "Premium subscription page plan-selection UI improvements and integration of a ButtonStyleRegressionCheck component.",
-      "reason": "Not requested; changes to premium UI are outside onboarding/route/PWA caching requirements.",
+      "id": "REQ-3",
+      "requirement": "Persist Like state/count and Comments per story for authenticated users via backend persistence (guests via local persistence).",
+      "reason": "Implemented social storage is localStorage-based only (like overlay + comments) and there is no evidence of any backend methods/state to persist likes/comments for authenticated users.",
       "evidence": [
-        "frontend-file-summaries.txt (frontend/src/pages/GoPremium.tsx)"
+        "frontend/src/lib/storySocialStorage.ts (explicitly local storage helpers)",
+        "frontend/src/hooks/useStorySocial.ts (reads/writes only local storage helpers)",
+        "frontend/src/pages/StoryReader.tsx (uses useStorySocial for Like/Comments; no backend calls shown)",
+        "backend/main.mo (truncated; shows Story.likes field but no shown endpoints for like/comment persistence)"
       ]
     },
     {
-      "description": "Offline downloads management added/changed (localStorage fallback for IndexedDB, bigint serialization).",
-      "reason": "Not requested; offline download feature work is unrelated to onboarding and service-worker stale navigation behavior as specified.",
+      "id": "REQ-5",
+      "requirement": "Add all required generated static image assets under frontend/public/assets/generated (app icon, default covers, placeholder avatar) and use them as reliable fallbacks.",
+      "reason": "Frontend code references generated asset paths, but the diff summary does not show the required image files being added under frontend/public/assets/generated.",
       "evidence": [
-        "frontend-file-summaries.txt (frontend/src/hooks/useOfflineDownloads.ts)"
-      ]
-    },
-    {
-      "description": "Unified user state management hook changes with optimistic premium state updates.",
-      "reason": "Not requested; premium state/UI update behavior is outside onboarding completion and PWA navigation caching fixes.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/hooks/useAppUser.ts)"
-      ]
-    },
-    {
-      "description": "Story reader refactors (hook ordering, ShareResult typing, progress storage changes, download state management).",
-      "reason": "Not requested; story reader refactors are outside the onboarding/navigation/PWA caching scope.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/pages/StoryReader.tsx)"
+        "frontend/src/components/AppHeader.tsx (references /assets/generated/gtu-app-icon.dim_512x512.png)",
+        "frontend/src/components/UserAvatar.tsx (references /assets/generated/gtu-placeholder-avatar.dim_256x256.png)",
+        "frontend/src/lib/seededStories.ts (references multiple /assets/generated/cover-*.dim_1200x1600.png)",
+        "frontend/src/components/StoryCard.tsx (onError fallback to /assets/generated/cover-default.dim_1200x1600.png)"
       ]
     }
   ],
-  "confidence": 0.66,
+  "hallucinated_features": [
+    {
+      "description": "Added route aliases for help/about/privacy/terms pages to avoid route errors.",
+      "reason": "Not requested by any requirement; appears to be additional navigation hardening work.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/App.tsx route aliases summary)"
+      ]
+    },
+    {
+      "description": "PWA/service worker/manifest updates (cache version bump, update detection, navigation handling).",
+      "reason": "Not requested by any requirement; unrelated to Adults/Kids filtering, story feed fallback, social actions, profiles, or generated asset placement.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/public/manifest.webmanifest summary)",
+        "frontend-file-summaries.txt (frontend/public/sw.js summary)",
+        "frontend-file-summaries.txt (frontend/src/pwa/registerServiceWorker.ts summary)"
+      ]
+    },
+    {
+      "description": "Global CSS OKLCH/Tailwind color token resolution fixes.",
+      "reason": "Not requested by any requirement; UI styling infrastructure change.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/index.css summary)"
+      ]
+    },
+    {
+      "description": "Premium subscription UI enhancements and dev-mode button style regression check component integration.",
+      "reason": "Not requested by any requirement; unrelated feature work.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/pages/GoPremium.tsx summary)"
+      ]
+    },
+    {
+      "description": "Offline downloads management with localStorage fallback for IndexedDB.",
+      "reason": "Not requested by any requirement; unrelated feature work.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/hooks/useOfflineDownloads.ts summary)",
+        "frontend/src/pages/StoryReader.tsx (imports and uses useOfflineDownloads)"
+      ]
+    },
+    {
+      "description": "Continuous reading progress tracking updateProgress as user scrolls.",
+      "reason": "Not requested by any requirement; additional reading-history functionality.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/hooks/useReadingHistory.ts summary)",
+        "frontend/src/pages/StoryReader.tsx (progress tracking effect calling updateProgress)"
+      ]
+    }
+  ],
+  "confidence": 0.72,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/public/sw.js",
-    "frontend/src/App.tsx",
-    "frontend/src/components/onboarding/OnboardingFlow.tsx",
-    "frontend/src/components/onboarding/StepTransition.tsx",
-    "frontend/src/lib/onboarding.ts",
-    "frontend/src/pwa/registerServiceWorker.ts",
+    "frontend/src/components/AppHeader.tsx",
+    "frontend/src/components/StoryCard.tsx",
+    "frontend/src/components/UserAvatar.tsx",
+    "frontend/src/context/PreferencesContext.tsx",
+    "frontend/src/hooks/useFavorites.ts",
+    "frontend/src/hooks/useStories.ts",
+    "frontend/src/hooks/useStorySocial.ts",
+    "frontend/src/hooks/useUserProfile.ts",
+    "frontend/src/lib/seededStories.ts",
+    "frontend/src/lib/storySocialStorage.ts",
+    "frontend/src/lib/userProfileStorage.ts",
+    "frontend/src/pages/ProfileTab.tsx",
+    "frontend/src/pages/StoryReader.tsx",
     "project_state.json"
   ]
 }

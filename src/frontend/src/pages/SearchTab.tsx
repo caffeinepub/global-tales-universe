@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { usePreferences } from '../context/PreferencesContext';
-import { useStories } from '../hooks/useStories';
-import { uiLangToBackendLang } from '../lib/storyLanguage';
+import { useGetAllStories } from '../hooks/useStories';
 import { getStoryContent } from '../lib/storyLanguage';
 import { t } from '../lib/i18n';
 import { Input } from '../components/ui/input';
@@ -14,10 +13,9 @@ import { iconSizes } from '../lib/uiPolish';
 
 export default function SearchTab() {
   const { language } = usePreferences();
-  const backendLang = uiLangToBackendLang(language);
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
-  const { data: allStories = [], isLoading, isError } = useStories(backendLang, sortBy === 'popular');
+  const { data: allStories = [], isLoading } = useGetAllStories();
 
   const filteredStories = allStories.filter((story) => {
     if (!query) return true;
@@ -57,10 +55,6 @@ export default function SearchTab() {
               <StoryCardSkeleton key={i} />
             ))}
           </div>
-        ) : isError ? (
-          <div className="text-center py-12 text-muted-foreground">
-            Coming soon
-          </div>
         ) : filteredStories.length > 0 ? (
           <div className="space-y-4">
             {filteredStories.map((story) => (
@@ -69,7 +63,7 @@ export default function SearchTab() {
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            {query ? t('noResults', language) : 'Coming soon'}
+            {query ? t('noResults', language) : 'No stories available yet.'}
           </div>
         )}
       </div>

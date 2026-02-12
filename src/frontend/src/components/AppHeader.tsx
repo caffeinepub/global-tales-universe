@@ -1,9 +1,10 @@
 import { Menu } from 'lucide-react';
 import { Button } from './ui/button';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import UserAvatar from './UserAvatar';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { iconSizes, focusRing } from '../lib/uiPolish';
+import { logOnce } from '../lib/logOnce';
 
 interface AppHeaderProps {
   onMenuClick: () => void;
@@ -11,17 +12,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ onMenuClick }: AppHeaderProps) {
   const [imageError, setImageError] = useState(false);
-  const { profile: getProfile, isLoading } = useUserProfile();
-  const [profileData, setProfileData] = useState<{ name: string; image?: string }>({ name: 'Guest' });
-
-  useEffect(() => {
-    getProfile()
-      .then(setProfileData)
-      .catch((error) => {
-        console.error('Failed to load profile in header:', error);
-        setProfileData({ name: 'Guest' });
-      });
-  }, [getProfile]);
+  const { profileData, isLoading } = useUserProfile();
 
   return (
     <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
@@ -41,7 +32,7 @@ export default function AppHeader({ onMenuClick }: AppHeaderProps) {
             alt="Global Tales Universe" 
             className="h-8 w-auto object-contain"
             onError={() => {
-              console.warn('Failed to load header icon');
+              logOnce('header-icon-load-fail', 'Failed to load header icon, using text fallback');
               setImageError(true);
             }}
           />
@@ -53,7 +44,7 @@ export default function AppHeader({ onMenuClick }: AppHeaderProps) {
       <div className="w-10 flex items-center justify-center">
         <UserAvatar 
           imageUrl={profileData.image}
-          name={profileData.name}
+          name={profileData.displayName}
           size="small"
           isLoading={isLoading}
         />

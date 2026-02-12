@@ -1,10 +1,11 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppUser } from '../hooks/useAppUser';
-import { Home, Search, Heart, User, Crown, BookOpen, HelpCircle, Info, PenSquare } from 'lucide-react';
+import { Home, Search, Heart, User, Crown, BookOpen, HelpCircle, Info } from 'lucide-react';
 import PremiumBadge from './PremiumBadge';
 import { Button } from './ui/button';
 import { iconSizes, cardRadius, cardPadding, cardElevation, focusRing, transitions } from '../lib/uiPolish';
+import { logOnce } from '../lib/logOnce';
 
 interface AppDrawerProps {
   isOpen: boolean;
@@ -20,9 +21,13 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
       navigate({ to: path as any });
       onClose();
     } catch (error) {
-      console.error('Navigation error:', error);
+      logOnce(`drawer-nav-${path}`, `Drawer navigation error to ${path}: ${error}`, 'error');
       // Fallback to home if navigation fails
-      navigate({ to: '/' });
+      try {
+        navigate({ to: '/' });
+      } catch (fallbackError) {
+        console.error('Fallback navigation also failed:', fallbackError);
+      }
       onClose();
     }
   };
@@ -59,7 +64,7 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
               <button
                 key={item.path}
                 onClick={() => handleNavigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent ${transitions.colors} ${focusRing} text-left`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left ${focusRing}`}
               >
                 <item.icon className={iconSizes.md} />
                 <span className="font-medium">{item.label}</span>
@@ -67,54 +72,36 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
             ))}
           </nav>
 
-          {/* Create Story (Authenticated Only) */}
-          {isAuthenticated && (
-            <>
-              <div className="h-px bg-border" />
-              <button
-                onClick={() => handleNavigate('/story/editor/new')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent ${transitions.colors} ${focusRing} text-left`}
-              >
-                <PenSquare className={iconSizes.md} />
-                <span className="font-medium">Create Story</span>
-              </button>
-            </>
-          )}
-
-          {/* Premium Upsell */}
+          {/* Premium CTA */}
           {!isPremium && (
-            <>
-              <div className="h-px bg-border" />
-              <div className={`${cardRadius.medium} ${cardPadding.default} bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 ${cardElevation.low}`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-500`} />
-                  <PremiumBadge variant="compact" />
-                </div>
-                <p className="text-sm mb-3">
-                  Unlock ad-free reading and exclusive premium stories.
-                </p>
-                <Button
-                  onClick={() => handleNavigate('/premium')}
-                  size="sm"
-                  className={`w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 ${focusRing}`}
-                >
-                  Go Premium
-                </Button>
+            <div className={`${cardPadding} ${cardRadius} ${cardElevation} bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-500`} />
+                <h3 className="font-bold">Go Premium</h3>
               </div>
-            </>
+              <p className="text-xs text-muted-foreground mb-3">
+                Unlock exclusive features
+              </p>
+              <Button
+                size="sm"
+                onClick={() => handleNavigate('/premium')}
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+              >
+                Upgrade Now
+              </Button>
+            </div>
           )}
 
           {/* Secondary Navigation */}
-          <div className="h-px bg-border" />
-          <nav className="space-y-1">
+          <nav className="space-y-1 pt-4 border-t border-border">
             {secondaryItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => handleNavigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-accent ${transitions.colors} ${focusRing} text-left`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left text-sm ${focusRing}`}
               >
-                <item.icon className={iconSizes.md} />
-                <span className="font-medium">{item.label}</span>
+                <item.icon className={iconSizes.sm} />
+                <span>{item.label}</span>
               </button>
             ))}
           </nav>

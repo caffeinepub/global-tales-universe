@@ -1,73 +1,134 @@
 {
   "kind": "build_request",
-  "title": "Fix onboarding Get Started/Skip buttons and forward navigation not updating pages",
+  "title": "Fix Adults/Kids mode filtering, restore stories feed, add like/share/comment, and correct profile name/username",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
+      "text": "Fix Adults/Kids mode so it is correctly persisted and consistently applied across the app (Home, Categories, Category Detail, Story Reader) to filter kid-friendly vs adult stories and categories.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-6"
+          "msg-6"
         ],
         "quotes": [
-          "Get starte button and skip button that page only show but not working and next page not change please check what problem please fix this problem"
+          "adults, kids not proper set"
         ]
       },
       "acceptanceCriteria": [
-        "On the onboarding screen, clicking/tapping \"Next\" on step 1 moves to step 2, and on step 2 moves to step 3 (verified visually by content + progress indicator).",
-        "On step 3, clicking/tapping \"Get Started\" closes onboarding and shows the main app UI.",
-        "Clicking/tapping \"Skip\" closes onboarding and shows the main app UI from any step.",
-        "Buttons are not blocked by overlays (click/tap works on desktop and mobile)."
+        "Switching between Adults and Kids updates visible categories and story lists immediately without requiring a refresh.",
+        "Kids mode shows only kid-safe categories/stories; Adults mode shows the full catalog.",
+        "The selected mode persists across reloads for both guest and authenticated users."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
+      "text": "Ensure stories are reliably available and rendered (no empty feed) by aligning frontend story fetching with current UI preferences (language + mode) and providing robust fallbacks when backend calls fail.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-6"
+          "msg-6"
         ],
         "quotes": [
-          "next page not change"
+          "and no story"
         ]
       },
       "acceptanceCriteria": [
-        "After completing onboarding, the app displays the main layout (header/bottom navigation) and a routed page (Home at \"/\" if enforced).",
-        "The route/state updates are reflected immediately without requiring a manual refresh."
+        "Home shows a featured story and a latest stories list when data exists (backend or seeded fallback).",
+        "If the backend fetch fails, the UI still renders seeded stories (and they still respect the selected Adults/Kids mode).",
+        "Story Reader can open a story from the list without showing 'Story not found' for seeded stories."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
-      "target": "frontend",
+      "text": "Implement story social actions: Like, Share, and Comment, including UI controls on Story Reader and persistence behavior (like state, like count, and comments per story).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages-6"
+          "msg-6"
         ],
         "quotes": [
-          "next page not change"
+          "like,share, comment"
         ]
       },
       "acceptanceCriteria": [
-        "With the service worker enabled, navigating between routes (e.g., Home -> Categories -> Category Detail -> Back) updates the UI to the correct page content every time.",
-        "After a new deployment, the app updates cleanly (no persistent stale routes/pages due to cached navigation responses)."
+        "Story Reader shows distinct controls for Like, Share, and Comments.",
+        "Like toggling updates the UI immediately and remains consistent after reload (for authenticated users via backend persistence; for guests via local persistence).",
+        "Share action uses the existing share utility and reports success/failure with English user-facing text.",
+        "Users can add a comment to a story and see the list of comments for that story after adding (for authenticated users via backend persistence; for guests via local persistence)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Fix profile fields so the app correctly supports and displays profile name and username, including editing/saving and consistent display in Profile and header/avatar areas.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "profile, username, and name fix"
+        ]
+      },
+      "acceptanceCriteria": [
+        "UserProfile supports both name and username and can be saved and retrieved for authenticated users.",
+        "Profile page displays name and username (or a clear fallback when unset) in English.",
+        "Guest users can set and persist name/username locally; authenticated users persist to the backend.",
+        "No repeated re-render loop occurs while loading profile data; profile text and avatar are stable."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add/ensure generated static image assets (app icon, default covers, placeholder avatar) are placed under frontend/public/assets/generated and are used as reliable fallbacks anywhere covers/avatars/icons would otherwise fail to load.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "some problem here ... profile"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All required generated images exist in frontend/public/assets/generated and are referenced by the frontend without going through the backend.",
+        "When a story has no coverImage, a local generated category/kids fallback cover is shown.",
+        "When a user has no profile image, a local generated placeholder avatar is shown."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files in frontend/src/components/ui (shadcn components); fix by composing/wrapping from app code instead.",
-    "Do not edit frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
-    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if an existing stable state schema must change (not expected for this fix)."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend immutablePaths (compose read-only UI components instead of modifying them).",
+    "Use English for any new or updated user-facing text."
   ],
   "nonGoals": [
-    "Adding new onboarding steps or changing onboarding content beyond what is necessary to make the existing buttons/navigation function correctly.",
-    "Introducing real-time features (WebSockets) or third-party auth providers beyond Internet Identity."
+    "Do not add third-party authentication providers (only Internet Identity is allowed).",
+    "Do not add real-time messaging/WebSockets for comments.",
+    "Do not introduce external databases or external cloud services."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "App icon, simple flat mark (gtu-app-icon.dim_512x512.png)",
+      "Default story cover illustration (cover-default.dim_1200x1600.png)",
+      "Kids default story cover illustration (cover-kids-default.dim_1200x1600.png)",
+      "Educational story cover illustration (cover-educational.dim_1200x1600.png)",
+      "Superhero story cover illustration (cover-superhero.dim_1200x1600.png)",
+      "Romance story cover illustration (cover-romance.dim_1200x1600.png)",
+      "Horror story cover illustration (cover-horror.dim_1200x1600.png)",
+      "Comedy story cover illustration (cover-comedy.dim_1200x1600.png)",
+      "Mythology story cover illustration (cover-mythology.dim_1200x1600.png)",
+      "Placeholder user avatar illustration (gtu-placeholder-avatar.dim_256x256.png)"
+    ],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

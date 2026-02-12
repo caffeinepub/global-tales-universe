@@ -8,7 +8,7 @@ import { iconSizes } from '../lib/uiPolish';
 
 export default function FavoritesTab() {
   const { language } = usePreferences();
-  const { favoriteStories, isLoading, isError } = useFavorites();
+  const { favoriteStories, isLoading } = useFavorites();
 
   if (isLoading) {
     return (
@@ -17,16 +17,6 @@ export default function FavoritesTab() {
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
           ))}
-        </div>
-      </PageLayout>
-    );
-  }
-
-  if (isError) {
-    return (
-      <PageLayout title={t('favorites', language)}>
-        <div className="text-center py-12 text-muted-foreground">
-          Coming soon
         </div>
       </PageLayout>
     );

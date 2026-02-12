@@ -1,0 +1,32 @@
+import Map "mo:core/Map";
+import Principal "mo:core/Principal";
+import Storage "blob-storage/Storage";
+
+module {
+  type OldUserProfile = {
+    name : Text;
+    image : ?Storage.ExternalBlob;
+  };
+
+  type OldActor = {
+    userProfiles : Map.Map<Principal, OldUserProfile>;
+  };
+
+  type NewUserProfile = {
+    displayName : Text;
+    username : Text;
+    image : ?Storage.ExternalBlob;
+  };
+  type NewActor = {
+    userProfiles : Map.Map<Principal, NewUserProfile>;
+  };
+
+  public func run(old : OldActor) : NewActor {
+    let newUserProfiles = old.userProfiles.map<Principal, OldUserProfile, NewUserProfile>(
+      func(_id, oldUserProfile) {
+        { oldUserProfile with displayName = oldUserProfile.name; username = oldUserProfile.name };
+      }
+    );
+    { userProfiles = newUserProfiles };
+  };
+};

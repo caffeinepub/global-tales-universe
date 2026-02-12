@@ -12,9 +12,9 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export interface AppUser {
   'favoriteStoryIds' : Array<bigint>,
+  'languagePreference' : Language,
   'readingHistory' : Array<bigint>,
   'lastReadStoryId' : [] | [bigint],
-  'language' : Language,
   'readingChallengeProgress' : bigint,
   'searchHistory' : Array<string>,
   'dailyStreak' : bigint,
@@ -33,18 +33,22 @@ export type Language = { 'tamil' : null } |
   { 'english' : null };
 export interface Story {
   'id' : bigint,
-  'coverImageUrl' : string,
   'isPremium' : boolean,
   'languages' : { 'tamil' : Content, 'hindi' : Content, 'english' : Content },
   'author' : string,
   'likes' : bigint,
+  'coverImage' : [] | [ExternalBlob],
   'timestamp' : bigint,
   'category' : string,
   'rating' : bigint,
   'isKidFriendly' : boolean,
   'readTimeMinutes' : bigint,
 }
-export interface UserProfile { 'name' : string, 'image' : [] | [ExternalBlob] }
+export interface UserProfile {
+  'username' : string,
+  'displayName' : string,
+  'image' : [] | [ExternalBlob],
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -97,16 +101,16 @@ export interface _SERVICE {
       string,
       bigint,
       boolean,
-      string,
+      [] | [ExternalBlob],
       Content,
       Content,
       Content,
     ],
     bigint
   >,
-  'saveAppUser' : ActorMethod<[AppUser], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'toggleFavoriteStory' : ActorMethod<[bigint], undefined>,
+  'updateAppUser' : ActorMethod<[AppUser], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

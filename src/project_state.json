@@ -4,37 +4,57 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "\"Get started\" and \"Skip\" buttons appear but do not function; navigation to the next page does not occur."
+    "Adults/Kids settings not being applied or set correctly.",
+    "Stories feature missing or not working (no story).",
+    "Social actions missing or not working: like, share, comment.",
+    "Profile-related fields not displaying or incorrect: profile, username, name."
   ],
   "isFixRequest": true,
+  "imageRequirements": "## Required Images\n- App icon, simple flat mark (gtu-app-icon.dim_512x512.png)\n- Default story cover illustration (cover-default.dim_1200x1600.png)\n- Kids default story cover illustration (cover-kids-default.dim_1200x1600.png)\n- Educational story cover illustration (cover-educational.dim_1200x1600.png)\n- Superhero story cover illustration (cover-superhero.dim_1200x1600.png)\n- Romance story cover illustration (cover-romance.dim_1200x1600.png)\n- Horror story cover illustration (cover-horror.dim_1200x1600.png)\n- Comedy story cover illustration (cover-comedy.dim_1200x1600.png)\n- Mythology story cover illustration (cover-mythology.dim_1200x1600.png)\n- Placeholder user avatar illustration (gtu-placeholder-avatar.dim_256x256.png)",
   "existing_features": [
     {
-      "id": "feature-fix-the-onboarding-screen-so-its-action-buttons-work-reliably-tapping-clicking-next-must-advance-to-the-next-onboarding-step-get-started-must-complete-onboarding-and-skip-must-exit-onboarding-immediately",
-      "title": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
+      "id": "feature-fix-adults-kids-mode-so-it-is-correctly-persisted-and-consistently-applied-across-the-app-home-categories-category-detail-story-reader-to-filter-kid-friendly-vs-adult-stories-and-categories",
+      "title": "Fix Adults/Kids mode so it is correctly persisted and consistently applied across the app (Home, Categories, Category Detail, Story Reader) to filter kid-friendly vs adult stories and categories.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-that-after-onboarding-completion-via-get-started-or-skip-the-app-reliably-renders-the-next-screen-instead-of-appearing-stuck-on-the-prior-page-if-needed-update-the-post-onboarding-behavior-to-navigate-to-the-home-route-so-users-always-land-on-a-visible-main-page",
-      "title": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
+      "id": "feature-ensure-stories-are-reliably-available-and-rendered-no-empty-feed-by-aligning-frontend-story-fetching-with-current-ui-preferences-language-mode-and-providing-robust-fallbacks-when-backend-calls-fail",
+      "title": "Ensure stories are reliably available and rendered (no empty feed) by aligning frontend story fetching with current UI preferences (language + mode) and providing robust fallbacks when backend calls fail.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-any-pwa-service-worker-caching-behavior-that-can-cause-client-side-route-transitions-to-show-stale-content-e-g-appearing-to-repeat-the-previous-page-after-deployments-updates-ensuring-in-app-navigation-consistently-renders-the-correct-route-content",
-      "title": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
+      "id": "feature-implement-story-social-actions-like-share-and-comment-including-ui-controls-on-story-reader-and-persistence-behavior-like-state-like-count-and-comments-per-story",
+      "title": "Implement story social actions: Like, Share, and Comment, including UI controls on Story Reader and persistence behavior (like state, like count, and comments per story).",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-profile-fields-so-the-app-correctly-supports-and-displays-profile-name-and-username-including-editing-saving-and-consistent-display-in-profile-and-header-avatar-areas",
+      "title": "Fix profile fields so the app correctly supports and displays profile name and username, including editing/saving and consistent display in Profile and header/avatar areas.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-ensure-generated-static-image-assets-app-icon-default-covers-placeholder-avatar-are-placed-under-frontend-public-assets-generated-and-are-used-as-reliable-fallbacks-anywhere-covers-avatars-icons-would-otherwise-fail-to-load",
+      "title": "Add/ensure generated static image assets (app icon, default covers, placeholder avatar) are placed under frontend/public/assets/generated and are used as reliable fallbacks anywhere covers/avatars/icons would otherwise fail to load.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [],
-  "projectName": "Fix onboarding Get Started/Skip buttons and forward navigation not updating pages",
+  "projectName": "Fix Adults/Kids mode filtering, restore stories feed, add like/share/comment, and correct profile name/username",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

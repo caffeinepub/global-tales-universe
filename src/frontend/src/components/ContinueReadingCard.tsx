@@ -1,24 +1,24 @@
 import { useReadingHistory } from '../hooks/useReadingHistory';
-import { useStory } from '../hooks/useStories';
+import { useGetStoryById } from '../hooks/useStories';
 import { useNavigate } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { t } from '../lib/i18n';
 import { getStoryContent } from '../lib/storyLanguage';
-import { getCoverUrl } from '../lib/covers';
+import { getStoryCoverUrl } from '../hooks/useStories';
 import { Progress } from './ui/progress';
 import { cardRadius, transitions, focusRing } from '../lib/uiPolish';
 
 export default function ContinueReadingCard() {
   const { getLastRead } = useReadingHistory();
   const lastRead = getLastRead();
-  const { data: story } = useStory(lastRead?.storyId || null);
+  const { data: story } = useGetStoryById(lastRead?.storyId || null);
   const navigate = useNavigate();
   const { language } = usePreferences();
 
   if (!lastRead || !story) return null;
 
   const content = getStoryContent(story, language);
-  const coverUrl = getCoverUrl(story.category, story.isKidFriendly);
+  const coverUrl = getStoryCoverUrl(story);
 
   return (
     <div className="mb-6">

@@ -16,9 +16,9 @@ export class ExternalBlob {
 }
 export interface AppUser {
     favoriteStoryIds: Array<bigint>;
+    languagePreference: Language;
     readingHistory: Array<bigint>;
     lastReadStoryId?: bigint;
-    language: Language;
     readingChallengeProgress: bigint;
     searchHistory: Array<string>;
     dailyStreak: bigint;
@@ -28,7 +28,6 @@ export interface AppUser {
 }
 export interface Story {
     id: bigint;
-    coverImageUrl: string;
     isPremium: boolean;
     languages: {
         tamil: Content;
@@ -37,6 +36,7 @@ export interface Story {
     };
     author: string;
     likes: bigint;
+    coverImage?: ExternalBlob;
     timestamp: bigint;
     category: string;
     rating: bigint;
@@ -49,7 +49,8 @@ export interface Content {
     summary: string;
 }
 export interface UserProfile {
-    name: string;
+    username: string;
+    displayName: string;
     image?: ExternalBlob;
 }
 export enum Language {
@@ -68,14 +69,14 @@ export interface backendInterface {
     getAppUser(): Promise<AppUser>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getDailyFeaturedStoryByLanguage(language: Language): Promise<Story>;
-    getFilteredSortedStories(language: Language, sortByPopularity: boolean | null, filterByCategory: string | null, filterByKidFriendly: boolean | null): Promise<Array<Story>>;
+    getDailyFeaturedStoryByLanguage(_language: Language): Promise<Story>;
+    getFilteredSortedStories(_language: Language, sortByPopularity: boolean | null, filterByCategory: string | null, filterByKidFriendly: boolean | null): Promise<Array<Story>>;
     getStory(storyId: bigint): Promise<Story>;
     getUserFavoriteStories(): Promise<Array<Story>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
-    publishStory(isKidFriendly: boolean, category: string, author: string, readTimeMinutes: bigint, isPremium: boolean, coverImageUrl: string, english: Content, tamil: Content, hindi: Content): Promise<bigint>;
-    saveAppUser(appUser: AppUser): Promise<void>;
+    publishStory(isKidFriendly: boolean, category: string, author: string, readTimeMinutes: bigint, isPremium: boolean, coverImage: ExternalBlob | null, english: Content, tamil: Content, hindi: Content): Promise<bigint>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     toggleFavoriteStory(storyId: bigint): Promise<void>;
+    updateAppUser(updateFunc: AppUser): Promise<void>;
 }

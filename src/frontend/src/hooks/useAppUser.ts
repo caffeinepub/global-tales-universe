@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useInternetIdentity } from './useInternetIdentity';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
@@ -69,7 +69,7 @@ export function useAppUser() {
   const saveBackendUser = useMutation({
     mutationFn: async (appUser: AppUser) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.saveAppUser(appUser);
+      await actor.updateAppUser(appUser);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appUser'] });

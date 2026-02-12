@@ -1,79 +1,134 @@
 import { useQuery } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { Language } from '../backend';
+import { usePreferences } from '../context/PreferencesContext';
+import { Story, Language } from '../backend';
+import { SEEDED_STORIES, getCoverImageForCategory, getFilteredSeededStories } from '../lib/seededStories';
 
-export function useStories(
-  language: Language = Language.english,
-  sortByPopularity?: boolean,
-  filterByCategory?: string,
-  filterByKidFriendly?: boolean
-) {
+// Helper to get cover URL from story (handles both ExternalBlob and fallback)
+function getStoryCoverUrl(story: Story): string {
+  if (story.coverImage) {
+    return story.coverImage.getDirectURL();
+  }
+  // Fallback to category-based cover
+  return getCoverImageForCategory(story.category, story.isKidFriendly);
+}
+
+export function useGetAllStories() {
   const { actor, isFetching: actorFetching } = useActor();
+  const { language, mode } = usePreferences();
+  const isKidsMode = mode === 'kids';
 
-  return useQuery({
-    queryKey: ['stories', language, sortByPopularity, filterByCategory, filterByKidFriendly],
+  return useQuery<Story[]>({
+    queryKey: ['stories', 'all', language, mode],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) {
+        return getFilteredSeededStories(isKidsMode);
+      }
       try {
-        return await actor.getFilteredSortedStories(
-          language,
-          sortByPopularity ?? null,
-          filterByCategory ?? null,
-          filterByKidFriendly ?? null
+        const stories = await actor.getFilteredSortedStories(
+          Language.english,
+          null,
+          null,
+          isKidsMode ? true : null
         );
+        return stories;
       } catch (error) {
-        console.error('Failed to fetch stories:', error);
-        return [];
+        console.error('Failed to fetch stories from backend, using seeded stories:', error);
+        return getFilteredSeededStories(isKidsMode);
       }
     },
-    enabled: !!actor && !actorFetching,
+    enabled: true,
+    placeholderData: getFilteredSeededStories(isKidsMode),
     retry: false,
   });
 }
 
-export function useStory(storyId: bigint | null) {
+export function useGetFeaturedStory() {
+  const { actor, isFetching: actorFetching } = useActor();
+  const { language, mode } = usePreferences();
+  const isKidsMode = mode === 'kids';
+
+  return useQuery<Story>({
+    queryKey: ['stories', 'featured', language, mode],
+    queryFn: async () => {
+      const fallback = getFilteredSeededStories(isKidsMode)[0];
+      if (!actor) return fallback;
+      try {
+        const story = await actor.getDailyFeaturedStoryByLanguage(Language.english);
+        // Check if story matches mode
+        if (isKidsMode && !story.isKidFriendly) {
+          return fallback;
+        }
+        return story;
+      } catch (error) {
+        console.error('Failed to fetch featured story, using seeded story:', error);
+        return fallback;
+      }
+    },
+    enabled: true,
+    placeholderData: getFilteredSeededStories(isKidsMode)[0],
+    retry: false,
+  });
+}
+
+export function useGetStoriesByCategory(category: string) {
+  const { actor, isFetching: actorFetching } = useActor();
+  const { language, mode } = usePreferences();
+  const isKidsMode = mode === 'kids';
+
+  return useQuery<Story[]>({
+    queryKey: ['stories', 'category', category, language, mode],
+    queryFn: async () => {
+      const seededFallback = getFilteredSeededStories(isKidsMode).filter((s) => s.category === category);
+      if (!actor) {
+        return seededFallback;
+      }
+      try {
+        const stories = await actor.getFilteredSortedStories(
+          Language.english,
+          null,
+          category,
+          isKidsMode ? true : null
+        );
+        return stories;
+      } catch (error) {
+        console.error(`Failed to fetch ${category} stories, using seeded stories:`, error);
+        return seededFallback;
+      }
+    },
+    enabled: true,
+    placeholderData: getFilteredSeededStories(isKidsMode).filter((s) => s.category === category),
+    retry: false,
+  });
+}
+
+export function useGetStoryById(storyId: bigint | null) {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery({
-    queryKey: ['story', storyId?.toString()],
+  return useQuery<Story | null>({
+    queryKey: ['stories', 'detail', storyId?.toString()],
     queryFn: async () => {
-      if (!actor || !storyId) return null;
+      if (!storyId) return null;
+      if (!actor) {
+        return SEEDED_STORIES.find((s) => s.id === storyId) || null;
+      }
       try {
-        return await actor.getStory(storyId);
+        const story = await actor.getStory(storyId);
+        return story;
       } catch (error) {
-        console.error('Failed to fetch story:', error);
-        return null;
+        console.error(`Failed to fetch story ${storyId}, checking seeded stories:`, error);
+        return SEEDED_STORIES.find((s) => s.id === storyId) || null;
       }
     },
-    enabled: !!actor && !actorFetching && !!storyId,
+    enabled: !!storyId,
     retry: false,
   });
 }
 
-export function useDailyFeaturedStory(language: Language = Language.english) {
-  const { actor, isFetching: actorFetching } = useActor();
+// Legacy exports for backward compatibility
+export const useDailyFeaturedStory = useGetFeaturedStory;
+export const useStories = useGetAllStories;
+export const useStory = useGetStoryById;
 
-  return useQuery({
-    queryKey: ['dailyFeatured', language],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getDailyFeaturedStoryByLanguage(language);
-      } catch (error) {
-        console.error('Failed to fetch featured story:', error);
-        return null;
-      }
-    },
-    enabled: !!actor && !actorFetching,
-    retry: false,
-  });
-}
-
-// Export query key helpers for invalidation
-export const storyQueryKeys = {
-  all: ['stories'] as const,
-  lists: () => [...storyQueryKeys.all, 'list'] as const,
-  list: (filters: any) => [...storyQueryKeys.lists(), filters] as const,
-  details: () => [...storyQueryKeys.all, 'detail'] as const,
-  detail: (id: string) => [...storyQueryKeys.details(), id] as const,
-};
+// Export helper for components
+export { getStoryCoverUrl };

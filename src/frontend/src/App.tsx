@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState, useNavigate, NotFoundRoute } from '@tanstack/react-router';
+import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState, NotFoundRoute } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import SplashScreen from './components/SplashScreen';
 import BottomNav from './components/BottomNav';
@@ -31,11 +31,8 @@ import { isOnboardingCompleted } from './lib/onboarding';
 
 function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const routerState = useRouterState();
-  const navigate = useNavigate();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
 
@@ -47,10 +44,6 @@ function RootLayout() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-      // Check if onboarding is needed after splash
-      const completed = isOnboardingCompleted();
-      setOnboardingCompleted(completed);
-      setShowOnboarding(!completed);
     }, 2500);
     return () => clearTimeout(timer);
   }, []);
@@ -88,27 +81,8 @@ function RootLayout() {
     window.scrollTo(0, 0);
   }, [currentPath, currentSearch]);
 
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    setOnboardingCompleted(true);
-    
-    // Force navigation to home route after onboarding completion
-    // Use setTimeout to ensure state updates are processed first
-    setTimeout(() => {
-      navigate({ to: '/' }).catch((err) => {
-        console.error('Navigation after onboarding failed:', err);
-        // Fallback: force reload to home
-        window.location.href = '/';
-      });
-    }, 50);
-  };
-
   if (showSplash) {
     return <SplashScreen />;
-  }
-
-  if (showOnboarding) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
   // StoryReader, StoryEditor, and PremiumSuccess have their own layouts
@@ -200,6 +174,7 @@ const premiumSuccessRoute = createRoute({
   component: PremiumSuccess,
 });
 
+// Primary routes for legal/support pages
 const privacyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/privacy',
@@ -224,6 +199,31 @@ const aboutRoute = createRoute({
   component: AboutUs,
 });
 
+// Alias routes for alternate paths used by UI components
+const privacyPolicyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/privacy-policy',
+  component: PrivacyPolicy,
+});
+
+const termsAndConditionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/terms-and-conditions',
+  component: TermsAndConditions,
+});
+
+const helpAndSupportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/help-and-support',
+  component: HelpAndSupport,
+});
+
+const aboutUsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/about-us',
+  component: AboutUs,
+});
+
 const notFoundRoute = new NotFoundRoute({
   getParentRoute: () => rootRoute,
   component: RouteErrorFallback,
@@ -244,6 +244,10 @@ const routeTree = rootRoute.addChildren([
   termsRoute,
   helpRoute,
   aboutRoute,
+  privacyPolicyRoute,
+  termsAndConditionsRoute,
+  helpAndSupportRoute,
+  aboutUsRoute,
   notFoundRoute,
 ]);
 
@@ -258,12 +262,42 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppWithOnboarding() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
+
+  useEffect(() => {
+    // Check onboarding status on mount
+    const completed = isOnboardingCompleted();
+    setShowOnboarding(!completed);
+    setIsCheckingOnboarding(false);
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Force page reload to home to ensure clean state
+    // This works because onboarding is rendered outside RouterProvider
+    window.location.href = '/';
+  };
+
+  // Don't render anything until we've checked onboarding status
+  if (isCheckingOnboarding) {
+    return null;
+  }
+
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
+  return <RouterProvider router={router} />;
+}
+
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
         <PreferencesProvider>
-          <RouterProvider router={router} />
+          <AppWithOnboarding />
           <Toaster />
         </PreferencesProvider>
       </QueryClientProvider>
