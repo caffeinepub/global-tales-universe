@@ -15,23 +15,36 @@ export default function ShareSheetPlaceholder({ storyTitle, storyId, storyPrevie
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async () => {
+    if (isSharing) return;
+    
     setIsSharing(true);
     
-    const success = await shareStory(storyId, storyTitle, storyPreview);
-    
-    if (success) {
-      const data = recordShare();
-      if (data.bonusStoriesUnlocked > 0) {
-        toast.success('Bonus story unlocked! 🎉');
+    try {
+      const success = await shareStory(storyId, storyTitle, storyPreview);
+      
+      if (success) {
+        const data = recordShare();
+        if (data.bonusStoriesUnlocked > 0) {
+          toast.success('Bonus story unlocked! 🎉');
+        } else {
+          toast.success('Thanks for sharing!');
+        }
       }
+    } catch (error) {
+      console.error('Share error:', error);
+    } finally {
+      setIsSharing(false);
     }
-    
-    setIsSharing(false);
   };
 
   return (
-    <Button variant="outline" size="icon" onClick={handleShare} disabled={isSharing}>
-      <Share2 className="w-4 h-4" />
+    <Button 
+      variant="outline" 
+      size="icon" 
+      onClick={handleShare} 
+      disabled={isSharing}
+    >
+      <Share2 className={`w-4 h-4 ${isSharing ? 'animate-pulse' : ''}`} />
     </Button>
   );
 }

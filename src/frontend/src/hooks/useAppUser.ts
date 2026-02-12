@@ -39,7 +39,6 @@ export function useAppUser() {
       const stored = localStorage.getItem(GUEST_STORAGE_KEY);
       if (!stored) return {};
       const parsed = JSON.parse(stored);
-      // Convert string IDs back to bigints for readingHistory
       if (parsed.readingHistory) {
         parsed.readingHistory = parsed.readingHistory.map((entry: any) => ({
           ...entry,
@@ -54,7 +53,6 @@ export function useAppUser() {
 
   const isAuthenticated = !!identity;
 
-  // Fetch backend user data when authenticated
   const { data: backendUser } = useQuery<AppUser | null>({
     queryKey: ['appUser', identity?.getPrincipal().toString()],
     queryFn: async () => {
@@ -68,7 +66,6 @@ export function useAppUser() {
     enabled: !!actor && isAuthenticated,
   });
 
-  // Save backend user data
   const saveBackendUser = useMutation({
     mutationFn: async (appUser: AppUser) => {
       if (!actor) throw new Error('Actor not available');
@@ -79,12 +76,15 @@ export function useAppUser() {
     },
   });
 
-  // Get unified premium state
-  const isPremium = isAuthenticated && backendUser 
-    ? backendUser.premiumSubscriptionActive 
-    : guestState.isPremium || false;
+  // Optimistic premium state for instant UI updates
+  const [optimisticPremium, setOptimisticPremium] = useState<boolean | null>(null);
 
-  // Get unified notifications preference (identity-scoped for authenticated users)
+  const isPremium = optimisticPremium !== null 
+    ? optimisticPremium 
+    : isAuthenticated && backendUser 
+      ? backendUser.premiumSubscriptionActive 
+      : guestState.isPremium || false;
+
   const dailyNotificationsEnabled = (() => {
     if (isAuthenticated && identity) {
       const key = `${NOTIFICATIONS_PREF_KEY}_${identity.getPrincipal().toString()}`;
@@ -94,31 +94,39 @@ export function useAppUser() {
     return guestState.dailyNotificationsEnabled || false;
   })();
 
-  // Unified user state (guest or authenticated)
   const userState: UserState | AppUser = isAuthenticated && backendUser ? backendUser : guestState;
 
   const updateUserState = (updates: Partial<UserState>) => {
     if (isAuthenticated && backendUser && actor) {
-      // For authenticated users, handle premium via backend
       if ('isPremium' in updates) {
+        // Set optimistic state immediately
+        setOptimisticPremium(updates.isPremium || false);
+        
         const updated = { 
           ...backendUser, 
           premiumSubscriptionActive: updates.isPremium || false 
         } as AppUser;
-        saveBackendUser.mutate(updated);
+        
+        saveBackendUser.mutate(updated, {
+          onSuccess: () => {
+            // Clear optimistic state after backend confirms
+            setOptimisticPremium(null);
+          },
+          onError: () => {
+            // Revert optimistic state on error
+            setOptimisticPremium(null);
+          }
+        });
       }
       
-      // Handle notifications preference separately (identity-scoped localStorage)
       if ('dailyNotificationsEnabled' in updates && identity) {
         const key = `${NOTIFICATIONS_PREF_KEY}_${identity.getPrincipal().toString()}`;
         localStorage.setItem(key, String(updates.dailyNotificationsEnabled || false));
       }
     } else {
-      // For guests, merge with local state
       const updated = { ...guestState, ...updates };
       setGuestState(updated);
       try {
-        // Serialize bigints to strings for localStorage
         const serialized = JSON.parse(JSON.stringify(updated, (key, value) =>
           typeof value === 'bigint' ? value.toString() : value
         ));

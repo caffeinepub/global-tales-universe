@@ -33,7 +33,7 @@ export default function DailyStoryNotificationBanner({ show }: DailyStoryNotific
   }
 
   return (
-    <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-3">
+    <div className="bg-gradient-to-r from-primary/90 to-accent/90 text-primary-foreground px-4 py-3 border-b border-primary/20">
       <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1">
           <Sparkles className="w-5 h-5 shrink-0" />
@@ -43,7 +43,7 @@ export default function DailyStoryNotificationBanner({ show }: DailyStoryNotific
           variant="ghost"
           size="icon"
           onClick={handleDismiss}
-          className="shrink-0 hover:bg-white/20 text-white"
+          className="shrink-0 hover:bg-primary-foreground/20 text-primary-foreground"
         >
           <X className="w-4 h-4" />
         </Button>

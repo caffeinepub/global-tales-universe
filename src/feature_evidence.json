@@ -2,14 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-a-complete-fake-premium-subscription-flow-that-persists-premium-status-locally-and-updates-ui-state-across-the-app-scope-make-the-existing-premium-entry-point-s-navigable-from-both-the-side-drawer-premium-item-and-the-profile-page-button-update-the-go-premium-page-ui-content-to-match-benefits-list-exactly-no-ads-unlimited-premium-stories-exclusive-content-daily-exclusive-story-pricing-placeholders-exactly-monthly-99-and-yearly-799-no-real-payments-subscribe-now-action-that-shows-a-dedicated-success-screen-subscribed-successfully-enjoy-premium-features-persist-premium-state-using-existing-user-state-persistence-guest-localstorage-and-authenticated-backend-appuser-via-useappuser-updateuserstate-using-the-existing-ispremium-field-when-premium-is-active-show-a-crown-icon-or-premium-badge-next-to-the-username-in-the-side-drawer-and-in-the-profile-page-hide-ad-ui-anywhere-ads-are-rendered-continue-to-rely-on-the-existing-ispremium-checks-and-ensure-any-remaining-ad-banners-are-gated-treat-premium-only-stories-as-unlocked-if-a-story-is-flagged-treated-as-premium-only-in-the-ui-show-a-clear-placeholder-message-like-premium-unlocked-instead-of-any-lock-ui-add-a-cancel-subscription-action-in-profile-that-reverts-the-user-to-free-sets-ispremium-to-false-and-updates-the-badge-crown-and-ad-visibility-immediately",
-      "featureTitle": "Implement a complete fake premium subscription flow that persists premium status locally and updates UI state across the app.\n\nScope:\n- Make the existing Premium entry point(s) navigable from both the side drawer “Premium” item and the Profile page button.\n- Update the Go Premium page UI/content to match:\n  - Benefits list exactly: \"No ads • Unlimited premium stories • Exclusive content • Daily exclusive story\".\n  - Pricing placeholders exactly: \"Monthly ₹99\" and \"Yearly ₹799\" (no real payments).\n  - \"Subscribe Now\" action that shows a dedicated success screen: \"Subscribed successfully! Enjoy premium features.\".\n- Persist premium state using existing user state persistence (guest localStorage and authenticated backend AppUser via useAppUser.updateUserState), using the existing `isPremium` field.\n- When premium is active:\n  - Show a crown icon or “Premium” badge next to the username in the side drawer and in the Profile page.\n  - Hide ad UI anywhere ads are rendered (continue to rely on the existing isPremium checks, and ensure any remaining ad banners are gated).\n  - Treat premium-only stories as unlocked: if a story is flagged/treated as premium-only in the UI, show a clear placeholder message like \"Premium unlocked\" instead of any lock UI.\n- Add a \"Cancel Subscription\" action in Profile that reverts the user to free (sets isPremium to false) and updates the badge/crown and ad visibility immediately.",
+      "featureId": "feature-polish-the-premium-experience-end-to-end-go-premium-premium-success-profile-and-drawer-to-feel-more-complete-and-consistent-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-fake-subscription-behavior-no-real-payments",
+      "featureTitle": "Polish the Premium experience end-to-end (Go Premium, Premium Success, Profile, and Drawer) to feel more complete and consistent: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing fake subscription behavior (no real payments).",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AdPlaceholder.tsx",
         "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/components/StoryCard.tsx",
-        "frontend/src/hooks/useAppUser.ts",
+        "frontend/src/components/PremiumBadge.tsx",
         "frontend/src/pages/GoPremium.tsx",
         "frontend/src/pages/PremiumSuccess.tsx",
         "frontend/src/pages/ProfileTab.tsx"
@@ -29,13 +26,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-in-app-sharing-for-both-the-overall-app-and-individual-stories-with-web-share-api-support-and-a-copy-link-fallback-scope-add-a-invite-friends-share-app-button-to-the-profile-page-near-the-bottom-or-home-top-area-on-tap-use-navigator-share-when-available-with-message-check-out-global-tales-universe-free-multi-language-stories-app-for-adults-kids-install-here-current-app-url-where-current-app-url-is-the-runtime-url-derived-from-the-current-window-location-if-navigator-share-is-not-supported-or-fails-show-a-clear-copy-link-fallback-that-copies-the-app-url-to-clipboard-and-shows-a-confirmation-toast-for-individual-stories-enhance-the-existing-share-control-on-the-storyreader-screen-currently-uses-sharesheetplaceholder-so-that-the-share-payload-includes-story-title-a-short-preview-use-the-story-summary-if-available-otherwise-a-safe-truncated-snippet-a-link-to-the-story-page-if-stable-otherwise-fall-back-to-the-app-url-ensure-the-story-share-action-works-with-apps-like-whatsapp-instagram-via-the-system-share-dialog-where-supported",
-      "featureTitle": "Add in-app sharing for both the overall app and individual stories with Web Share API support and a copy-link fallback.\n\nScope:\n- Add a \"Invite Friends – Share App\" button to the Profile page (near the bottom) or Home top area.\n  - On tap, use `navigator.share` when available with message:\n    \"Check out Global Tales Universe – Free multi-language stories app for adults & kids! Install here: [current app URL]\"\n    where [current app URL] is the runtime URL derived from the current window location.\n  - If `navigator.share` is not supported or fails, show a clear \"Copy link\" fallback that copies the app URL to clipboard and shows a confirmation toast.\n- For individual stories, enhance the existing share control on the StoryReader screen (currently uses ShareSheetPlaceholder) so that the share payload includes:\n  - story title\n  - a short preview (use the story summary if available; otherwise a safe truncated snippet)\n  - a link to the story page if stable, otherwise fall back to the app URL\n- Ensure the story share action works with apps like WhatsApp/Instagram via the system share dialog where supported.",
+      "featureId": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-in-the-ui-is-consistently-hidden-for-premium-users-and-make-any-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
+      "featureTitle": "Enhance ad-removal and premium gating polish: ensure every ad placement in the UI is consistently hidden for premium users, and make any premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
       "files": [
-        "frontend/src/components/ShareSheetPlaceholder.tsx",
-        "frontend/src/lib/share.ts",
-        "frontend/src/pages/ProfileTab.tsx",
-        "frontend/src/pages/StoryReader.tsx"
+        "frontend/src/components/AdPlaceholder.tsx",
+        "frontend/src/components/StoryCard.tsx",
+        "frontend/src/hooks/useAppUser.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -52,13 +48,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-basic-daily-notifications-push-alert-simulation-using-the-browser-notifications-api-with-a-profile-toggle-and-a-test-notification-scope-add-a-user-facing-permission-prompt-either-on-first-app-open-or-in-profile-as-an-explicit-cta-with-the-exact-prompt-text-allow-notifications-for-daily-new-stories-add-a-profile-setting-toggle-labeled-exactly-enable-daily-story-notifications-on-off-when-the-user-enables-notifications-request-notification-permission-if-not-already-granted-denied-if-permission-is-granted-immediately-show-a-sample-notification-title-body-single-notification-must-include-the-exact-message-new-story-added-open-app-to-read-today-s-motivational-tale-persist-the-toggle-state-locally-guest-localstorage-and-authenticated-user-state-via-useappuser-updateuserstate-and-rehydrate-it-on-reload-if-browser-notifications-are-not-supported-or-permission-is-denied-keep-the-toggle-in-an-off-disabled-state-with-a-clear-inline-explanation-also-show-an-in-app-simulation-on-home-a-dismissible-banner-or-badge-reading-exactly-new-story-today-when-notifications-are-enabled-but-real-notifications-cannot-be-shown-ensure-service-worker-registration-remains-intact-do-not-break-existing-sw-js-registration",
-      "featureTitle": "Implement basic daily notifications / push alert simulation using the browser Notifications API with a Profile toggle and a test notification.\n\nScope:\n- Add a user-facing permission prompt either:\n  - on first app open, or\n  - in Profile as an explicit CTA\n  with the exact prompt text: \"Allow notifications for daily new stories?\".\n- Add a Profile setting toggle labeled exactly: \"Enable Daily Story Notifications\" (on/off).\n- When the user enables notifications:\n  - Request notification permission (if not already granted/denied).\n  - If permission is granted, immediately show a sample notification:\n    Title/body (single notification) must include the exact message:\n    \"New story added! Open app to read today's motivational tale.\"\n  - Persist the toggle state locally (guest localStorage and authenticated user state via useAppUser.updateUserState), and rehydrate it on reload.\n- If browser notifications are not supported or permission is denied:\n  - Keep the toggle in an off/disabled state with a clear inline explanation.\n  - Also show an in-app simulation on Home: a dismissible banner or badge reading exactly \"New story today!\" when notifications are enabled but real notifications cannot be shown.\n- Ensure service worker registration remains intact (do not break existing /sw.js registration).",
+      "featureId": "feature-polish-app-sharing-ux-for-both-share-app-and-share-story-improve-user-feedback-handle-cancellations-errors-gracefully-and-make-the-copy-link-fallback-more-explicit-and-discoverable-when-system-sharing-is-unavailable",
+      "featureTitle": "Polish app sharing UX for both “Share App” and “Share Story”: improve user feedback, handle cancellations/errors gracefully, and make the copy-link fallback more explicit and discoverable when system sharing is unavailable.",
       "files": [
-        "frontend/src/components/DailyStoryNotificationBanner.tsx",
-        "frontend/src/hooks/useAppUser.ts",
-        "frontend/src/lib/notifications.ts",
-        "frontend/src/pages/HomeTab.tsx",
+        "frontend/src/components/ShareSheetPlaceholder.tsx",
+        "frontend/src/lib/share.ts",
         "frontend/src/pages/ProfileTab.tsx"
       ],
       "components": [
@@ -76,11 +70,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-maintain-a-clean-dark-themed-intuitive-ui-across-the-new-premium-share-and-notifications-controls-scope-keep-the-existing-dark-theme-tokens-styles-ensure-new-buttons-toggles-success-screens-match-existing-spacing-typography-and-component-styles-use-existing-shadcn-button-badge-separator-patterns-ensure-new-flows-are-testable-in-preview-end-to-end-premium-subscribe-cancel-app-share-story-share-or-copy-link-notification-permission-test-notification",
-      "featureTitle": "Maintain a clean, dark-themed, intuitive UI across the new Premium, Share, and Notifications controls.\n\nScope:\n- Keep the existing dark theme tokens/styles.\n- Ensure new buttons/toggles/success screens match existing spacing, typography, and component styles (use existing shadcn Button/Badge/Separator patterns).\n- Ensure new flows are testable in preview end-to-end: Premium subscribe/cancel, app share/story share (or copy link), notification permission + test notification.",
+      "featureId": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-improve-the-in-app-new-story-today-simulation-banner-styling-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
+      "featureTitle": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and improve the in-app “New story today!” simulation banner styling to match the app’s overall theme (avoid clashing gradients).",
       "files": [
-        "frontend/src/pages/GoPremium.tsx",
-        "frontend/src/pages/HomeTab.tsx",
+        "frontend/src/components/DailyStoryNotificationBanner.tsx",
+        "frontend/src/lib/notifications.ts",
         "frontend/src/pages/ProfileTab.tsx"
       ],
       "components": [
@@ -94,6 +88,29 @@
       ],
       "testIds": [
         "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-and-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
+      "featureTitle": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone, and remove any accidental mixed styling that stands out from the rest of the app.",
+      "files": [
+        "frontend/src/components/PremiumBadge.tsx",
+        "frontend/src/components/ShareSheetPlaceholder.tsx",
+        "frontend/src/pages/GoPremium.tsx",
+        "frontend/src/pages/ProfileTab.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

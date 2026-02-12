@@ -23,6 +23,13 @@ export function canShowNotifications(): boolean {
 }
 
 /**
+ * Check if notification permission was denied
+ */
+export function isNotificationDenied(): boolean {
+  return isNotificationSupported() && Notification.permission === 'denied';
+}
+
+/**
  * Request notification permission
  */
 export async function requestNotificationPermission(): Promise<NotificationPermission | null> {
@@ -70,11 +77,4 @@ export function showTestNotification(): boolean {
     console.warn('Failed to show notification:', error);
     return false;
   }
-}
-
-/**
- * Check if notification permission was denied
- */
-export function isNotificationDenied(): boolean {
-  return isNotificationSupported() && Notification.permission === 'denied';
 }

@@ -6,28 +6,32 @@ interface ShareOptions {
   url: string;
 }
 
+type ShareResult = 'success' | 'cancelled' | 'failed';
+
 /**
  * Share content using Web Share API or fallback to clipboard
  */
-export async function shareContent(options: ShareOptions): Promise<boolean> {
+export async function shareContent(options: ShareOptions): Promise<ShareResult> {
   const { title, text, url } = options;
 
   // Try Web Share API first
   if (navigator.share) {
     try {
       await navigator.share({ title, text, url });
-      return true;
+      return 'success';
     } catch (error: any) {
-      // User cancelled or error occurred
-      if (error.name !== 'AbortError') {
-        console.warn('Share failed:', error);
+      // User cancelled
+      if (error.name === 'AbortError') {
+        return 'cancelled';
       }
-      return false;
+      console.warn('Share failed:', error);
+      return 'failed';
     }
   }
 
   // Fallback to clipboard
-  return copyToClipboard(url);
+  const copied = await copyToClipboard(url);
+  return copied ? 'success' : 'failed';
 }
 
 /**
@@ -87,30 +91,34 @@ export function getStoryUrl(storyId: string | bigint): string {
 }
 
 /**
- * Share the app
+ * Share the app - returns true if shared successfully
  */
 export async function shareApp(): Promise<boolean> {
   const url = getAppUrl();
   const text = `Check out Global Tales Universe – Free multi-language stories app for adults & kids! Install here: ${url}`;
   
-  return shareContent({
+  const result = await shareContent({
     title: 'Global Tales Universe',
     text,
     url,
   });
+
+  return result === 'success';
 }
 
 /**
- * Share a story
+ * Share a story - returns true if shared successfully
  */
 export async function shareStory(storyId: string | bigint, title: string, preview?: string): Promise<boolean> {
   const url = getStoryUrl(storyId);
-  const previewText = preview ? ` - ${preview}` : '';
-  const text = `Check out this story: ${title}${previewText}\n\n${url}`;
+  const previewText = preview ? `\n\n${preview.substring(0, 100)}${preview.length > 100 ? '...' : ''}` : '';
+  const text = `${title}${previewText}\n\nRead on Global Tales Universe: ${url}`;
   
-  return shareContent({
+  const result = await shareContent({
     title,
     text,
     url,
   });
+
+  return result === 'success';
 }

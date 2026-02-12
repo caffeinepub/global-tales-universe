@@ -50,7 +50,7 @@ export default function HomeTab() {
       {/* Ad Banner - only for non-premium users */}
       {!isPremium && (
         <div className="px-4 pt-4">
-          <AdPlaceholder type="banner" />
+          <AdPlaceholder variant="banner" />
         </div>
       )}
 
@@ -76,7 +76,7 @@ export default function HomeTab() {
       {/* Inline Ad - only for non-premium users */}
       {!isPremium && (
         <div className="px-4">
-          <AdPlaceholder type="inline" />
+          <AdPlaceholder variant="inline" />
         </div>
       )}
 

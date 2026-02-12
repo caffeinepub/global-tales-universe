@@ -2,8 +2,9 @@ import { Story } from '../backend';
 import { useNavigate } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppUser } from '../hooks/useAppUser';
-import { Clock, Star, Crown } from 'lucide-react';
+import { Clock, Star } from 'lucide-react';
 import { Badge } from './ui/badge';
+import PremiumBadge from './PremiumBadge';
 
 interface StoryCardProps {
   story: Story;
@@ -41,12 +42,7 @@ export default function StoryCard({ story, featured = false }: StoryCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="flex items-center gap-2 mb-2">
-            {story.isPremium && (
-              <Badge variant="secondary" className="bg-yellow-500 text-white border-0">
-                <Crown className="w-3 h-3 mr-1" />
-                Premium
-              </Badge>
-            )}
+            {story.isPremium && <PremiumBadge variant="compact" />}
             <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm text-white border-0">
               {story.category}
             </Badge>
@@ -63,7 +59,7 @@ export default function StoryCard({ story, featured = false }: StoryCardProps) {
             </span>
           </div>
           {story.isPremium && isPremium && (
-            <p className="text-xs text-yellow-300 mt-2">Premium unlocked</p>
+            <p className="text-xs text-yellow-300 mt-2 font-medium">✓ Premium Access</p>
           )}
         </div>
       </div>
@@ -88,9 +84,7 @@ export default function StoryCard({ story, featured = false }: StoryCardProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 mb-2">
           <h3 className="font-semibold line-clamp-2 flex-1">{title}</h3>
-          {story.isPremium && (
-            <Crown className="w-4 h-4 text-yellow-500 shrink-0" />
-          )}
+          {story.isPremium && <PremiumBadge variant="icon-only" className="w-5 h-5 shrink-0" />}
         </div>
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
           {content?.summary || story.languages.english.summary}
@@ -105,7 +99,7 @@ export default function StoryCard({ story, featured = false }: StoryCardProps) {
           {story.isPremium && isPremium && (
             <>
               <span>•</span>
-              <span className="text-yellow-500">Premium unlocked</span>
+              <span className="text-yellow-600 dark:text-yellow-500 font-medium">Premium</span>
             </>
           )}
         </div>

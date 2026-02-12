@@ -1,114 +1,52 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T06:34:20.771Z",
-  "summary": "Diff implements major parts of Premium, Share, and Notifications simulation, but several text-exactness and persistence requirements are either not met or cannot be confirmed from the truncated diff. There are also some extra/changed behaviors (e.g., service worker/manifest changes, banner dismissal window) not explicitly requested.",
+  "generatedAt": "2026-02-12T07:22:08.083Z",
+  "summary": "Diff implements substantial Premium polish (plan selection + loading guard, success screen, consistent Premium badge), ad hiding for premium (AdPlaceholder returns null + guarded placements), and adds notifications/share helper libs. However, Share UX requirements around explicit copy-link action and distinct cancel/failure feedback are not clearly implemented. There are also unrequested changes to PWA/service worker/manifest/styles that may violate the constraint to preserve existing /sw.js behavior.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Go Premium page must display the benefits list exactly as: \"No ads • Unlimited premium stories • Exclusive content • Daily exclusive story\".",
-      "reason": "GoPremium renders benefits as four separate list items rather than the single exact bullet-separated string.",
+      "id": "REQ-3",
+      "requirement": "Profile “Invite Friends – Share App” provides clear user feedback for success vs. cancel vs. failure (no silent failures).",
+      "reason": "The new share helper returns a detailed result ('success' | 'cancelled' | 'failed'), but shareApp/shareStory collapse that to a boolean, and ShareSheetPlaceholder only shows a toast on success and logs errors without user-facing failure/cancel feedback.",
       "evidence": [
-        "frontend/src/pages/GoPremium.tsx"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Go Premium page must show pricing placeholders exactly: \"Monthly ₹99\" and \"Yearly ₹799\".",
-      "reason": "UI uses \"Yearly Plan\"/\"Monthly Plan\" headings and shows prices separately (₹799 with \"/year\", ₹99 with \"/month\"), not the exact strings requested.",
-      "evidence": [
-        "frontend/src/pages/GoPremium.tsx"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Subscribe Now must show a dedicated success screen with the exact success message: \"Subscribed successfully! Enjoy premium features.\".",
-      "reason": "PremiumSuccess splits the message into a title and a separate sentence/paragraph, not the exact combined string.",
-      "evidence": [
-        "frontend/src/pages/PremiumSuccess.tsx"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Persist premium state using the existing `isPremium` field via existing user-state persistence paths (guest localStorage and authenticated backend AppUser via useAppUser.updateUserState).",
-      "reason": "useAppUser derives premium from `backendUser.premiumSubscriptionActive` (not `isPremium`), and updateUserState writes `premiumSubscriptionActive` for authenticated users.",
-      "evidence": [
-        "frontend/src/hooks/useAppUser.ts"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "If `navigator.share` is not supported or fails, show a clear \"Copy link\" fallback UI that copies the app URL and shows a confirmation toast.",
-      "reason": "Fallback behavior auto-copies and toasts, but there is no explicit \"Copy link\" fallback UI/CTA shown in the provided diff; shareContent returns false on share failure and may not automatically copy in that case.",
-      "evidence": [
-        "frontend/src/lib/share.ts"
+        "frontend/src/lib/share.ts",
+        "frontend/src/components/ShareSheetPlaceholder.tsx"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Add a user-facing permission prompt with the exact prompt text: \"Allow notifications for daily new stories?\".",
-      "reason": "No evidence of this exact prompt text appearing in the shown changes (ProfileTab content is truncated and notifications.ts does not contain this string).",
+      "requirement": "If Web Share API is unavailable, the UI offers an explicit copy-link action (not just an implicit fallback) and confirms success with a toast.",
+      "reason": "shareContent falls back to copying automatically when navigator.share is unavailable; the diff does not show any explicit UI control/button offering 'Copy link' as a discoverable action.",
       "evidence": [
-        "frontend/src/pages/ProfileTab.tsx",
-        "frontend/src/lib/notifications.ts"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Profile contains a toggle labeled exactly: \"Enable Daily Story Notifications\" (on/off).",
-      "reason": "ProfileTab is truncated; the exact toggle label text cannot be verified from the diff summary.",
-      "evidence": [
+        "frontend/src/lib/share.ts",
+        "frontend/src/components/ShareSheetPlaceholder.tsx",
         "frontend/src/pages/ProfileTab.tsx"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "If permission is granted, immediately show a sample notification whose title/body includes the exact message: \"New story added! Open app to read today's motivational tale.\".",
-      "reason": "Implementation splits this into title \"New story added!\" and body \"Open app to read today's motivational tale.\"; it is not shown as a single exact message string as specified.",
-      "evidence": [
-        "frontend/src/lib/notifications.ts"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Persist daily notification toggle state locally for guests and via authenticated user state via useAppUser.updateUserState (backend AppUser fields), and rehydrate on reload.",
-      "reason": "For authenticated users, notifications preference is stored in identity-scoped localStorage (`gtu_notifications_pref_<principal>`) rather than being persisted to backend AppUser state.",
-      "evidence": [
-        "frontend/src/hooks/useAppUser.ts"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Daily notification simulation banner has a 24-hour localStorage dismissal cooldown.",
-      "reason": "Requirement only asked for a dismissible banner/badge; it did not specify a 24-hour persistence window for dismissal.",
+      "description": "PWA/service worker and manifest updates (e.g., sw.js cache version bump, manifest changes, service worker registration logic mentioned).",
+      "reason": "BuildRequest explicitly says to preserve existing PWA service worker registration and /sw.js behavior; these changes are not requested as part of Premium/Share/Notifications UX polish and may violate the constraint.",
       "evidence": [
-        "frontend/src/components/DailyStoryNotificationBanner.tsx"
+        "frontend-file-summaries.txt (mentions frontend/public/sw.js, frontend/public/manifest.webmanifest, frontend/src/pwa/registerServiceWorker.ts)"
       ]
     },
     {
-      "description": "Share fallback includes deprecated `document.execCommand('copy')` and a final fallback toast that displays the URL.",
-      "reason": "Requirement asked for a copy-link fallback with a confirmation toast; it did not request additional fallback mechanisms or showing the link in a toast.",
+      "description": "Broad global styling system changes (index.css OKLCH color system, splash screen animations, onboarding animations).",
+      "reason": "Not requested by any REQ; scope was Premium/Sharing/Notifications surfaces polish rather than app-wide animation/color system changes.",
       "evidence": [
-        "frontend/src/lib/share.ts"
-      ]
-    },
-    {
-      "description": "Service worker and PWA manifest modifications (e.g., cache version bump and manifest updates).",
-      "reason": "BuildRequest only required not to break existing /sw.js registration; it did not request changing sw.js caching strategy/versioning or manifest content.",
-      "evidence": [
-        "frontend/public/sw.js",
-        "frontend/public/manifest.webmanifest"
+        "frontend-file-summaries.txt (mentions frontend/src/index.css)"
       ]
     }
   ],
   "confidence": 0.66,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
     "frontend/src/components/AdPlaceholder.tsx",
     "frontend/src/components/AppDrawer.tsx",
     "frontend/src/components/DailyStoryNotificationBanner.tsx",
+    "frontend/src/components/PremiumBadge.tsx",
     "frontend/src/components/ShareSheetPlaceholder.tsx",
     "frontend/src/components/StoryCard.tsx",
     "frontend/src/hooks/useAppUser.ts",
@@ -118,7 +56,6 @@
     "frontend/src/pages/HomeTab.tsx",
     "frontend/src/pages/PremiumSuccess.tsx",
     "frontend/src/pages/ProfileTab.tsx",
-    "frontend/src/pages/StoryReader.tsx",
     "project_state.json"
   ]
 }

@@ -1,26 +1,34 @@
 import { useAppUser } from '../hooks/useAppUser';
 
 interface AdPlaceholderProps {
-  type: 'banner' | 'inline';
+  variant?: 'banner' | 'inline';
 }
 
-export default function AdPlaceholder({ type }: AdPlaceholderProps) {
+export default function AdPlaceholder({ variant = 'banner' }: AdPlaceholderProps) {
   const { isPremium } = useAppUser();
 
-  // Hide ads for premium users
+  // Premium users never see ads
   if (isPremium) {
     return null;
   }
 
-  const isBanner = type === 'banner';
+  if (variant === 'banner') {
+    return (
+      <div className="w-full bg-muted border border-border rounded-lg p-4 text-center">
+        <p className="text-sm text-muted-foreground">Advertisement</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Go Premium to remove ads
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`bg-muted/30 border-2 border-dashed border-muted-foreground/20 rounded-lg flex items-center justify-center ${
-        isBanner ? 'h-24' : 'h-32'
-      }`}
-    >
-      <p className="text-sm text-muted-foreground">Ad Space ({type})</p>
+    <div className="w-full bg-muted border border-border rounded-lg p-6 text-center my-4">
+      <p className="text-sm text-muted-foreground">Advertisement</p>
+      <p className="text-xs text-muted-foreground mt-1">
+        Go Premium to remove ads
+      </p>
     </div>
   );
 }
