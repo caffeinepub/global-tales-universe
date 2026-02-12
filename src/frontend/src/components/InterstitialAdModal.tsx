@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
 import { useAppUser } from '../hooks/useAppUser';
+import { isPreviewMode } from '../lib/urlParams';
 
 interface InterstitialAdModalProps {
   isOpen: boolean;
@@ -27,6 +28,11 @@ export default function InterstitialAdModal({ isOpen, onClose }: InterstitialAdM
 
   // Premium users never see interstitial ads
   if (isPremium) {
+    return null;
+  }
+
+  // Hide ads in preview/testing mode
+  if (isPreviewMode()) {
     return null;
   }
 

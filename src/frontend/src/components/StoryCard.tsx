@@ -23,7 +23,11 @@ export default function StoryCard({ story, featured = false }: StoryCardProps) {
   const isPremiumLocked = story.isPremium && !isPremium;
 
   const handleClick = () => {
-    navigate({ to: '/story/$storyId', params: { storyId: String(story.id) } });
+    try {
+      navigate({ to: '/story/$storyId', params: { storyId: String(story.id) } });
+    } catch (error) {
+      console.error('Story navigation error:', error);
+    }
   };
 
   const handleReadClick = (e: React.MouseEvent) => {

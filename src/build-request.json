@@ -1,51 +1,70 @@
 {
   "kind": "build_request",
-  "title": "Fix regression where buttons render as plain text (no visible button styling)",
+  "title": "Fix onboarding Get Started/Skip buttons and forward navigation not updating pages",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
+      "text": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-6"
         ],
         "quotes": [
-          "Again this two only show no button only text why please help and create please solve my problem"
+          "Get starte button and skip button that page only show but not working and next page not change please check what problem please fix this problem"
         ]
       },
       "acceptanceCriteria": [
-        "On pages where primary CTAs exist (e.g., Premium subscribe actions, error fallback navigation, install prompt), the CTAs render as visually distinct buttons (not just plain text) with clear hit targets.",
-        "Buttons show visible focus styling when tabbed to (keyboard navigation) and remain readable in both light and dark themes.",
-        "The fix is verified in both Preview and Production builds (not only in local/dev mode)."
+        "On the onboarding screen, clicking/tapping \"Next\" on step 1 moves to step 2, and on step 2 moves to step 3 (verified visually by content + progress indicator).",
+        "On step 3, clicking/tapping \"Get Started\" closes onboarding and shows the main app UI.",
+        "Clicking/tapping \"Skip\" closes onboarding and shows the main app UI from any step.",
+        "Buttons are not blocked by overlays (click/tap works on desktop and mobile)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
+      "text": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-6"
         ],
         "quotes": [
-          "Again this two only show no button only text why please help and create please solve my problem"
+          "next page not change"
         ]
       },
       "acceptanceCriteria": [
-        "There is a documented/manual checklist (or lightweight dev-only verification step) that developers can use to confirm buttons are visibly styled on the chosen screens after builds.",
-        "The selected screens include at least two distinct button variants (e.g., default and outline/secondary/ghost) to catch missing styles across variants."
+        "After completing onboarding, the app displays the main layout (header/bottom navigation) and a routed page (Home at \"/\" if enforced).",
+        "The route/state updates are reflected immediately without requiring a manual refresh."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-6"
+        ],
+        "quotes": [
+          "next page not change"
+        ]
+      },
+      "acceptanceCriteria": [
+        "With the service worker enabled, navigating between routes (e.g., Home -> Categories -> Category Detail -> Back) updates the UI to the correct page content every time.",
+        "After a new deployment, the app updates cleanly (no persistent stale routes/pages due to cached navigation responses)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under frontend/src/components/ui (read-only UI component sources must be composed/used, not modified).",
-    "Do not modify frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx."
+    "Do not edit files in frontend/src/components/ui (shadcn components); fix by composing/wrapping from app code instead.",
+    "Do not edit frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if an existing stable state schema must change (not expected for this fix)."
   ],
   "nonGoals": [
-    "Do not add new product features or new pages beyond what is required to restore button visibility/styling.",
-    "Do not change authentication behavior or backend logic as part of this fix."
+    "Adding new onboarding steps or changing onboarding content beyond what is necessary to make the existing buttons/navigation function correctly.",
+    "Introducing real-time features (WebSockets) or third-party auth providers beyond Internet Identity."
   ],
   "imageRequirements": {
     "required": [],

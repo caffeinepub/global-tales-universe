@@ -41,7 +41,12 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
   ];
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={(open) => {
+      // Only close when the sheet is being dismissed (open becomes false)
+      if (!open) {
+        onClose();
+      }
+    }}>
       <SheetContent side="left" className="w-80">
         <SheetHeader>
           <SheetTitle className="text-left">Menu</SheetTitle>

@@ -26,6 +26,7 @@ export default function StepTransition({ children, step, direction, reducedMotio
     <div 
       key={step}
       className={getAnimationClass()}
+      style={{ pointerEvents: 'auto' }}
     >
       {children}
     </div>

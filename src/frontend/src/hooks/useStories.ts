@@ -14,14 +14,20 @@ export function useStories(
     queryKey: ['stories', language, sortByPopularity, filterByCategory, filterByKidFriendly],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getFilteredSortedStories(
-        language,
-        sortByPopularity ?? null,
-        filterByCategory ?? null,
-        filterByKidFriendly ?? null
-      );
+      try {
+        return await actor.getFilteredSortedStories(
+          language,
+          sortByPopularity ?? null,
+          filterByCategory ?? null,
+          filterByKidFriendly ?? null
+        );
+      } catch (error) {
+        console.error('Failed to fetch stories:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching,
+    retry: false,
   });
 }
 
@@ -32,9 +38,15 @@ export function useStory(storyId: bigint | null) {
     queryKey: ['story', storyId?.toString()],
     queryFn: async () => {
       if (!actor || !storyId) return null;
-      return actor.getStory(storyId);
+      try {
+        return await actor.getStory(storyId);
+      } catch (error) {
+        console.error('Failed to fetch story:', error);
+        return null;
+      }
     },
     enabled: !!actor && !actorFetching && !!storyId,
+    retry: false,
   });
 }
 
@@ -45,9 +57,15 @@ export function useDailyFeaturedStory(language: Language = Language.english) {
     queryKey: ['dailyFeatured', language],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getDailyFeaturedStoryByLanguage(language);
+      try {
+        return await actor.getDailyFeaturedStoryByLanguage(language);
+      } catch (error) {
+        console.error('Failed to fetch featured story:', error);
+        return null;
+      }
     },
     enabled: !!actor && !actorFetching,
+    retry: false,
   });
 }
 

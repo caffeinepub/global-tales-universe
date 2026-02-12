@@ -17,9 +17,9 @@ export default function SearchTab() {
   const backendLang = uiLangToBackendLang(language);
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
-  const { data: allStories, isLoading } = useStories(backendLang, sortBy === 'popular');
+  const { data: allStories = [], isLoading, isError } = useStories(backendLang, sortBy === 'popular');
 
-  const filteredStories = allStories?.filter((story) => {
+  const filteredStories = allStories.filter((story) => {
     if (!query) return true;
     const content = getStoryContent(story, language);
     const searchText = `${content.title} ${content.body} ${story.author}`.toLowerCase();
@@ -57,7 +57,11 @@ export default function SearchTab() {
               <StoryCardSkeleton key={i} />
             ))}
           </div>
-        ) : filteredStories && filteredStories.length > 0 ? (
+        ) : isError ? (
+          <div className="text-center py-12 text-muted-foreground">
+            Coming soon
+          </div>
+        ) : filteredStories.length > 0 ? (
           <div className="space-y-4">
             {filteredStories.map((story) => (
               <StoryCard key={story.id.toString()} story={story} />
@@ -65,7 +69,7 @@ export default function SearchTab() {
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            {t('noResults', language)}
+            {query ? t('noResults', language) : 'Coming soon'}
           </div>
         )}
       </div>

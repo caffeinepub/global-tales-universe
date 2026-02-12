@@ -7,6 +7,7 @@ export default {
     darkMode: ['class'],
     content: ['index.html', 'src/**/*.{js,ts,jsx,tsx,html,css}'],
     safelist: [
+      // Color utilities
       'bg-primary',
       'text-primary-foreground',
       'bg-secondary',
@@ -15,11 +16,39 @@ export default {
       'text-destructive-foreground',
       'bg-muted',
       'text-muted-foreground',
+      'bg-accent',
+      'text-accent-foreground',
+      'bg-background',
+      'text-foreground',
       'border-primary',
       'border-secondary',
+      'border-input',
+      'border-border',
+      // Hover states
       'hover:bg-primary',
+      'hover:bg-primary/90',
       'hover:bg-secondary',
+      'hover:bg-secondary/80',
       'hover:bg-destructive',
+      'hover:bg-destructive/90',
+      'hover:bg-accent',
+      'hover:text-accent-foreground',
+      'hover:underline',
+      // Focus states
+      'focus-visible:outline-none',
+      'focus-visible:ring-2',
+      'focus-visible:ring-ring',
+      'focus-visible:ring-offset-2',
+      // Button-specific classes
+      'shadow',
+      'shadow-sm',
+      'underline-offset-4',
+      // Disabled states
+      'disabled:pointer-events-none',
+      'disabled:opacity-50',
+      // Animation classes for onboarding
+      'animate-slide-in-right',
+      'animate-slide-in-left',
     ],
     theme: {
         container: {
@@ -95,25 +124,49 @@ export default {
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)'
             },
-            boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
-                sm: '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)',
-                md: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)',
-                lg: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)',
-            },
             keyframes: {
                 'accordion-down': {
-                    from: { height: '0' },
-                    to: { height: 'var(--radix-accordion-content-height)' }
+                    from: {
+                        height: '0'
+                    },
+                    to: {
+                        height: 'var(--radix-accordion-content-height)'
+                    }
                 },
                 'accordion-up': {
-                    from: { height: 'var(--radix-accordion-content-height)' },
-                    to: { height: '0' }
+                    from: {
+                        height: 'var(--radix-accordion-content-height)'
+                    },
+                    to: {
+                        height: '0'
+                    }
+                },
+                'slide-in-right': {
+                    from: {
+                        opacity: '0',
+                        transform: 'translateX(20px)'
+                    },
+                    to: {
+                        opacity: '1',
+                        transform: 'translateX(0)'
+                    }
+                },
+                'slide-in-left': {
+                    from: {
+                        opacity: '0',
+                        transform: 'translateX(-20px)'
+                    },
+                    to: {
+                        opacity: '1',
+                        transform: 'translateX(0)'
+                    }
                 }
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
-                'accordion-up': 'accordion-up 0.2s ease-out'
+                'accordion-up': 'accordion-up 0.2s ease-out',
+                'slide-in-right': 'slide-in-right 0.3s ease-out',
+                'slide-in-left': 'slide-in-left 0.3s ease-out'
             }
         }
     },

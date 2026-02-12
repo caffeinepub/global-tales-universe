@@ -4,29 +4,37 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "UI regression: two elements/pages display only text and no button is visible (buttons not rendering)."
+    "\"Get started\" and \"Skip\" buttons appear but do not function; navigation to the next page does not occur."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-investigate-and-fix-the-ui-regression-where-some-pages-components-display-only-button-text-no-visible-button-styling-ensuring-buttons-render-with-the-expected-padding-border-background-hover-focus-states-and-are-clearly-recognizable-as-buttons-in-both-preview-and-production-builds",
-      "title": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
+      "id": "feature-fix-the-onboarding-screen-so-its-action-buttons-work-reliably-tapping-clicking-next-must-advance-to-the-next-onboarding-step-get-started-must-complete-onboarding-and-skip-must-exit-onboarding-immediately",
+      "title": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-minimal-repeatable-regression-check-in-the-ui-to-confirm-button-styling-is-present-on-at-least-two-representative-screens-that-previously-exhibited-the-issue-for-example-the-premium-page-subscribe-button-and-the-routeerrorfallback-go-to-home-button",
-      "title": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
+      "id": "feature-ensure-that-after-onboarding-completion-via-get-started-or-skip-the-app-reliably-renders-the-next-screen-instead-of-appearing-stuck-on-the-prior-page-if-needed-update-the-post-onboarding-behavior-to-navigate-to-the-home-route-so-users-always-land-on-a-visible-main-page",
+      "title": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-any-pwa-service-worker-caching-behavior-that-can-cause-client-side-route-transitions-to-show-stale-content-e-g-appearing-to-repeat-the-previous-page-after-deployments-updates-ensuring-in-app-navigation-consistently-renders-the-correct-route-content",
+      "title": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [],
-  "projectName": "Fix regression where buttons render as plain text (no visible button styling)",
+  "projectName": "Fix onboarding Get Started/Skip buttons and forward navigation not updating pages",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

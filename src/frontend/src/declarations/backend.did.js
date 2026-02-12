@@ -106,7 +106,7 @@ export const idlService = IDL.Service({
   'getFilteredSortedStories' : IDL.Func(
       [Language, IDL.Opt(IDL.Bool), IDL.Opt(IDL.Text), IDL.Opt(IDL.Bool)],
       [IDL.Vec(Story)],
-      [],
+      ['query'],
     ),
   'getStory' : IDL.Func([IDL.Nat], [Story], ['query']),
   'getUserFavoriteStories' : IDL.Func([], [IDL.Vec(Story)], ['query']),
@@ -241,7 +241,7 @@ export const idlFactory = ({ IDL }) => {
     'getFilteredSortedStories' : IDL.Func(
         [Language, IDL.Opt(IDL.Bool), IDL.Opt(IDL.Text), IDL.Opt(IDL.Bool)],
         [IDL.Vec(Story)],
-        [],
+        ['query'],
       ),
     'getStory' : IDL.Func([IDL.Nat], [Story], ['query']),
     'getUserFavoriteStories' : IDL.Func([], [IDL.Vec(Story)], ['query']),

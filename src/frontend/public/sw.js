@@ -1,4 +1,4 @@
-const CACHE_NAME = 'global-tales-v3';
+const CACHE_NAME = 'global-tales-v6';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   '/assets/generated/gtu-app-icon.dim_180x180.png',
   '/assets/generated/gtu-favicon.dim_32x32.png',
   '/assets/generated/gtu-splash-bg.dim_1080x1920.png',
+  '/assets/generated/gtu-placeholder-avatar.dim_256x256.png',
   '/assets/generated/cover-default.dim_1200x1600.png',
   '/assets/generated/cover-kids-default.dim_1200x1600.png',
   '/assets/generated/cover-romance.dim_1200x1600.png',
@@ -47,7 +48,14 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
+// Handle skip waiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Fetch event - network first with cache fallback for navigation
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -62,19 +70,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For navigation requests (HTML pages), try network first, fallback to cached app shell on any error or 404
+  // For navigation requests (HTML pages), always serve fresh from network or cached app shell
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // If we get a 404 or other error status for a navigation request, serve the app shell
-          // This allows the client-side router to handle the route
-          if (!response.ok && response.status === 404) {
-            return caches.match('/index.html').then((cachedResponse) => {
-              return cachedResponse || response;
-            });
+          // Always serve the app shell for client-side routing
+          // Don't cache individual navigation responses to avoid stale routes
+          if (response.ok) {
+            return response;
           }
-          return response;
+          // If network fails or returns non-OK, serve cached app shell
+          return caches.match('/index.html').then((cachedResponse) => {
+            return cachedResponse || response;
+          });
         })
         .catch(() => {
           // Network failure - serve cached app shell
@@ -84,32 +93,41 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For static assets, try cache first, then network
+  // For static assets, use stale-while-revalidate strategy
   if (url.pathname.startsWith('/assets/')) {
     event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(request).then((response) => {
-          // Cache successful responses
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(request).then((cachedResponse) => {
+          const fetchPromise = fetch(request).then((networkResponse) => {
+            // Cache successful responses
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          }).catch(() => cachedResponse);
+
+          // Return cached response immediately if available, otherwise wait for network
+          return cachedResponse || fetchPromise;
         });
       })
     );
     return;
   }
 
-  // For everything else, network first
+  // For everything else, network first with cache fallback
   event.respondWith(
-    fetch(request).catch(() => {
-      return caches.match(request);
-    })
+    fetch(request)
+      .then((response) => {
+        // Cache successful responses for app resources
+        if (response.ok && (url.pathname.endsWith('.js') || url.pathname.endsWith('.css'))) {
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, response.clone());
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(request);
+      })
   );
 });

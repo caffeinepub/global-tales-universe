@@ -1,69 +1,54 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { useInternetIdentity } from './useInternetIdentity';
-import { useState, useEffect } from 'react';
-
-const GUEST_FAVORITES_KEY = 'gtu_guest_favorites';
+import { Story } from '../backend';
 
 export function useFavorites() {
-  const { actor } = useActor();
-  const { identity } = useInternetIdentity();
+  const { actor, isFetching: actorFetching } = useActor();
   const queryClient = useQueryClient();
-  const isAuthenticated = !!identity;
 
-  const [guestFavorites, setGuestFavorites] = useState<bigint[]>(() => {
-    try {
-      const stored = localStorage.getItem(GUEST_FAVORITES_KEY);
-      return stored ? JSON.parse(stored).map((id: string) => BigInt(id)) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Fetch backend favorites when authenticated
-  const { data: backendFavorites } = useQuery({
-    queryKey: ['favorites', identity?.getPrincipal().toString()],
+  const { data: favoriteStories = [], isLoading, isError } = useQuery<Story[]>({
+    queryKey: ['favoriteStories'],
     queryFn: async () => {
-      if (!actor || !isAuthenticated) return [];
+      if (!actor) return [];
       try {
         return await actor.getUserFavoriteStories();
-      } catch {
+      } catch (error) {
+        console.error('Failed to fetch favorite stories:', error);
         return [];
       }
     },
-    enabled: !!actor && isAuthenticated,
+    enabled: !!actor && !actorFetching,
+    retry: false,
   });
 
-  const toggleFavorite = useMutation({
+  const toggleMutation = useMutation({
     mutationFn: async (storyId: bigint) => {
-      if (isAuthenticated && actor) {
-        await actor.toggleFavoriteStory(storyId);
-      } else {
-        const isFavorite = guestFavorites.some(id => id === storyId);
-        const updated = isFavorite
-          ? guestFavorites.filter(id => id !== storyId)
-          : [...guestFavorites, storyId];
-        setGuestFavorites(updated);
-        localStorage.setItem(GUEST_FAVORITES_KEY, JSON.stringify(updated.map(id => id.toString())));
-      }
+      if (!actor) throw new Error('Actor not available');
+      await actor.toggleFavoriteStory(storyId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      // Invalidate favorites list to refetch
+      queryClient.invalidateQueries({ queryKey: ['favoriteStories'] });
+    },
+    onError: (error) => {
+      console.error('Failed to toggle favorite:', error);
     },
   });
 
-  const favoriteStories = isAuthenticated ? backendFavorites || [] : [];
-  const favoriteIds = isAuthenticated
-    ? (backendFavorites || []).map(s => s.id)
-    : guestFavorites;
+  const isFavorite = (storyId: bigint): boolean => {
+    return favoriteStories.some((story) => story.id === storyId);
+  };
 
-  const isFavorite = (storyId: bigint) => favoriteIds.some(id => id === storyId);
+  const toggleFavorite = async (storyId: bigint) => {
+    await toggleMutation.mutateAsync(storyId);
+  };
 
   return {
     favoriteStories,
-    favoriteIds,
+    isLoading,
+    isError,
     isFavorite,
-    toggleFavorite: toggleFavorite.mutate,
-    isToggling: toggleFavorite.isPending,
+    toggleFavorite,
+    isToggling: toggleMutation.isPending,
   };
 }

@@ -12,8 +12,9 @@ export function registerServiceWorker(): void {
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New service worker available, skip waiting and reload
+                  // New service worker available, send skip waiting message
                   newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  console.log('New service worker installed, activating...');
                 }
               });
             }
@@ -33,7 +34,18 @@ export function registerServiceWorker(): void {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
           refreshing = true;
-          window.location.reload();
+          console.log('New service worker activated, reloading page...');
+          // Small delay to ensure the new worker is fully active
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+      });
+
+      // Revalidate on visibility change to ensure fresh content
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
         }
       });
     });

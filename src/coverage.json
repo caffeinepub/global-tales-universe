@@ -1,44 +1,53 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T10:35:21.373Z",
+  "generatedAt": "2026-02-12T13:25:37.431Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
+        "summary": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/index.css",
-          "frontend/tailwind.config.js",
-          "frontend/src/components/InstallPromptBanner.tsx"
+          "frontend/src/components/onboarding/OnboardingFlow.tsx",
+          "frontend/src/components/onboarding/StepTransition.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/index.css",
-          "frontend/tailwind.config.js",
-          "frontend/src/components/InstallPromptBanner.tsx"
+          "frontend/src/components/onboarding/OnboardingFlow.tsx",
+          "frontend/src/components/onboarding/StepTransition.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
+        "summary": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ButtonStyleRegressionCheck.tsx",
-          "frontend/src/pages/GoPremium.tsx",
-          "frontend/src/components/RouteErrorFallback.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/lib/onboarding.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx",
+          "frontend/src/lib/onboarding.ts"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/public/sw.js",
+          "frontend/src/pwa/registerServiceWorker.ts",
           "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/ButtonStyleRegressionCheck.tsx",
-          "frontend/src/pages/GoPremium.tsx",
-          "frontend/src/components/RouteErrorFallback.tsx",
+          "frontend/public/sw.js",
+          "frontend/src/pwa/registerServiceWorker.ts",
           "frontend/src/App.tsx"
         ]
       }
@@ -49,13 +58,12 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/public/sw.js",
     "frontend/src/App.tsx",
-    "frontend/src/components/ButtonStyleRegressionCheck.tsx",
-    "frontend/src/components/InstallPromptBanner.tsx",
-    "frontend/src/components/RouteErrorFallback.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/GoPremium.tsx",
-    "frontend/tailwind.config.js",
+    "frontend/src/components/onboarding/OnboardingFlow.tsx",
+    "frontend/src/components/onboarding/StepTransition.tsx",
+    "frontend/src/lib/onboarding.ts",
+    "frontend/src/pwa/registerServiceWorker.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

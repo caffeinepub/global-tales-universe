@@ -1,4 +1,5 @@
 import { useAppUser } from '../hooks/useAppUser';
+import { isPreviewMode } from '../lib/urlParams';
 
 interface AdPlaceholderProps {
   variant?: 'banner' | 'inline';
@@ -9,6 +10,11 @@ export default function AdPlaceholder({ variant = 'banner' }: AdPlaceholderProps
 
   // Premium users never see ads - return null immediately
   if (isPremium) {
+    return null;
+  }
+
+  // Hide ads in preview/testing mode
+  if (isPreviewMode()) {
     return null;
   }
 

@@ -15,7 +15,12 @@ export default function AppHeader({ onMenuClick }: AppHeaderProps) {
   const [profileData, setProfileData] = useState<{ name: string; image?: string }>({ name: 'Guest' });
 
   useEffect(() => {
-    getProfile().then(setProfileData);
+    getProfile()
+      .then(setProfileData)
+      .catch((error) => {
+        console.error('Failed to load profile in header:', error);
+        setProfileData({ name: 'Guest' });
+      });
   }, [getProfile]);
 
   return (

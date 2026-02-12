@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppUser } from '../hooks/useAppUser';
 import { t } from '../lib/i18n';
-import { Button } from '../components/ui/button';
+import { AppButton } from '../components/AppButton';
 import { ArrowLeft, Check, Crown } from 'lucide-react';
 import { Separator } from '../components/ui/separator';
 import { iconSizes, cardPadding, rowSpacing, separatorMargin } from '../lib/uiPolish';
@@ -41,14 +41,14 @@ export default function GoPremium() {
       <ButtonStyleRegressionCheck />
       
       <div className="flex items-center gap-3 mb-6">
-        <Button 
+        <AppButton 
           variant="ghost" 
           size="icon" 
           onClick={() => navigate({ to: '/profile' })}
           disabled={isSubscribing}
         >
           <ArrowLeft className={iconSizes.md} />
-        </Button>
+        </AppButton>
         <h1 className="text-2xl font-bold flex-1">{t('goPremium', language)}</h1>
       </div>
 
@@ -103,7 +103,7 @@ export default function GoPremium() {
               <p className="text-sm text-muted-foreground">/year</p>
             </div>
           </div>
-          <Button 
+          <AppButton 
             className="w-full" 
             size="lg" 
             onClick={(e) => {
@@ -113,7 +113,7 @@ export default function GoPremium() {
             disabled={isSubscribing}
           >
             {isSubscribing && selectedPlan === 'yearly' ? 'Processing...' : 'Subscribe Now'}
-          </Button>
+          </AppButton>
         </div>
 
         <div 
@@ -136,7 +136,7 @@ export default function GoPremium() {
               <p className="text-sm text-muted-foreground">/month</p>
             </div>
           </div>
-          <Button 
+          <AppButton 
             className="w-full" 
             variant="outline" 
             size="lg" 
@@ -147,7 +147,7 @@ export default function GoPremium() {
             disabled={isSubscribing}
           >
             {isSubscribing && selectedPlan === 'monthly' ? 'Processing...' : 'Subscribe Now'}
-          </Button>
+          </AppButton>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState, NotFoundRoute } from '@tanstack/react-router';
+import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState, useNavigate, NotFoundRoute } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import SplashScreen from './components/SplashScreen';
 import BottomNav from './components/BottomNav';
@@ -35,7 +35,9 @@ function RootLayout() {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const routerState = useRouterState();
+  const navigate = useNavigate();
   const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
 
   // Check if current route is StoryReader or StoryEditor (full-screen experience)
   const isStoryReader = currentPath.startsWith('/story/') && !currentPath.includes('/editor');
@@ -81,9 +83,24 @@ function RootLayout() {
     }
   }, []);
 
+  // Scroll to top on route change to ensure fresh page view
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPath, currentSearch]);
+
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setOnboardingCompleted(true);
+    
+    // Force navigation to home route after onboarding completion
+    // Use setTimeout to ensure state updates are processed first
+    setTimeout(() => {
+      navigate({ to: '/' }).catch((err) => {
+        console.error('Navigation after onboarding failed:', err);
+        // Fallback: force reload to home
+        window.location.href = '/';
+      });
+    }, 50);
   };
 
   if (showSplash) {
@@ -96,7 +113,11 @@ function RootLayout() {
 
   // StoryReader, StoryEditor, and PremiumSuccess have their own layouts
   if (isStoryReader || isStoryEditor || isPremiumSuccess) {
-    return <Outlet />;
+    return (
+      <div key={`${currentPath}-${currentSearch}`}>
+        <Outlet />
+      </div>
+    );
   }
 
   return (
@@ -105,7 +126,7 @@ function RootLayout() {
       <AppDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ReminderBanner />
       <InstallPromptBanner />
-      <main className="flex-1 overflow-auto pb-16">
+      <main className="flex-1 overflow-auto pb-16" key={`${currentPath}-${currentSearch}`}>
         <Outlet />
       </main>
       <BottomNav />
@@ -179,28 +200,33 @@ const premiumSuccessRoute = createRoute({
   component: PremiumSuccess,
 });
 
-const privacyPolicyRoute = createRoute({
+const privacyRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/privacy-policy',
+  path: '/privacy',
   component: PrivacyPolicy,
 });
 
-const termsAndConditionsRoute = createRoute({
+const termsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/terms-and-conditions',
+  path: '/terms',
   component: TermsAndConditions,
 });
 
-const helpAndSupportRoute = createRoute({
+const helpRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/help-and-support',
+  path: '/help',
   component: HelpAndSupport,
 });
 
-const aboutUsRoute = createRoute({
+const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/about-us',
+  path: '/about',
   component: AboutUs,
+});
+
+const notFoundRoute = new NotFoundRoute({
+  getParentRoute: () => rootRoute,
+  component: RouteErrorFallback,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -214,30 +240,33 @@ const routeTree = rootRoute.addChildren([
   storyEditorRoute,
   premiumRoute,
   premiumSuccessRoute,
-  privacyPolicyRoute,
-  termsAndConditionsRoute,
-  helpAndSupportRoute,
-  aboutUsRoute,
+  privacyRoute,
+  termsRoute,
+  helpRoute,
+  aboutRoute,
+  notFoundRoute,
 ]);
 
-const router = createRouter({ 
-  routeTree,
-  defaultNotFoundComponent: RouteErrorFallback,
-});
+const router = createRouter({ routeTree });
 
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <PreferencesProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </PreferencesProvider>
+      <QueryClientProvider client={queryClient}>
+        <PreferencesProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </PreferencesProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

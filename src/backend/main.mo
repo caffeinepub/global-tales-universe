@@ -10,11 +10,8 @@ import List "mo:core/List";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 
-
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-
-// Specify the data migration function in with-clause.
 
 actor {
   // Initialize the user system state
@@ -257,7 +254,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func getFilteredSortedStories(
+  public query ({ caller }) func getFilteredSortedStories(
     language : Language,
     sortByPopularity : ?Bool,
     filterByCategory : ?Text,
@@ -299,6 +296,7 @@ actor {
   };
 
   public query ({ caller }) func getDailyFeaturedStoryByLanguage(language : Language) : async Story {
+    // Public access - guests can view featured stories
     let allStories = stories.values().toArray();
     if (allStories.size() == 0) {
       Runtime.trap("No stories available.");

@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { Button } from './ui/button';
+import { AppButton } from './AppButton';
 import { Home, AlertCircle } from 'lucide-react';
 import { cardRadius, cardPadding, cardElevation, iconSizes } from '../lib/uiPolish';
 import ButtonStyleRegressionCheck from './ButtonStyleRegressionCheck';
@@ -27,14 +27,14 @@ export default function RouteErrorFallback() {
           Sorry, we couldn't find the page you're looking for. It may have been moved or doesn't exist.
         </p>
         
-        <Button 
+        <AppButton 
           onClick={handleGoHome}
           className="w-full"
           size="lg"
         >
           <Home className={`${iconSizes.sm} mr-2`} />
           Go to Home
-        </Button>
+        </AppButton>
       </div>
     </div>
   );

@@ -1,61 +1,72 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Restore shadcn/Tailwind button styling across builds and add a lightweight regression check",
+  "title": "Fix onboarding button reliability, post-onboarding navigation, and SW stale routing",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix the regression causing buttons to render as plain text by restoring correct Tailwind/shadcn token formatting and ensuring button variants retain visible styling in Preview and Production builds.",
+      "summary": "Make onboarding Next/Get Started/Skip advance/complete/exit reliably and ensure buttons are clickable on all devices.",
       "acceptanceCriteria": [
-        "On pages where primary CTAs exist (e.g., Premium subscribe actions, error fallback navigation, install prompt), the CTAs render as visually distinct buttons (not just plain text) with clear hit targets.",
-        "Buttons show visible focus styling when tabbed to (keyboard navigation) and remain readable in both light and dark themes.",
-        "The fix is verified in both Preview and Production builds (not only in local/dev mode)."
+        "On the onboarding screen, clicking/tapping \"Next\" on step 1 moves to step 2, and on step 2 moves to step 3 (verified visually by content + progress indicator).",
+        "On step 3, clicking/tapping \"Get Started\" closes onboarding and shows the main app UI.",
+        "Clicking/tapping \"Skip\" closes onboarding and shows the main app UI from any step.",
+        "Buttons are not blocked by overlays (click/tap works on desktop and mobile)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/components/onboarding/OnboardingFlow.tsx",
           "operation": "modify",
-          "description": "Fix CSS variable token formatting to match Tailwind's `oklch(var(--token) / <alpha-value>)` expectations (store raw OKLCH channels like `L C H`, not nested `oklch(...)`), so button backgrounds/borders/text colors render correctly across builds."
+          "description": "Replace direct shadcn Button usage with the app-owned AppButton wrapper to ensure reliable pointer/tap behavior and consistent disabled/pointer-events styling in production builds; also ensure action buttons use explicit type=\"button\" and are not prevented by any unintended default behaviors. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/tailwind.config.js",
+          "path": "frontend/src/components/onboarding/StepTransition.tsx",
           "operation": "modify",
-          "description": "Harden Tailwind scanning for Production builds (ensure content globs reliably cover all `src/**/*` files) and add a minimal safelist for key button-variant utility classes used by shadcn button variants to prevent accidental purging in optimized builds."
-        },
-        {
-          "path": "frontend/src/components/InstallPromptBanner.tsx",
-          "operation": "modify",
-          "description": "Ensure both the install CTA and the dismiss control are rendered with clearly button-like styling (compose using existing shadcn-ui `Button` patterns where appropriate, without modifying any files under `frontend/src/components/ui`). Verify the component's usage instructions before implementing."
+          "description": "Ensure the transition wrapper cannot create an invisible overlay that intercepts taps/clicks during step changes (e.g., by confirming it only renders the current step and does not apply styles that block pointer events)."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add a minimal, repeatable regression check developers can use to confirm button styling is present on at least two representative screens (Premium and RouteErrorFallback) and covers at least two button variants.",
+      "summary": "After onboarding completion (Get Started/Skip), reliably transition to the main routed UI and navigate to Home (\"/\") if needed.",
       "acceptanceCriteria": [
-        "There is a documented/manual checklist (or lightweight dev-only verification step) that developers can use to confirm buttons are visibly styled on the chosen screens after builds.",
-        "The selected screens include at least two distinct button variants (e.g., default and outline/secondary/ghost) to catch missing styles across variants."
+        "After completing onboarding, the app displays the main layout (header/bottom navigation) and a routed page (Home at \"/\" if enforced).",
+        "The route/state updates are reflected immediately without requiring a manual refresh."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ButtonStyleRegressionCheck.tsx",
-          "operation": "create",
-          "description": "Create a small dev-only UI fragment that renders at least two shadcn `Button` variants (e.g., default + outline/ghost) with a short on-screen instruction to visually confirm padding/background/border/hover/focus states are present. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Update the post-onboarding completion handler to reliably render the main layout and force a navigation to the Home route (\"/\") after onboarding is dismissed (via Get Started or Skip), so users never appear stuck on the onboarding screen or prior route."
         },
         {
-          "path": "frontend/src/pages/GoPremium.tsx",
+          "path": "frontend/src/lib/onboarding.ts",
           "operation": "modify",
-          "description": "Wire the dev-only regression check onto the Premium screen near the subscribe CTAs so developers can quickly confirm both default and outline button variants are styled after Preview/Production builds. Verify the component's usage instructions before implementing."
+          "description": "Harden onboarding completion persistence to avoid edge cases where storage failures leave the app repeatedly showing onboarding; keep behavior backward-compatible and limited to ensuring completion is recorded/read reliably."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Adjust PWA/service worker caching so client-side route transitions never show stale content and new deployments update cleanly.",
+      "acceptanceCriteria": [
+        "With the service worker enabled, navigating between routes (e.g., Home -> Categories -> Category Detail -> Back) updates the UI to the correct page content every time.",
+        "After a new deployment, the app updates cleanly (no persistent stale routes/pages due to cached navigation responses)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/sw.js",
+          "operation": "modify",
+          "description": "Update the service worker caching strategy to avoid serving stale navigation content: use a robust app-shell approach for navigations (serve index.html consistently for client-side routes without caching arbitrary navigation responses), and bump/rotate the cache version to ensure updates invalidate older cached shells after deployment."
         },
         {
-          "path": "frontend/src/components/RouteErrorFallback.tsx",
+          "path": "frontend/src/pwa/registerServiceWorker.ts",
           "operation": "modify",
-          "description": "Wire the dev-only regression check onto the error fallback screen (alongside the existing 'Go to Home' CTA) to validate button styling on a second representative screen. Verify the component's usage instructions before implementing."
+          "description": "Improve update handling so new deployments replace older cached shells reliably (e.g., prompt immediate activation behavior already present, plus ensuring the app revalidates on focus/visibility changes and avoids getting stuck on an old controller state)."
         },
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add a lightweight developer-facing manual checklist reference (dev-only) accessible during testing (e.g., a console message or small hidden note gated by `import.meta.env.DEV`) describing the two screens to verify and the expected visible button styling."
+          "description": "Ensure service worker registration/update behavior does not interfere with in-app navigation rendering (e.g., confirm registration is not repeatedly re-triggered in a way that causes stale UI or blocked route updates)."
         }
       ]
     }

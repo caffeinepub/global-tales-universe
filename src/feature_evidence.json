@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-investigate-and-fix-the-ui-regression-where-some-pages-components-display-only-button-text-no-visible-button-styling-ensuring-buttons-render-with-the-expected-padding-border-background-hover-focus-states-and-are-clearly-recognizable-as-buttons-in-both-preview-and-production-builds",
-      "featureTitle": "Investigate and fix the UI regression where some pages/components display only button text (no visible button styling), ensuring buttons render with the expected padding, border/background, hover/focus states, and are clearly recognizable as buttons in both Preview and Production builds.",
+      "featureId": "feature-fix-the-onboarding-screen-so-its-action-buttons-work-reliably-tapping-clicking-next-must-advance-to-the-next-onboarding-step-get-started-must-complete-onboarding-and-skip-must-exit-onboarding-immediately",
+      "featureTitle": "Fix the onboarding screen so its action buttons work reliably: tapping/clicking \"Next\" must advance to the next onboarding step, \"Get Started\" must complete onboarding, and \"Skip\" must exit onboarding immediately.",
       "files": [
-        "frontend/src/components/InstallPromptBanner.tsx",
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
+        "frontend/src/components/onboarding/OnboardingFlow.tsx",
+        "frontend/src/components/onboarding/StepTransition.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,13 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-minimal-repeatable-regression-check-in-the-ui-to-confirm-button-styling-is-present-on-at-least-two-representative-screens-that-previously-exhibited-the-issue-for-example-the-premium-page-subscribe-button-and-the-routeerrorfallback-go-to-home-button",
-      "featureTitle": "Add a minimal, repeatable regression check in the UI to confirm button styling is present on at least two representative screens that previously exhibited the issue (for example: the Premium page subscribe button and the RouteErrorFallback “Go to Home” button).",
+      "featureId": "feature-ensure-that-after-onboarding-completion-via-get-started-or-skip-the-app-reliably-renders-the-next-screen-instead-of-appearing-stuck-on-the-prior-page-if-needed-update-the-post-onboarding-behavior-to-navigate-to-the-home-route-so-users-always-land-on-a-visible-main-page",
+      "featureTitle": "Ensure that after onboarding completion (via \"Get Started\" or \"Skip\"), the app reliably renders the next screen instead of appearing stuck on the prior page; if needed, update the post-onboarding behavior to navigate to the Home route (\"/\") so users always land on a visible main page.",
       "files": [
         "frontend/src/App.tsx",
-        "frontend/src/components/ButtonStyleRegressionCheck.tsx",
-        "frontend/src/components/RouteErrorFallback.tsx",
-        "frontend/src/pages/GoPremium.tsx"
+        "frontend/src/lib/onboarding.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,6 +40,28 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-any-pwa-service-worker-caching-behavior-that-can-cause-client-side-route-transitions-to-show-stale-content-e-g-appearing-to-repeat-the-previous-page-after-deployments-updates-ensuring-in-app-navigation-consistently-renders-the-correct-route-content",
+      "featureTitle": "Fix any PWA/service-worker caching behavior that can cause client-side route transitions to show stale content (e.g., appearing to repeat the previous page) after deployments/updates, ensuring in-app navigation consistently renders the correct route content.",
+      "files": [
+        "frontend/public/sw.js",
+        "frontend/src/App.tsx",
+        "frontend/src/pwa/registerServiceWorker.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

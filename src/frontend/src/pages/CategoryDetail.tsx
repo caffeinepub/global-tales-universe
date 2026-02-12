@@ -3,6 +3,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { useStories } from '../hooks/useStories';
 import { uiLangToBackendLang } from '../lib/storyLanguage';
 import { translateCategory, t } from '../lib/i18n';
+import { decodeCategoryId } from '../lib/urlParams';
 import StoryCard from '../components/StoryCard';
 import ModeToggle from '../components/ModeToggle';
 import { ArrowLeft } from 'lucide-react';
@@ -10,11 +11,15 @@ import { useNavigate } from '@tanstack/react-router';
 import { Button } from '../components/ui/button';
 
 export default function CategoryDetail() {
-  const { categoryId } = useParams({ from: '/categories/$categoryId' });
+  const { categoryId: encodedCategoryId } = useParams({ from: '/categories/$categoryId' });
   const navigate = useNavigate();
   const { language, mode } = usePreferences();
   const backendLang = uiLangToBackendLang(language);
-  const { data: stories, isLoading } = useStories(
+  
+  // Decode the category ID from URL
+  const categoryId = decodeCategoryId(encodedCategoryId);
+  
+  const { data: stories = [], isLoading, isError } = useStories(
     backendLang,
     true,
     categoryId,
@@ -40,7 +45,11 @@ export default function CategoryDetail() {
             <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
-      ) : stories && stories.length > 0 ? (
+      ) : isError ? (
+        <div className="text-center py-12 text-muted-foreground">
+          Coming soon
+        </div>
+      ) : stories.length > 0 ? (
         <div className="space-y-2">
           {stories.map((story) => (
             <StoryCard key={story.id.toString()} story={story} />

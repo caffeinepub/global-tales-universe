@@ -27,23 +27,31 @@ type FontSize = 'small' | 'medium' | 'large';
 
 export default function StoryReader() {
   const params = useParams({ from: '/story/$storyId' });
-  const storyId = BigInt(params.storyId);
   const navigate = useNavigate();
   const { language } = usePreferences();
   const { isPremium } = useAppUser();
-  const { data: story, isLoading } = useStory(storyId);
-  const { addToHistory } = useReadingHistory();
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite, isToggling } = useFavorites();
+  const { updateProgress } = useReadingHistory();
   const { isDownloaded, downloadStory, removeDownload } = useOfflineDownloads();
 
   const [isSharing, setIsSharing] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingStory, setIsDownloadingStory] = useState(false);
   const [background, setBackground] = useState<ReadingBackground>('default');
   const [fontSize, setFontSize] = useState<FontSize>('medium');
   const [scrollProgress, setScrollProgress] = useState(0);
-  
   const contentRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Parse storyId safely - do this before calling useStory
+  let storyId: bigint | null = null;
+  let parseError = false;
+  try {
+    storyId = BigInt(params.storyId);
+  } catch (error) {
+    parseError = true;
+  }
+
+  // Call useStory with a valid bigint or 0n as fallback
+  const { data: story, isLoading, isError } = useStory(storyId || 0n);
 
   const content = story?.languages[language as keyof typeof story.languages];
   const title = content?.title || story?.languages.english.title || '';
@@ -53,213 +61,187 @@ export default function StoryReader() {
   const downloaded = story ? isDownloaded(story.id) : false;
   const favorite = story ? isFavorite(story.id) : false;
 
-  // Load saved progress on mount
+  // Load saved reading progress
   useEffect(() => {
     if (story) {
-      const saved = loadReadingProgress(story.id.toString());
-      if (saved && scrollContainerRef.current) {
-        setTimeout(() => {
-          scrollContainerRef.current?.scrollTo({
-            top: saved.scrollPosition,
-            behavior: 'smooth',
-          });
-        }, 100);
+      const progress = loadReadingProgress(story.id.toString());
+      if (progress && contentRef.current) {
+        contentRef.current.scrollTop = progress.scrollPosition;
       }
     }
   }, [story]);
 
   // Track scroll progress
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || !story) return;
-
     const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const percentage = calculateScrollPercentage(scrollTop, scrollHeight, clientHeight);
-      
-      setScrollProgress(percentage);
-      
-      // Save progress periodically
-      if (percentage > 0) {
+      if (contentRef.current && story) {
+        const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
+        const percentage = calculateScrollPercentage(scrollTop, scrollHeight, clientHeight);
+        setScrollProgress(percentage);
         saveReadingProgress(story.id.toString(), percentage, scrollTop);
-        addToHistory(story.id, percentage);
+        updateProgress(story.id, percentage);
       }
     };
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [story, addToHistory]);
-
-  // Add to history on mount
-  useEffect(() => {
-    if (story) {
-      const saved = loadReadingProgress(story.id.toString());
-      addToHistory(story.id, saved?.scrollPercentage || 0);
+    const ref = contentRef.current;
+    if (ref) {
+      ref.addEventListener('scroll', handleScroll);
+      return () => ref.removeEventListener('scroll', handleScroll);
     }
-  }, [story, addToHistory]);
+  }, [story, updateProgress]);
 
   const handleShare = async () => {
-    if (!story || isSharing) return;
+    if (!story) return;
     
     setIsSharing(true);
     try {
-      const result: ShareResult = await shareStory(story.id, title, summary);
+      const result: ShareResult = await shareStory(story.id.toString(), title, summary);
       
       if (result === 'success') {
-        toast.success('Thanks for sharing!');
+        toast.success('Story shared successfully!');
       } else if (result === 'cancelled') {
-        // User cancelled, no message
+        // User cancelled, no toast needed
       } else {
-        toast.error('Failed to share. Please try again.');
+        toast.error('Failed to share story');
       }
     } catch (error) {
       console.error('Share error:', error);
-      toast.error('Failed to share. Please try again.');
+      toast.error('Failed to share story');
     } finally {
       setIsSharing(false);
     }
   };
 
-  const handleDownload = async () => {
-    if (!story || isDownloading) return;
-    
-    setIsDownloading(true);
-    try {
-      if (downloaded) {
-        await removeDownload(story.id);
-        toast.success('Story removed from offline storage');
-      } else {
-        await downloadStory(story);
-        toast.success('Story saved for offline reading');
-      }
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error('Failed to save story. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const handleFavorite = async () => {
+  const handleToggleFavorite = async () => {
     if (!story) return;
+    
     try {
       await toggleFavorite(story.id);
       toast.success(favorite ? 'Removed from favorites' : 'Added to favorites');
     } catch (error) {
-      console.error('Favorite error:', error);
-      toast.error('Failed to update favorites. Please try again.');
+      console.error('Toggle favorite error:', error);
+      toast.error('Failed to update favorites');
     }
   };
 
-  const getBackgroundClass = () => {
-    switch (background) {
-      case 'sepia':
-        return 'bg-[#f4ecd8] text-[#5f4b32]';
-      case 'dark':
-        return 'bg-gray-900 text-gray-100';
-      default:
-        return 'bg-background text-foreground';
+  const handleDownload = async () => {
+    if (!story) return;
+    
+    setIsDownloadingStory(true);
+    try {
+      if (downloaded) {
+        await removeDownload(story.id);
+        toast.success('Download removed');
+      } else {
+        await downloadStory(story);
+        toast.success('Story downloaded for offline reading');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to manage download');
+    } finally {
+      setIsDownloadingStory(false);
     }
   };
 
-  const getFontSizeClass = () => {
-    switch (fontSize) {
-      case 'small':
-        return 'text-base leading-relaxed';
-      case 'large':
-        return 'text-xl leading-loose';
-      default:
-        return 'text-lg leading-relaxed';
-    }
-  };
-
-  if (isLoading) {
+  // Now handle the parse error after all hooks have been called
+  if (parseError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading story...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!story) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center">
-          <p className="text-xl font-semibold mb-2">Story not found</p>
+          <h1 className="text-2xl font-bold mb-2">Invalid Story ID</h1>
+          <p className="text-muted-foreground mb-4">The story you're looking for doesn't exist.</p>
           <Button onClick={() => navigate({ to: '/' })}>Go Home</Button>
         </div>
       </div>
     );
   }
 
-  return (
-    <div ref={scrollContainerRef} className={`min-h-screen ${getBackgroundClass()} ${transitions.colors} overflow-auto`}>
-      {/* Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Progress value={scrollProgress} className="h-1 rounded-none" />
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading story...</p>
+        </div>
       </div>
+    );
+  }
 
+  if (isError || !story) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Story Not Found</h1>
+          <p className="text-muted-foreground mb-4">Coming soon</p>
+          <Button onClick={() => navigate({ to: '/' })}>Go Home</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const backgroundClasses = {
+    default: 'bg-background text-foreground',
+    sepia: 'bg-[#f4ecd8] text-[#5c4a3a]',
+    dark: 'bg-gray-900 text-gray-100',
+  };
+
+  const fontSizeClasses = {
+    small: 'text-base',
+    medium: 'text-lg',
+    large: 'text-xl',
+  };
+
+  return (
+    <div className={`min-h-screen ${backgroundClasses[background]}`}>
       {/* Header */}
-      <div className={`sticky top-0 z-40 ${getBackgroundClass()} border-b backdrop-blur-sm bg-opacity-95`}>
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate({ to: '/' })}
-            className={focusRing}
-          >
-            <ArrowLeft className={iconSizes.sm} />
+      <header className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/' })}>
+            <ArrowLeft className={iconSizes.md} />
           </Button>
-          
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
-              onClick={handleFavorite}
-              className={focusRing}
+              size="icon"
+              onClick={handleToggleFavorite}
+              disabled={isToggling}
+              className={favorite ? 'text-red-500' : ''}
             >
-              <Heart className={`${iconSizes.sm} ${favorite ? 'fill-current text-red-500' : ''}`} />
+              <Heart className={iconSizes.md} fill={favorite ? 'currentColor' : 'none'} />
             </Button>
-            
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={handleShare}
               disabled={isSharing}
-              className={focusRing}
             >
-              <Share2 className={iconSizes.sm} />
+              <Share2 className={iconSizes.md} />
             </Button>
-            
-            {!isPremiumLocked && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className={focusRing}
-              >
-                {downloaded ? (
-                  <Check className={`${iconSizes.sm} text-green-500`} />
-                ) : (
-                  <Download className={iconSizes.sm} />
-                )}
-              </Button>
-            )}
-            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDownload}
+              disabled={isDownloadingStory}
+            >
+              {downloaded ? (
+                <Check className={iconSizes.md} />
+              ) : (
+                <Download className={iconSizes.md} />
+              )}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className={focusRing}>
-                  <Settings className={iconSizes.sm} />
+                <Button variant="ghost" size="icon">
+                  <Settings className={iconSizes.md} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Reading Settings</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Background</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  Background
+                </DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => setBackground('default')}>
                   {background === 'default' && '✓ '}Default
                 </DropdownMenuItem>
@@ -270,7 +252,9 @@ export default function StoryReader() {
                   {background === 'dark' && '✓ '}Dark
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Font Size</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  Font Size
+                </DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => setFontSize('small')}>
                   {fontSize === 'small' && '✓ '}Small
                 </DropdownMenuItem>
@@ -284,68 +268,61 @@ export default function StoryReader() {
             </DropdownMenu>
           </div>
         </div>
-      </div>
-
-      {/* Cover Image */}
-      <div className="relative w-full h-64 md:h-96 overflow-hidden">
-        <img
-          src={story.coverImageUrl}
-          alt={title}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-      </div>
+        <Progress value={scrollProgress} className="h-1 rounded-none" />
+      </header>
 
       {/* Content */}
-      <div ref={contentRef} className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">{title}</h1>
-        
-        <div className="flex items-center gap-4 text-sm opacity-70 mb-8">
-          <span>{story.category}</span>
+      <div ref={contentRef} className="max-w-2xl mx-auto px-4 py-8 overflow-auto">
+        {/* Cover Image */}
+        {story.coverImageUrl && (
+          <div className={`mb-6 ${cardRadius.medium} overflow-hidden`}>
+            <img
+              src={story.coverImageUrl}
+              alt={title}
+              className="w-full aspect-[16/9] object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
+              }}
+            />
+          </div>
+        )}
+
+        {/* Title */}
+        <h1 className="text-3xl font-bold mb-4">{title}</h1>
+
+        {/* Meta */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+          <span>{story.author}</span>
           <span>•</span>
           <span>{Number(story.readTimeMinutes)} min read</span>
-          {story.isPremium && (
-            <>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                {isPremiumLocked ? (
-                  <>
-                    <Lock className={iconSizes.xs} />
-                    Premium Story
-                  </>
-                ) : (
-                  '✓ Premium Access'
-                )}
-              </span>
-            </>
-          )}
+          <span>•</span>
+          <span>{story.category}</span>
         </div>
 
-        {isPremiumLocked ? (
-          <div className={`${cardRadius.medium} border-2 border-yellow-500/50 bg-yellow-500/10 p-8 text-center space-y-4`}>
-            <Lock className={`${iconSizes.lg} mx-auto text-yellow-600 dark:text-yellow-500`} />
-            <div>
-              <h3 className="text-xl font-bold mb-2">Premium Story</h3>
-              <p className="text-muted-foreground mb-4">
-                This story is available exclusively for Premium members.
-              </p>
+        {/* Premium Lock */}
+        {isPremiumLocked && (
+          <div className={`${cardRadius.medium} bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 mb-6`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className={iconSizes.sm} />
+              <h3 className="font-semibold">Premium Story</h3>
             </div>
-            <Button
-              onClick={() => navigate({ to: '/premium' })}
-              size="lg"
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-            >
+            <p className="text-sm mb-3">This story is only available to premium members.</p>
+            <Button onClick={() => navigate({ to: '/premium' })} size="sm">
               Go Premium
             </Button>
           </div>
-        ) : (
-          <div className={`${getFontSizeClass()} whitespace-pre-wrap`}>
-            {body}
-          </div>
         )}
+
+        {/* Body */}
+        <div className={`prose prose-lg max-w-none ${fontSizeClasses[fontSize]}`}>
+          {isPremiumLocked ? (
+            <p className="text-muted-foreground italic">
+              {body.substring(0, 200)}...
+            </p>
+          ) : (
+            <div className="whitespace-pre-wrap">{body}</div>
+          )}
+        </div>
       </div>
     </div>
   );

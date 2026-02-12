@@ -24,8 +24,20 @@ export default function BottomNav() {
     } catch (error) {
       console.error('Navigation error:', error);
       // Fallback to home if navigation fails
-      navigate({ to: '/' });
+      try {
+        navigate({ to: '/' });
+      } catch (fallbackError) {
+        console.error('Fallback navigation also failed:', fallbackError);
+      }
     }
+  };
+
+  // Check if current path starts with a tab path (for nested routes like /categories/Romance)
+  const isTabActive = (tabPath: string) => {
+    if (tabPath === '/') {
+      return currentPath === '/';
+    }
+    return currentPath.startsWith(tabPath);
   };
 
   return (
@@ -33,7 +45,7 @@ export default function BottomNav() {
       <div className="flex justify-around items-center h-16 max-w-2xl mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = currentPath === tab.path;
+          const isActive = isTabActive(tab.path);
           return (
             <button
               key={tab.path}

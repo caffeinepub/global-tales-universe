@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the UI regression where buttons appear as plain text by restoring expected button styling across affected screens in both Preview and Production builds.
+**Goal:** Fix onboarding navigation so Next/Get Started/Skip work reliably and the app consistently transitions to the main UI without getting stuck or showing stale pages.
 
 **Planned changes:**
-- Identify why button styles are not being applied on affected pages/components and adjust usage/composition so buttons render with padding, background/border, hover, and focus styles (without modifying read-only UI component source files).
-- Verify and restore visible focus styling and readability in both light and dark themes on key CTA locations (e.g., Premium subscribe, RouteErrorFallback navigation, install prompt).
-- Add a minimal, repeatable regression check (manual checklist or dev-only verification step) covering at least two representative screens and at least two button variants to confirm styling remains present after builds.
+- Repair onboarding step state/progress updates so "Next" advances through steps and "Get Started" completes onboarding on the final step.
+- Ensure "Skip" exits onboarding immediately from any step and consistently renders the main app UI.
+- Update post-onboarding behavior to reliably navigate/render the Home route ("/") so users always land on a visible main page after completion.
+- Address any service worker/PWA caching behavior that can cause stale route content after navigation or deployments.
 
-**User-visible outcome:** Buttons across the previously affected pages render as clearly recognizable, properly styled buttons (not plain text) with appropriate hover/focus states in both Preview and Production builds.
+**User-visible outcome:** Users can move through onboarding with Next, finish with Get Started, or exit with Skip, and the app reliably shows the main screen immediately afterward with correct page content during navigation.

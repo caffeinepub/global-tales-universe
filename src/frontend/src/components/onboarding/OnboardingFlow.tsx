@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { usePreferences } from '../../context/PreferencesContext';
 import { useTheme } from 'next-themes';
-import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
@@ -77,14 +76,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               </div>
             </div>
             <div className="flex-1 flex justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={handleSkip}
-                className="text-muted-foreground hover:text-foreground text-sm h-8"
+                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors cursor-pointer"
+                style={{ pointerEvents: 'auto' }}
               >
                 Skip
-              </Button>
+              </button>
             </div>
           </div>
           <CardTitle className="text-2xl">Welcome to Global Tales Universe</CardTitle>
@@ -226,22 +225,25 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
           <div className="flex gap-3 pt-4">
             {step > 1 && (
-              <Button
-                variant="outline"
+              <button
+                type="button"
                 onClick={handleBack}
-                className="flex-1"
+                className="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                style={{ pointerEvents: 'auto' }}
               >
                 <ChevronLeft className="w-4 h-4 mr-2" />
                 Back
-              </Button>
+              </button>
             )}
-            <Button
+            <button
+              type="button"
               onClick={handleNext}
-              className="flex-1"
+              className="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer font-medium"
+              style={{ pointerEvents: 'auto' }}
             >
               {step === 3 ? 'Get Started' : 'Next'}
               {step < 3 && <ChevronRight className="w-4 h-4 ml-2" />}
-            </Button>
+            </button>
           </div>
         </CardContent>
       </Card>

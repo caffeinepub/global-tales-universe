@@ -15,13 +15,22 @@ export function useUserProfile() {
   const queryClient = useQueryClient();
   const isAuthenticated = !!identity;
 
-  // Fetch authenticated user profile
+  // Fetch authenticated user profile with error handling
   const authenticatedQuery = useQuery<UserProfile | null>({
     queryKey: ['userProfile', identity?.getPrincipal().toString()],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      const profile = await actor.getCallerUserProfile();
-      return profile;
+      try {
+        const profile = await actor.getCallerUserProfile();
+        return profile;
+      } catch (error: any) {
+        console.error('Failed to fetch user profile:', error);
+        // If unauthorized or trap, return null to trigger guest fallback
+        if (error.message?.includes('Unauthorized') || error.message?.includes('trap')) {
+          return null;
+        }
+        throw error;
+      }
     },
     enabled: !!actor && !actorFetching && isAuthenticated,
     retry: false,
@@ -47,6 +56,9 @@ export function useUserProfile() {
         const principal = identity?.getPrincipal().toString() || 'User';
         const shortName = principal.substring(0, 8);
         return { name: `User-${shortName}` };
+      } else if (authenticatedQuery.isError) {
+        // Error fetching profile, use fallback
+        return { name: 'Guest' };
       }
       return { name: 'Loading...' };
     } else {
