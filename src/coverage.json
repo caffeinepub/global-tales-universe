@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T18:24:54.096Z",
+  "generatedAt": "2026-02-12T04:38:24.707Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,114 +11,75 @@
     "implemented": 5,
     "items": [
       {
-        "id": "REQ-21",
-        "summary": "Add Progressive Web App (PWA) configuration so Global Tales Universe can be installed to a device home screen and launches in standalone (app-like) mode.",
+        "id": "REQ-1",
+        "summary": "Add a persistent top header (app bar) to the main app layout (the layout that currently renders the BottomNav), including a left \"menu\" (hamburger) button and an app logo in the header.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/manifest.webmanifest",
-          "frontend/index.html"
-        ],
-        "matchedFiles": [
-          "frontend/public/manifest.webmanifest",
-          "frontend/index.html"
-        ]
-      },
-      {
-        "id": "REQ-22",
-        "summary": "Add a service worker that enables offline-first caching for the app shell (HTML/CSS/JS) and static assets, without breaking existing story offline downloads.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/sw.js",
-          "frontend/src/pwa/registerServiceWorker.ts",
+          "frontend/src/components/AppHeader.tsx",
           "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/sw.js",
-          "frontend/src/pwa/registerServiceWorker.ts",
+          "frontend/src/components/AppHeader.tsx",
           "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-23",
-        "summary": "Add install UX: detect when the app is installable (where supported) and show a non-intrusive in-app prompt to install; allow dismissal and do not repeatedly nag after dismissal.",
+        "id": "REQ-2",
+        "summary": "Implement a left-side drawer (slide-in panel) that opens when the header hamburger button is pressed and closes via an explicit close action and by selecting a navigation item.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/usePwaInstallPrompt.ts",
-          "frontend/src/components/InstallPromptBanner.tsx",
+          "frontend/src/components/AppDrawer.tsx",
+          "frontend/src/components/AppHeader.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AppDrawer.tsx",
+          "frontend/src/components/AppHeader.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Add navigation menu items inside the drawer that route using TanStack Router to existing routes: Home (/), Categories (/categories), Search (/search), Favorites (/favorites), Profile (/profile), and Premium (/premium).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AppDrawer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AppDrawer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Ensure the new header + drawer integration does not break existing bottom navigation behavior and that the main content area layout accounts for the header height (no content hidden under the header).",
+        "status": "implemented",
+        "plannedFiles": [
           "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/usePwaInstallPrompt.ts",
-          "frontend/src/components/InstallPromptBanner.tsx",
           "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-24",
-        "summary": "Enhance mobile-web “app-like” presentation in frontend/index.html: add appropriate meta tags for PWA + iOS (apple-touch icon, status bar style) and ensure the viewport is configured for a mobile-first experience.",
+        "id": "REQ-5",
+        "summary": "Use an existing or generated static logo asset for the header logo and reference it as a static file from the frontend (not via the backend), consistent with the PWA manifest icon path conventions used in the project.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/index.html"
+          "frontend/src/components/AppHeader.tsx"
         ],
         "matchedFiles": [
-          "frontend/index.html"
-        ]
-      },
-      {
-        "id": "REQ-25",
-        "summary": "Add required generated image assets under frontend/public/assets/generated and ensure the app references them as static files (not served by the backend).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/assets/generated/gtu-logo.dim_512x512.png",
-          "frontend/public/assets/generated/gtu-splash-bg.dim_1080x1920.png",
-          "frontend/public/assets/generated/cover-default.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-kids-default.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-romance.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-horror.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-comedy.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-mythology.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-educational.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-superhero.dim_1200x1600.png",
-          "frontend/src/lib/covers.ts"
-        ],
-        "matchedFiles": [
-          "frontend/public/assets/generated/gtu-logo.dim_512x512.png",
-          "frontend/public/assets/generated/gtu-splash-bg.dim_1080x1920.png",
-          "frontend/public/assets/generated/cover-default.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-kids-default.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-romance.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-horror.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-comedy.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-mythology.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-educational.dim_1200x1600.png",
-          "frontend/public/assets/generated/cover-superhero.dim_1200x1600.png"
+          "frontend/src/components/AppHeader.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/public/assets/generated/cover-comedy.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-default.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-educational.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-horror.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-kids-default.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-mythology.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-romance.dim_1200x1600.png",
-    "frontend/public/assets/generated/cover-superhero.dim_1200x1600.png",
-    "frontend/public/assets/generated/gtu-logo.dim_512x512.png",
-    "frontend/public/assets/generated/gtu-splash-bg.dim_1080x1920.png",
-    "frontend/public/manifest.webmanifest",
-    "frontend/public/sw.js",
+    "frontend/public/assets/generated/gtu-logo.dim_512x512.png 512x512",
     "frontend/src/App.tsx",
-    "frontend/src/components/InstallPromptBanner.tsx",
-    "frontend/src/hooks/usePwaInstallPrompt.ts",
-    "frontend/src/pwa/registerServiceWorker.ts",
+    "frontend/src/components/AppDrawer.tsx",
+    "frontend/src/components/AppHeader.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

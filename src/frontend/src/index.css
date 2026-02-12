@@ -103,3 +103,155 @@
         direction: rtl;
     }
 }
+
+@layer utilities {
+    /* Onboarding step transition animations */
+    .onboarding-step-container {
+        animation-duration: 300ms;
+        animation-fill-mode: both;
+    }
+
+    /* Forward transitions (Next button) - entering slides use ease-out, exiting slides use ease-in */
+    .onboarding-slide-in-right {
+        animation-name: slideInRight;
+        animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .onboarding-slide-out-left {
+        animation-name: slideOutLeft;
+        animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+    }
+
+    /* Backward transitions (Back button) - entering slides use ease-out, exiting slides use ease-in */
+    .onboarding-slide-in-left {
+        animation-name: slideInLeft;
+        animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .onboarding-slide-out-right {
+        animation-name: slideOutRight;
+        animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+    }
+
+    /* Reduced motion alternatives */
+    .onboarding-fade-in {
+        animation-name: fadeIn;
+        animation-duration: 150ms;
+        animation-timing-function: ease-out;
+    }
+
+    .onboarding-fade-out {
+        animation-name: fadeOut;
+        animation-duration: 150ms;
+        animation-timing-function: ease-in;
+    }
+
+    /* Progress indicator smooth transitions */
+    .onboarding-progress-indicator {
+        transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1),
+                    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Option row micro-interactions */
+    .onboarding-option-row {
+        transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+                    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .onboarding-option-row:active {
+        transform: scale(0.98);
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideOutLeft {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    /* Reduced motion safeguards */
+    @media (prefers-reduced-motion: reduce) {
+        .onboarding-step-container {
+            animation-duration: 150ms;
+        }
+
+        .onboarding-slide-in-right,
+        .onboarding-slide-in-left {
+            animation-name: fadeIn;
+        }
+
+        .onboarding-slide-out-left,
+        .onboarding-slide-out-right {
+            animation-name: fadeOut;
+        }
+
+        .onboarding-progress-indicator {
+            transition-duration: 200ms;
+        }
+
+        .onboarding-option-row {
+            transition-duration: 100ms;
+        }
+
+        .onboarding-option-row:active {
+            transform: none;
+        }
+    }
+}

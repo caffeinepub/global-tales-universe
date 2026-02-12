@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
+import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useRouterState } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import SplashScreen from './components/SplashScreen';
 import BottomNav from './components/BottomNav';
+import AppHeader from './components/AppHeader';
+import AppDrawer from './components/AppDrawer';
 import HomeTab from './pages/HomeTab';
 import CategoriesTab from './pages/CategoriesTab';
 import CategoryDetail from './pages/CategoryDetail';
@@ -16,13 +18,29 @@ import { PreferencesProvider } from './context/PreferencesContext';
 import { Toaster } from './components/ui/sonner';
 import ReminderBanner from './components/ReminderBanner';
 import InstallPromptBanner from './components/InstallPromptBanner';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
+import { isOnboardingCompleted } from './lib/onboarding';
 
 function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+
+  // Check if current route is StoryReader (full-screen experience)
+  const isStoryReader = currentPath.startsWith('/story/');
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2500);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+      // Check if onboarding is needed after splash
+      const completed = isOnboardingCompleted();
+      setOnboardingCompleted(completed);
+      setShowOnboarding(!completed);
+    }, 2500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -31,12 +49,28 @@ function RootLayout() {
     registerServiceWorker();
   }, []);
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    setOnboardingCompleted(true);
+  };
+
   if (showSplash) {
     return <SplashScreen />;
   }
 
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
+  // StoryReader has its own layout
+  if (isStoryReader) {
+    return <Outlet />;
+  }
+
   return (
     <div className="flex flex-col h-screen bg-background">
+      <AppHeader onMenuClick={() => setDrawerOpen(true)} />
+      <AppDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
       <ReminderBanner />
       <InstallPromptBanner />
       <main className="flex-1 overflow-auto pb-16">

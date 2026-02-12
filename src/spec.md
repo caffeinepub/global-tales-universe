@@ -1,14 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add PWA packaging to the Global Tales Universe web app so it can be installed on mobile home screens, run in standalone mode, and support offline-first loading of the app shell.
+**Goal:** Add a persistent top header with a logo and hamburger button, plus a left-side drawer navigation, without disrupting the existing bottom navigation and layouts.
 
 **Planned changes:**
-- Add and link a web app manifest (name/short_name, standalone display, start_url, theme/background colors, icon entries including 512x512).
-- Add a service worker with offline-first caching for the app shell and static assets, while preserving existing localStorage-based offline story downloads.
-- Register the service worker from the frontend without modifying immutable paths.
-- Add a lightweight in-app install prompt UX that appears when installable, triggers the browser install flow, and respects dismissal (persisted locally).
-- Enhance `frontend/index.html` with PWA + iOS meta/link tags (manifest, theme color, apple-touch-icon, status bar style) and a mobile-first viewport configuration.
-- Ensure required generated image assets exist under `frontend/public/assets/generated` and are referenced as static files (including splash logo and cover images).
+- Add a top app header (app bar) to the post–Splash/Onboarding main layout, containing a left hamburger/menu button and a static logo image.
+- Implement a left-side slide-in drawer that opens from the hamburger button and closes via explicit close/outside click and after selecting a navigation item.
+- Add drawer menu items that navigate via TanStack Router to existing routes: Home (/), Categories (/categories), Search (/search), Favorites (/favorites), Profile (/profile), Premium (/premium), with active-route visual indication.
+- Adjust main content layout to account for header height so content remains visible/scrollable, while keeping BottomNav behavior unchanged and ensuring full-screen experiences (e.g., StoryReader) still render correctly.
 
-**User-visible outcome:** Users can install Global Tales Universe to their device home screen, launch it as an app-like standalone experience, and continue using core UI routes offline after the first load, without breaking existing offline story downloads.
+**User-visible outcome:** After Splash + Onboarding, users see a header with a logo and a hamburger button; tapping it opens a drawer with links to key sections, while the existing bottom navigation continues to work as before.

@@ -1,121 +1,113 @@
 {
   "kind": "build_request",
-  "title": "Add PWA packaging for mobile-look Global Tales Universe web app",
+  "title": "Add left-side drawer navigation and header logo to the existing web PWA",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-21",
-      "text": "Add Progressive Web App (PWA) configuration so Global Tales Universe can be installed to a device home screen and launches in standalone (app-like) mode.",
+      "id": "REQ-1",
+      "text": "Add a persistent top header (app bar) to the main app layout (the layout that currently renders the BottomNav), including a left \"menu\" (hamburger) button and an app logo in the header.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Mobile-look web app (PWA style)  this version generate"
+          "A"
         ]
       },
       "acceptanceCriteria": [
-        "A web app manifest is present and linked from frontend/index.html.",
-        "The manifest sets: name \"Global Tales Universe\", short_name \"Global Tales\", display \"standalone\", start_url \"/\", theme_color, background_color, and appropriate icon entries (including a 512x512 icon).",
-        "When opened via the installed icon, the app runs in standalone mode (no browser UI) in supporting browsers."
+        "When the user is past Splash + Onboarding, a header is visible above the current page content.",
+        "The header includes a hamburger/menu button on the left and a logo image.",
+        "Header does not appear on SplashScreen or OnboardingFlow screens."
       ]
     },
     {
-      "id": "REQ-22",
-      "text": "Add a service worker that enables offline-first caching for the app shell (HTML/CSS/JS) and static assets, without breaking existing story offline downloads.",
+      "id": "REQ-2",
+      "text": "Implement a left-side drawer (slide-in panel) that opens when the header hamburger button is pressed and closes via an explicit close action and by selecting a navigation item.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Mobile-look web app (PWA style)  this version generate"
+          "A"
         ]
       },
       "acceptanceCriteria": [
-        "A service worker is registered from the frontend (without modifying any immutable paths).",
-        "With the network disconnected after the first successful load, the app shell still loads and renders the main UI routes (e.g., Home tab frame).",
-        "Existing offline story download behavior (localStorage-based downloads) continues to function as before."
+        "Clicking/tapping the hamburger button opens a left-side drawer.",
+        "The drawer can be closed without navigation (close button or outside click) and closes after selecting a menu item.",
+        "Drawer open/close behavior works on mobile and desktop widths."
       ]
     },
     {
-      "id": "REQ-23",
-      "text": "Add install UX: detect when the app is installable (where supported) and show a non-intrusive in-app prompt to install; allow dismissal and do not repeatedly nag after dismissal.",
+      "id": "REQ-3",
+      "text": "Add navigation menu items inside the drawer that route using TanStack Router to existing routes: Home (/), Categories (/categories), Search (/search), Favorites (/favorites), Profile (/profile), and Premium (/premium).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Mobile-look web app (PWA style)  this version generate"
+          "A"
         ]
       },
       "acceptanceCriteria": [
-        "On supporting browsers, an install prompt UI appears after the install event is available.",
-        "Clicking the prompt triggers the browser install flow.",
-        "Dismissing the prompt prevents it from reappearing for a reasonable period (persisted locally)."
+        "Each drawer menu item navigates to the correct existing route using TanStack Router navigation APIs.",
+        "The current route is visually indicated as active inside the drawer menu.",
+        "No routes are removed or renamed."
       ]
     },
     {
-      "id": "REQ-24",
-      "text": "Enhance mobile-web “app-like” presentation in frontend/index.html: add appropriate meta tags for PWA + iOS (apple-touch icon, status bar style) and ensure the viewport is configured for a mobile-first experience.",
+      "id": "REQ-4",
+      "text": "Ensure the new header + drawer integration does not break existing bottom navigation behavior and that the main content area layout accounts for the header height (no content hidden under the header).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Mobile-look web app (PWA style)  this version generate"
+          "A"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/index.html includes meta/link tags for manifest, theme color, and common iOS PWA tags.",
-        "An apple-touch-icon is provided and referenced.",
-        "The app does not appear zoomed-out on mobile; it renders as a phone-style layout with the existing max-width container behavior."
+        "BottomNav remains visible and functional as before.",
+        "Main page content is scrollable and not obscured by the new header.",
+        "StoryReader and other full-screen experiences still render correctly with the new layout."
       ]
     },
     {
-      "id": "REQ-25",
-      "text": "Add required generated image assets under frontend/public/assets/generated and ensure the app references them as static files (not served by the backend).",
+      "id": "REQ-5",
+      "text": "Use an existing or generated static logo asset for the header logo and reference it as a static file from the frontend (not via the backend), consistent with the PWA manifest icon path conventions used in the project.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Mobile-look web app (PWA style)  this version generate"
+          "A"
         ]
       },
       "acceptanceCriteria": [
-        "All required images listed in this build request exist under frontend/public/assets/generated with the exact filenames.",
-        "Splash screen logo reference (/assets/generated/gtu-logo.dim_512x512.png) continues to load correctly.",
-        "Cover image references used by frontend/src/lib/covers.ts resolve correctly at runtime."
+        "The header logo is served as a static asset (e.g., under frontend/public/assets/generated).",
+        "The app builds successfully without requiring any backend changes to serve the logo.",
+        "Logo renders crisply in both light and dark themes (no unreadable blending)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything under frontend/src/components/ui (compose them instead).",
-    "Keep the backend as a single Motoko actor; add backend changes only if strictly required for PWA support (generally not required).",
-    "Use English for any new user-facing UI text."
+    "Do not rebuild the project as an Expo/React Native app; implement the drawer and header in the existing React web (PWA) app.",
+    "Do not edit any files under frontend/src/components/ui (compose existing UI components instead).",
+    "Do not edit frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
+    "Keep backend as a single Motoko actor; no backend changes are required for this UI-only request."
   ],
   "nonGoals": [
-    "Implement real push notifications (PWA push) or any server-driven notification delivery.",
-    "Integrate any external services for translation, analytics, ads, or payments as part of PWA work.",
-    "Replace existing offline story download storage strategy (localStorage) with a new persistence mechanism."
+    "Adding new backend APIs or persistence for drawer state.",
+    "Changing the existing route structure or adding new app sections beyond the drawer links.",
+    "Implementing any Expo/React Native-specific navigation patterns (e.g., Expo Router, gesture handler)."
   ],
   "imageRequirements": {
     "required": [
-      "Elegant globe + open book mark, modern flat with subtle gradient (gtu-logo.dim_512x512.png)",
-      "Global map-inspired abstract gradient with soft shapes, dark-friendly (gtu-splash-bg.dim_1080x1920.png)",
-      "Abstract literary-themed illustration, adult-neutral (cover-default.dim_1200x1600.png)",
-      "Playful friendly illustration style, safe and cheerful (cover-kids-default.dim_1200x1600.png)",
-      "Romance-themed cover illustration (cover-romance.dim_1200x1600.png)",
-      "Horror-themed cover illustration (cover-horror.dim_1200x1600.png)",
-      "Comedy-themed cover illustration (cover-comedy.dim_1200x1600.png)",
-      "Mythology-themed cover illustration (cover-mythology.dim_1200x1600.png)",
-      "Educational-themed cover illustration (cover-educational.dim_1200x1600.png)",
-      "Superhero-themed cover illustration (cover-superhero.dim_1200x1600.png)"
+      "Simple app logo mark, clean geometric book/globe motif, transparent background (gtu-logo.dim_512x512.png 512x512)"
     ],
     "edits": []
   },

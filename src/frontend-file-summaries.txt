@@ -1,10 +1,10 @@
 {
-  "frontend/src/App.tsx": "Main app component with TanStack Router setup, splash screen logic, bottom navigation layout, PWA install banner, and service worker registration for the Global Tales Universe app.",
+  "frontend/src/App.tsx": "Main app component with TanStack Router setup, splash screen logic, onboarding flow gating, drawer state management, conditional header/bottom nav layout (hidden on StoryReader), PWA install banner, and service worker registration for the Global Tales Universe app.",
   "frontend/src/components/StoryCard.tsx": "Reusable story card component that displays story information in both featured (large) and list (compact) formats with cover images, metadata, and navigation.",
   "frontend/src/components/CategoryScroller.tsx": "Horizontal scrolling category selector that filters categories based on Kids/Adults mode and displays translated category names.",
   "frontend/src/components/ContinueReadingCard.tsx": "Component that displays the last read story with progress indicator and allows users to resume reading from where they left off.",
   "frontend/src/pages/CategoriesTab.tsx": "Categories browsing page that displays all available categories as a grid with cover images and handles Kids/Adults mode filtering.",
-  "frontend/src/index.css": "Global styles with Tailwind base layers, OKLCH color system for light/dark themes, and font classes for multi-language script support (Latin, Indic, Arabic).",
+  "frontend/src/index.css": "Global styles with Tailwind layers, OKLCH color system for light/dark themes, multi-language font classes, and onboarding-specific animation utilities with distinct ease-out (entering) and ease-in (exiting) curves for smoother transitions, plus reduced-motion safeguards.",
   "frontend/src/pages/ProfileTab.tsx": "User profile page displaying engagement stats (streak, badges, challenges), account settings, login/logout controls, and premium subscription CTA with footer attribution.",
   "frontend/src/pages/StoryReader.tsx": "Full-featured story reading screen with adjustable font size, background themes, auto-scroll, progress tracking, favorites, sharing, offline downloads, and translation support.",
   "frontend/src/pages/GoPremium.tsx": "Premium subscription page with feature list and monthly/yearly plan options using placeholder purchase flow.",
@@ -18,5 +18,11 @@
   "frontend/src/pwa/registerServiceWorker.ts": "Helper function that registers the service worker on page load and sets up periodic update checks.",
   "frontend/src/hooks/usePwaInstallPrompt.ts": "Custom hook managing PWA install prompt state, handling beforeinstallprompt event, and persisting dismissal cooldown in localStorage.",
   "frontend/src/components/InstallPromptBanner.tsx": "Dismissible banner component displaying PWA install prompt with Install and Dismiss actions when app is installable.",
-  "frontend/index.html": "HTML entry point with PWA meta tags, manifest link, theme colors, iOS-specific PWA tags, and mobile-optimized viewport configuration."
+  "frontend/index.html": "HTML entry point with PWA meta tags, manifest link, theme colors, iOS-specific PWA tags, and mobile-optimized viewport configuration.",
+  "frontend/src/lib/onboarding.ts": "Utility functions for managing onboarding completion state in localStorage with read/write helpers.",
+  "frontend/src/components/onboarding/OnboardingFlow.tsx": "Full-screen 3-step onboarding component with polished animated step transitions (forward/backward), micro-interactions on option rows, smooth progress indicators, Skip button, and reduced-motion accessibility support integrated with PreferencesContext and next-themes.",
+  "frontend/src/hooks/usePrefersReducedMotion.ts": "Custom React hook that detects and subscribes to the user's prefers-reduced-motion media query setting, returning a boolean for accessibility-aware animation decisions.",
+  "frontend/src/components/onboarding/StepTransition.tsx": "Lightweight transition wrapper component for onboarding steps that coordinates direction-aware slide+fade animations with layout stability and reduced-motion support.",
+  "frontend/src/components/AppHeader.tsx": "Header component with hamburger menu button and centered app logo, displayed on all routes except StoryReader.",
+  "frontend/src/components/AppDrawer.tsx": "Left-side slide-in drawer navigation using Sheet component with menu items for all main routes, active route highlighting, and auto-close on navigation."
 }
