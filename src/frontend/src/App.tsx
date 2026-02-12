@@ -14,6 +14,11 @@ import FavoritesTab from './pages/FavoritesTab';
 import ProfileTab from './pages/ProfileTab';
 import StoryReader from './pages/StoryReader';
 import GoPremium from './pages/GoPremium';
+import PremiumSuccess from './pages/PremiumSuccess';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import HelpAndSupport from './pages/HelpAndSupport';
+import AboutUs from './pages/AboutUs';
 import { PreferencesProvider } from './context/PreferencesContext';
 import { Toaster } from './components/ui/sonner';
 import ReminderBanner from './components/ReminderBanner';
@@ -32,6 +37,7 @@ function RootLayout() {
 
   // Check if current route is StoryReader (full-screen experience)
   const isStoryReader = currentPath.startsWith('/story/');
+  const isPremiumSuccess = currentPath === '/premium/success';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,6 +55,14 @@ function RootLayout() {
     registerServiceWorker();
   }, []);
 
+  useEffect(() => {
+    // Auto-open drawer for preview if URL param is present
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('preview') === 'drawer') {
+      setDrawerOpen(true);
+    }
+  }, []);
+
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setOnboardingCompleted(true);
@@ -62,8 +76,8 @@ function RootLayout() {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
-  // StoryReader has its own layout
-  if (isStoryReader) {
+  // StoryReader and PremiumSuccess have their own layouts
+  if (isStoryReader || isPremiumSuccess) {
     return <Outlet />;
   }
 
@@ -133,6 +147,36 @@ const premiumRoute = createRoute({
   component: GoPremium,
 });
 
+const premiumSuccessRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/premium/success',
+  component: PremiumSuccess,
+});
+
+const privacyPolicyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/privacy-policy',
+  component: PrivacyPolicy,
+});
+
+const termsAndConditionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/terms-and-conditions',
+  component: TermsAndConditions,
+});
+
+const helpAndSupportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/help-and-support',
+  component: HelpAndSupport,
+});
+
+const aboutUsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/about-us',
+  component: AboutUs,
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   categoriesRoute,
@@ -142,6 +186,11 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   storyRoute,
   premiumRoute,
+  premiumSuccessRoute,
+  privacyPolicyRoute,
+  termsAndConditionsRoute,
+  helpAndSupportRoute,
+  aboutUsRoute,
 ]);
 
 const router = createRouter({ routeTree });

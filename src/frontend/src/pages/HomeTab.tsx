@@ -1,77 +1,93 @@
+import { useQuery } from '@tanstack/react-query';
+import { useActor } from '../hooks/useActor';
 import { usePreferences } from '../context/PreferencesContext';
-import { useDailyFeaturedStory, useStories } from '../hooks/useStories';
-import { uiLangToBackendLang } from '../lib/storyLanguage';
-import { t } from '../lib/i18n';
-import LanguageSelector from '../components/LanguageSelector';
-import ModeToggle from '../components/ModeToggle';
+import { useAppUser } from '../hooks/useAppUser';
+import { Story, Language } from '../backend';
 import StoryCard from '../components/StoryCard';
 import CategoryScroller from '../components/CategoryScroller';
 import ContinueReadingCard from '../components/ContinueReadingCard';
 import AdPlaceholder from '../components/AdPlaceholder';
-import { useAppUser } from '../hooks/useAppUser';
+import DailyStoryNotificationBanner from '../components/DailyStoryNotificationBanner';
+import { t } from '../lib/i18n';
+import { canShowNotifications } from '../lib/notifications';
 
 export default function HomeTab() {
+  const { actor } = useActor();
   const { language, mode } = usePreferences();
-  const { userState } = useAppUser();
-  const backendLang = uiLangToBackendLang(language);
-  const { data: featuredStory, isLoading: featuredLoading } = useDailyFeaturedStory(backendLang);
-  const { data: stories, isLoading: storiesLoading } = useStories(
-    backendLang,
-    true,
-    undefined,
-    mode === 'kids' ? true : undefined
-  );
+  const { isPremium, dailyNotificationsEnabled } = useAppUser();
 
-  // Type guard to check if userState has isPremium
-  const isPremium = userState && 'isPremium' in userState ? userState.isPremium : false;
+  const { data: featuredStory } = useQuery<Story>({
+    queryKey: ['featuredStory', language],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getDailyFeaturedStoryByLanguage(language as Language);
+    },
+    enabled: !!actor,
+  });
+
+  const { data: latestStories = [] } = useQuery<Story[]>({
+    queryKey: ['latestStories', language, mode],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getFilteredSortedStories(
+        language as Language,
+        true,
+        null,
+        mode === 'kids' ? true : null
+      );
+    },
+    enabled: !!actor,
+  });
+
+  // Show notification banner if user wants notifications but can't receive them
+  const showNotificationBanner = dailyNotificationsEnabled && !canShowNotifications();
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Global Tales</h1>
-        <LanguageSelector />
-      </div>
+    <div className="space-y-6 pb-6">
+      {/* Daily Story Notification Banner */}
+      {showNotificationBanner && <DailyStoryNotificationBanner show={true} />}
 
-      <ModeToggle />
+      {/* Ad Banner - only for non-premium users */}
+      {!isPremium && (
+        <div className="px-4 pt-4">
+          <AdPlaceholder type="banner" />
+        </div>
+      )}
 
-      {featuredLoading ? (
-        <div className="h-64 bg-muted animate-pulse rounded-2xl" />
-      ) : featuredStory ? (
-        <>
-          <div>
-            <h2 className="text-lg font-semibold mb-3">{t('featuredStory', language)}</h2>
-            <StoryCard story={featuredStory} featured />
-          </div>
-        </>
-      ) : null}
+      {/* Featured Story */}
+      {featuredStory && (
+        <div className="px-4">
+          <h2 className="text-xl font-bold mb-4">{t('featuredStory', language)}</h2>
+          <StoryCard story={featuredStory} featured />
+        </div>
+      )}
 
+      {/* Categories */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">{t('categories', language)}</h2>
+        <h2 className="text-xl font-bold mb-4 px-4">{t('categories', language)}</h2>
         <CategoryScroller />
       </div>
 
-      <ContinueReadingCard />
+      {/* Continue Reading */}
+      <div className="px-4">
+        <ContinueReadingCard />
+      </div>
 
-      {!isPremium && <AdPlaceholder type="banner" />}
+      {/* Inline Ad - only for non-premium users */}
+      {!isPremium && (
+        <div className="px-4">
+          <AdPlaceholder type="inline" />
+        </div>
+      )}
 
-      <div>
-        <h2 className="text-lg font-semibold mb-3">{t('latestStories', language)}</h2>
-        {storiesLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {stories?.slice(0, 10).map((story, idx) => (
-              <div key={story.id.toString()}>
-                <StoryCard story={story} />
-                {!isPremium && idx === 4 && <AdPlaceholder type="inline" />}
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Latest Stories */}
+      <div className="px-4">
+        <h2 className="text-xl font-bold mb-4">{t('latestStories', language)}</h2>
+        <div className="space-y-4">
+          {latestStories.slice(0, 10).map((story) => (
+            <StoryCard key={Number(story.id)} story={story} />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -7,13 +7,19 @@ import Iter "mo:core/Iter";
 import Time "mo:core/Time";
 import Order "mo:core/Order";
 import List "mo:core/List";
+import Storage "blob-storage/Storage";
+import MixinStorage "blob-storage/Mixin";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+
+// Data migration module imported to the top.
 
 actor {
   // Initialize the user system state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+  include MixinStorage();
 
   // Types
   type Language = {
@@ -59,9 +65,10 @@ actor {
     premiumSubscriptionActive : Bool;
   };
 
-  // User profile type for frontend compatibility
+  // Extended UserProfile type to include public display image blob.
   public type UserProfile = {
     name : Text;
+    image : ?Storage.ExternalBlob;
   };
 
   // Module for Story comparison logic.

@@ -1,95 +1,169 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Left-side drawer navigation and header logo for the existing React PWA",
+  "title": "Fake Premium subscription flow, in-app sharing, and daily notification simulation",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a persistent app header to the post-splash/onboarding layout with a hamburger button and logo.",
+      "summary": "Implement a fake Premium subscribe/cancel flow with local persistence, app-wide UI updates (badge/crown, ads hidden), and premium-story unlock placeholder messaging.",
       "acceptanceCriteria": [
-        "When the user is past Splash + Onboarding, a header is visible above the current page content.",
-        "The header includes a hamburger/menu button on the left and a logo image.",
-        "Header does not appear on SplashScreen or OnboardingFlow screens."
+        "From the AppDrawer “Premium” item and Profile “Go Premium” button, the user can reach the Go Premium page.",
+        "Go Premium page displays the benefits string and the placeholder prices exactly as specified in English.",
+        "Tapping \"Subscribe Now\" shows a success screen with the exact success message and sets `isPremium=true` via the existing user-state persistence path (guest localStorage and authenticated backend save).",
+        "After subscribing, AppDrawer and Profile show a crown icon or “Premium” badge next to the username without page refresh.",
+        "After subscribing, ad placeholders no longer render on Home (banner and inline) and any other ad placements are also hidden when `isPremium=true`.",
+        "Profile includes \"Cancel Subscription\"; tapping it sets `isPremium=false`, removes the badge/crown, and ads reappear where applicable.",
+        "If the UI has any premium-only story gating, the locked state is replaced by a placeholder message \"Premium unlocked\" when premium is active."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AppHeader.tsx",
+          "path": "frontend/src/hooks/useAppUser.ts",
+          "operation": "modify",
+          "description": "Unify premium persistence across guest and authenticated users: keep guest `isPremium` in localStorage and map authenticated premium changes to the backend AppUser premium field (while exposing a stable `isPremium` boolean to the UI). Ensure updates propagate immediately via react-query invalidation/state updates."
+        },
+        {
+          "path": "frontend/src/pages/GoPremium.tsx",
+          "operation": "modify",
+          "description": "Update Go Premium UI/content to match required copy exactly (benefits string and placeholder prices), remove any real-payment framing, and replace current subscribe actions with a single \"Subscribe Now\" action that sets premium via useAppUser.updateUserState and navigates to a dedicated success screen. Use shadcn-ui Button/Badge/Separator styling patterns for consistency. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/PremiumSuccess.tsx",
           "operation": "create",
-          "description": "Create an AppHeader component that renders a top app bar with a left hamburger button and a logo image. Use shadcn/ui primitives (e.g., Button) for consistent styling; verify the component's usage instructions before implementing."
+          "description": "Add a dedicated Premium subscription success screen that displays the exact message: \"Subscribed successfully! Enjoy premium features.\" and provides a clear navigation action back into the app (e.g., Home/Profile) using existing dark-themed layout. Use shadcn-ui Button for actions. Verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Integrate AppHeader into the main RootLayout that currently renders BottomNav, ensuring it is only rendered after SplashScreen and OnboardingFlow have completed (i.e., within the existing post-splash/onboarding return branch)."
+          "description": "Wire the new Premium success screen into routing (e.g., a /premium/success route) so it is reachable only through the subscribe flow and is testable end-to-end in preview."
+        },
+        {
+          "path": "frontend/src/components/AppDrawer.tsx",
+          "operation": "modify",
+          "description": "Show a crown icon or \"Premium\" badge next to the username in the drawer when premium is active (using the unified `isPremium` state). Keep drawer navigation to /premium intact. Use shadcn-ui Badge (or an icon) and match existing spacing/typography. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ProfileTab.tsx",
+          "operation": "modify",
+          "description": "Add premium status indicator (crown icon or \"Premium\" badge) next to the username on Profile; add \"Cancel Subscription\" action that sets premium off via useAppUser.updateUserState; ensure the existing \"Go Premium\" button remains and is clearly accessible. Use shadcn-ui Button/Badge/Separator patterns. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AdPlaceholder.tsx",
+          "operation": "modify",
+          "description": "Add a defensive premium gate inside AdPlaceholder (read premium state and return null when premium) to ensure any remaining ad placements across the app are reliably hidden when `isPremium=true`, while preserving existing explicit gates in pages."
+        },
+        {
+          "path": "frontend/src/components/StoryCard.tsx",
+          "operation": "modify",
+          "description": "For premium-flagged stories, display a clear placeholder message \"Premium unlocked\" when premium is active (replacing any implied locked state / premium gating indicator). When not premium, keep the existing premium labeling. Use shadcn-ui Badge and keep styling consistent. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Implement a left-side drawer that opens from the header hamburger button and closes via explicit close and selection actions.",
+      "summary": "Add in-app sharing for the overall app and enhance story sharing with Web Share API + robust copy-link fallback and toasts.",
       "acceptanceCriteria": [
-        "Clicking/tapping the hamburger button opens a left-side drawer.",
-        "The drawer can be closed without navigation (close button or outside click) and closes after selecting a menu item.",
-        "Drawer open/close behavior works on mobile and desktop widths."
+        "Profile (or Home) shows a visible button labeled exactly \"Invite Friends – Share App\".",
+        "On supported browsers, tapping \"Invite Friends – Share App\" opens the native share dialog with the specified message and includes the current app URL.",
+        "On unsupported browsers, tapping the share button provides a copy-link fallback that copies the URL and shows a success toast.",
+        "StoryReader share button shares title + preview + URL using navigator.share when available, otherwise copies the story URL (or app URL fallback) to clipboard with a toast.",
+        "No runtime errors occur when `navigator.share` or `navigator.clipboard` is unavailable; the UI presents a usable fallback."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AppDrawer.tsx",
+          "path": "frontend/src/lib/share.ts",
           "operation": "create",
-          "description": "Create an AppDrawer component implementing a controlled left-side slide-in panel. Use a shadcn/ui overlay/drawer pattern (e.g., Sheet) to support outside-click close and an explicit close control; verify the component's usage instructions before implementing."
+          "description": "Create a small sharing utility that (1) builds runtime URLs from window.location, (2) uses Web Share API when available, and (3) falls back to clipboard copy with a final fallback (e.g., selectable text/dialog) when clipboard APIs are unavailable. Centralize toast messages for success/failure using the existing toast system."
         },
         {
-          "path": "frontend/src/components/AppHeader.tsx",
+          "path": "frontend/src/pages/ProfileTab.tsx",
           "operation": "modify",
-          "description": "Wire the hamburger button to control AppDrawer open/close state, and pass handlers so the drawer can close via explicit close and after a navigation item is selected. Use shadcn/ui Button/icon patterns; verify the component's usage instructions before implementing."
+          "description": "Add a button labeled exactly \"Invite Friends – Share App\" near the bottom of Profile. On tap, share the exact message \"Check out Global Tales Universe – Free multi-language stories app for adults & kids! Install here: [current app URL]\" using the new share utility, with copy-link fallback and a confirmation toast. Use shadcn-ui Button for styling. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/ShareSheetPlaceholder.tsx",
+          "operation": "modify",
+          "description": "Enhance the existing StoryReader share control to include story title, a short preview (prefer summary; otherwise safe truncated snippet), and a stable story URL when possible (else fall back to the app URL). Use the share utility so Web Share API and copy fallback behavior is consistent and resilient when APIs are missing."
+        },
+        {
+          "path": "frontend/src/pages/StoryReader.tsx",
+          "operation": "modify",
+          "description": "Pass story title + summary/body-derived preview information into the ShareSheetPlaceholder so the share payload contains title + preview + URL as required, without adding new routes beyond existing story route."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add TanStack Router navigation items in the drawer for existing routes and indicate the active route.",
+      "summary": "Simulate daily notifications using the browser Notifications API with a Profile toggle, permission prompt copy, persistence, and an in-app fallback banner when real notifications cannot be shown.",
       "acceptanceCriteria": [
-        "Each drawer menu item navigates to the correct existing route using TanStack Router navigation APIs.",
-        "The current route is visually indicated as active inside the drawer menu.",
-        "No routes are removed or renamed."
+        "Profile contains a toggle labeled exactly \"Enable Daily Story Notifications\" and it persists across reloads.",
+        "If Notification permission is not yet granted, enabling the toggle triggers a permission request flow.",
+        "If permission is granted, a sample notification with the exact message \"New story added! Open app to read today's motivational tale.\" is shown immediately (suitable for preview testing).",
+        "If Notifications API is unsupported or permission is denied, the UI provides a clear explanation and does not repeatedly re-prompt unexpectedly.",
+        "When real notifications cannot be shown but the user wants daily notifications, Home displays an in-app simulation banner/badge labeled exactly \"New story today!\".",
+        "Existing service worker registration remains functional and does not regress offline behavior."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AppDrawer.tsx",
+          "path": "frontend/src/hooks/useAppUser.ts",
           "operation": "modify",
-          "description": "Add drawer menu items for Home (/), Categories (/categories), Search (/search), Favorites (/favorites), Profile (/profile), and Premium (/premium). Use TanStack Router navigation APIs (e.g., useNavigate) and router state (e.g., useRouterState) to navigate and style the active item; close the drawer after selection."
+          "description": "Add persistence for a daily-notifications preference using the existing user state persistence path: store for guests in the existing guest state localStorage, and for authenticated users persist via an identity-scoped local overlay while still using useAppUser.updateUserState as the single UI-facing API. Ensure the preference rehydrates on reload."
+        },
+        {
+          "path": "frontend/src/lib/notifications.ts",
+          "operation": "create",
+          "description": "Add helpers to: detect Notification API support, request permission once in a user-initiated flow, determine whether a real notification can be shown, and show the test notification with the exact message \"New story added! Open app to read today's motivational tale.\" without throwing when APIs are missing."
+        },
+        {
+          "path": "frontend/src/pages/ProfileTab.tsx",
+          "operation": "modify",
+          "description": "Add the exact permission prompt text \"Allow notifications for daily new stories?\" as an explicit CTA near the notifications controls; add a toggle labeled exactly \"Enable Daily Story Notifications\" that persists via useAppUser.updateUserState. When enabling: request permission if needed; if granted, immediately show the sample notification with the exact message; if denied/unsupported, keep toggle off/disabled with a clear inline explanation and do not repeatedly re-prompt unexpectedly. Use shadcn-ui Button/Separator and a shadcn-ui-compatible toggle pattern already present in the codebase (without editing frontend/src/components/ui). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/DailyStoryNotificationBanner.tsx",
+          "operation": "create",
+          "description": "Create a dismissible in-app simulation banner/badge component for Home that displays exactly \"New story today!\" when the user has enabled daily notifications but real browser notifications cannot be shown. Style to match the existing dark theme and ReminderBanner patterns using shadcn-ui Button for dismiss. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/HomeTab.tsx",
+          "operation": "modify",
+          "description": "Wire the in-app simulation banner into Home so it appears only when daily notifications are enabled and real notifications cannot be shown, and remains dismissible. Ensure this does not interfere with existing ads/premium gating."
+        },
+        {
+          "path": "frontend/public/sw.js",
+          "operation": "modify",
+          "description": "Verify no regressions to existing service worker behavior by ensuring any notification-related changes do not alter or depend on service worker caching logic; keep current registration and caching intact (only adjust if strictly required for Notifications API compatibility)."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Integrate header + drawer without breaking BottomNav, ensure content layout accounts for header, and keep StoryReader usable.",
+      "summary": "Ensure Premium, Share, and Notifications UI additions match the existing dark theme and shadcn-based component styling and remain testable end-to-end in preview.",
       "acceptanceCriteria": [
-        "BottomNav remains visible and functional as before.",
-        "Main page content is scrollable and not obscured by the new header.",
-        "StoryReader and other full-screen experiences still render correctly with the new layout."
+        "New screens and controls visually match the existing dark UI styling and component system.",
+        "Premium flow is testable end-to-end in preview: open Premium → subscribe → see success → badge appears → ads hidden; cancel reverses.",
+        "Share flow is testable end-to-end in preview: app share and story share trigger share dialog when supported or show copy fallback.",
+        "Notifications flow is testable end-to-end in preview: toggle prompts permission and displays the sample notification when granted (or shows in-app simulation when not possible)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Adjust RootLayout structure so the header sits above the scrollable main content area (no content hidden under the header) while retaining the existing fixed BottomNav and its spacing (pb-16). Add route-aware layout behavior if needed so StoryReader continues to render as a full-screen experience without visual conflicts."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Use an existing/generated static logo asset for the header logo via frontend static files, consistent with PWA icon conventions.",
-      "acceptanceCriteria": [
-        "The header logo is served as a static asset (e.g., under frontend/public/assets/generated).",
-        "The app builds successfully without requiring any backend changes to serve the logo.",
-        "Logo renders crisply in both light and dark themes (no unreadable blending)."
-      ],
-      "file_operations": [
+          "description": "If needed, add minimal global styling adjustments (only via existing tokens/utilities) to keep new Premium/Share/Notifications controls consistent with the current dark theme, spacing, and typography; avoid introducing new theme systems."
+        },
         {
-          "path": "frontend/src/components/AppHeader.tsx",
+          "path": "frontend/src/pages/GoPremium.tsx",
           "operation": "modify",
-          "description": "Reference the static logo asset at frontend/public/assets/generated/gtu-logo.dim_512x512.png for the header logo (matching the manifest icon convention) and style it to remain legible in light/dark themes; verify the component's usage instructions before implementing."
+          "description": "Refine layout/spacing/typography to align with existing dark-themed patterns and shadcn-ui composition (Button/Badge/Separator), ensuring the subscribe → success flow is clean and preview-testable. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ProfileTab.tsx",
+          "operation": "modify",
+          "description": "Refine placement and styling of Premium badge/cancel, \"Invite Friends – Share App\", and \"Enable Daily Story Notifications\" controls so they match existing Profile sections and remain easy to test in preview. Use shadcn-ui components for consistency. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/HomeTab.tsx",
+          "operation": "modify",
+          "description": "Ensure the in-app notification simulation banner integrates cleanly with existing Home layout (ReminderBanner, install banner, ads) and respects dark theme styling."
         }
       ]
     }

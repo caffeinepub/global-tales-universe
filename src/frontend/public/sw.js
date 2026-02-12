@@ -1,8 +1,12 @@
-const CACHE_NAME = 'global-tales-v1';
+const CACHE_NAME = 'global-tales-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/assets/generated/gtu-logo.dim_512x512.png',
+  '/assets/generated/gtu-app-icon.dim_192x192.png',
+  '/assets/generated/gtu-app-icon.dim_512x512.png',
+  '/assets/generated/gtu-app-icon-maskable.dim_512x512.png',
+  '/assets/generated/gtu-app-icon.dim_180x180.png',
+  '/assets/generated/gtu-favicon.dim_32x32.png',
   '/assets/generated/gtu-splash-bg.dim_1080x1920.png',
   '/assets/generated/cover-default.dim_1200x1600.png',
   '/assets/generated/cover-kids-default.dim_1200x1600.png',

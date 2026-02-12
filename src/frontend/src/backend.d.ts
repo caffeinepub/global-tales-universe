@@ -7,10 +7,12 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Content {
-    title: string;
-    body: string;
-    summary: string;
+export class ExternalBlob {
+    getBytes(): Promise<Uint8Array<ArrayBuffer>>;
+    getDirectURL(): string;
+    static fromURL(url: string): ExternalBlob;
+    static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
+    withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
 export interface AppUser {
     favoriteStoryIds: Array<bigint>;
@@ -23,9 +25,6 @@ export interface AppUser {
     adsWatched: bigint;
     premiumSubscriptionActive: boolean;
     badgeAchievements: Array<string>;
-}
-export interface UserProfile {
-    name: string;
 }
 export interface Story {
     id: bigint;
@@ -43,6 +42,15 @@ export interface Story {
     rating: bigint;
     isKidFriendly: boolean;
     readTimeMinutes: bigint;
+}
+export interface Content {
+    title: string;
+    body: string;
+    summary: string;
+}
+export interface UserProfile {
+    name: string;
+    image?: ExternalBlob;
 }
 export enum Language {
     tamil = "tamil",

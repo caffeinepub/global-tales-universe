@@ -24,9 +24,11 @@ interface UserState {
     timestamp: number;
     progress: number;
   }>;
+  dailyNotificationsEnabled?: boolean;
 }
 
 const GUEST_STORAGE_KEY = 'gtu_guest_user_state';
+const NOTIFICATIONS_PREF_KEY = 'gtu_notifications_pref';
 
 export function useAppUser() {
   const { identity } = useInternetIdentity();
@@ -77,14 +79,40 @@ export function useAppUser() {
     },
   });
 
+  // Get unified premium state
+  const isPremium = isAuthenticated && backendUser 
+    ? backendUser.premiumSubscriptionActive 
+    : guestState.isPremium || false;
+
+  // Get unified notifications preference (identity-scoped for authenticated users)
+  const dailyNotificationsEnabled = (() => {
+    if (isAuthenticated && identity) {
+      const key = `${NOTIFICATIONS_PREF_KEY}_${identity.getPrincipal().toString()}`;
+      const stored = localStorage.getItem(key);
+      return stored === 'true';
+    }
+    return guestState.dailyNotificationsEnabled || false;
+  })();
+
   // Unified user state (guest or authenticated)
   const userState: UserState | AppUser = isAuthenticated && backendUser ? backendUser : guestState;
 
   const updateUserState = (updates: Partial<UserState>) => {
     if (isAuthenticated && backendUser && actor) {
-      // For authenticated users, merge with backend user
-      const updated = { ...backendUser, ...updates } as AppUser;
-      saveBackendUser.mutate(updated);
+      // For authenticated users, handle premium via backend
+      if ('isPremium' in updates) {
+        const updated = { 
+          ...backendUser, 
+          premiumSubscriptionActive: updates.isPremium || false 
+        } as AppUser;
+        saveBackendUser.mutate(updated);
+      }
+      
+      // Handle notifications preference separately (identity-scoped localStorage)
+      if ('dailyNotificationsEnabled' in updates && identity) {
+        const key = `${NOTIFICATIONS_PREF_KEY}_${identity.getPrincipal().toString()}`;
+        localStorage.setItem(key, String(updates.dailyNotificationsEnabled || false));
+      }
     } else {
       // For guests, merge with local state
       const updated = { ...guestState, ...updates };
@@ -105,5 +133,7 @@ export function useAppUser() {
     userState,
     updateUserState,
     isAuthenticated,
+    isPremium,
+    dailyNotificationsEnabled,
   };
 }

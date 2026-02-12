@@ -16,6 +16,7 @@ export default function LoginButton() {
   const handleAuth = async () => {
     if (isAuthenticated) {
       await clear();
+      // Clear all queries including userProfile
       queryClient.clear();
     } else {
       try {

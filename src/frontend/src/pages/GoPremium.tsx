@@ -4,26 +4,23 @@ import { useAppUser } from '../hooks/useAppUser';
 import { t } from '../lib/i18n';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Check, Crown } from 'lucide-react';
-import { toast } from 'sonner';
+import { Separator } from '../components/ui/separator';
 
 export default function GoPremium() {
   const navigate = useNavigate();
   const { language } = usePreferences();
   const { updateUserState } = useAppUser();
 
-  const handlePurchase = (plan: 'monthly' | 'yearly') => {
+  const handleSubscribe = () => {
     updateUserState({ isPremium: true });
-    toast.success(`Premium ${plan} subscription activated! (Placeholder)`);
-    navigate({ to: '/' });
+    navigate({ to: '/premium/success' });
   };
 
-  const features = [
-    'Remove all ads',
-    'Unlock all premium stories',
-    'Access to all languages',
+  const benefits = [
+    'No ads',
+    'Unlimited premium stories',
     'Exclusive content',
-    'Offline downloads',
-    'Early access to new stories',
+    'Daily exclusive story',
   ];
 
   return (
@@ -42,33 +39,35 @@ export default function GoPremium() {
       </div>
 
       <div className="bg-card rounded-xl p-6 mb-6">
-        <h3 className="font-semibold mb-4">Premium Features</h3>
+        <h3 className="font-semibold mb-4">Premium Benefits</h3>
         <div className="space-y-3">
-          {features.map((feature) => (
-            <div key={feature} className="flex items-center gap-3">
+          {benefits.map((benefit) => (
+            <div key={benefit} className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                 <Check className="w-4 h-4 text-white" />
               </div>
-              <span>{feature}</span>
+              <span>{benefit}</span>
             </div>
           ))}
         </div>
       </div>
+
+      <Separator className="my-6" />
 
       <div className="space-y-4">
         <div className="bg-card rounded-xl p-6 border-2 border-primary">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-bold text-lg">Yearly Plan</h3>
-              <p className="text-sm text-muted-foreground">Save 40%</p>
+              <p className="text-sm text-muted-foreground">Best value</p>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold">$29.99</p>
+              <p className="text-3xl font-bold">₹799</p>
               <p className="text-sm text-muted-foreground">/year</p>
             </div>
           </div>
-          <Button className="w-full" size="lg" onClick={() => handlePurchase('yearly')}>
-            Subscribe Yearly
+          <Button className="w-full" size="lg" onClick={handleSubscribe}>
+            Subscribe Now
           </Button>
         </div>
 
@@ -79,18 +78,18 @@ export default function GoPremium() {
               <p className="text-sm text-muted-foreground">Flexible billing</p>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold">$4.99</p>
+              <p className="text-3xl font-bold">₹99</p>
               <p className="text-sm text-muted-foreground">/month</p>
             </div>
           </div>
-          <Button className="w-full" variant="outline" size="lg" onClick={() => handlePurchase('monthly')}>
-            Subscribe Monthly
+          <Button className="w-full" variant="outline" size="lg" onClick={handleSubscribe}>
+            Subscribe Now
           </Button>
         </div>
       </div>
 
       <p className="text-xs text-center text-muted-foreground mt-6">
-        This is a placeholder purchase flow. No actual payment will be processed.
+        This is a placeholder subscription. No actual payment will be processed.
       </p>
     </div>
   );
