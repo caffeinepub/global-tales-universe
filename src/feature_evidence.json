@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-polish-the-premium-experience-end-to-end-go-premium-premium-success-profile-and-drawer-to-feel-more-complete-and-consistent-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-fake-subscription-behavior-no-real-payments",
-      "featureTitle": "Polish the Premium experience end-to-end (Go Premium, Premium Success, Profile, and Drawer) to feel more complete and consistent: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing fake subscription behavior (no real payments).",
+      "featureId": "feature-polish-the-premium-experience-end-to-end-across-go-premium-premium-success-profile-and-the-app-drawer-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-placeholder-fake-subscription-behavior-no-real-payments",
+      "featureTitle": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
       "files": [
         "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/components/PremiumBadge.tsx",
         "frontend/src/pages/GoPremium.tsx",
         "frontend/src/pages/PremiumSuccess.tsx",
         "frontend/src/pages/ProfileTab.tsx"
@@ -26,12 +25,13 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-in-the-ui-is-consistently-hidden-for-premium-users-and-make-any-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
-      "featureTitle": "Enhance ad-removal and premium gating polish: ensure every ad placement in the UI is consistently hidden for premium users, and make any premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+      "featureId": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-is-consistently-hidden-for-premium-users-and-make-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
+      "featureTitle": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
       "files": [
         "frontend/src/components/AdPlaceholder.tsx",
+        "frontend/src/components/InterstitialAdModal.tsx",
         "frontend/src/components/StoryCard.tsx",
-        "frontend/src/hooks/useAppUser.ts"
+        "frontend/src/pages/StoryReader.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -53,7 +53,8 @@
       "files": [
         "frontend/src/components/ShareSheetPlaceholder.tsx",
         "frontend/src/lib/share.ts",
-        "frontend/src/pages/ProfileTab.tsx"
+        "frontend/src/pages/ProfileTab.tsx",
+        "frontend/src/pages/StoryReader.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -70,8 +71,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-improve-the-in-app-new-story-today-simulation-banner-styling-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
-      "featureTitle": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and improve the in-app “New story today!” simulation banner styling to match the app’s overall theme (avoid clashing gradients).",
+      "featureId": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-restyle-the-in-app-new-story-today-simulation-banner-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
+      "featureTitle": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
       "files": [
         "frontend/src/components/DailyStoryNotificationBanner.tsx",
         "frontend/src/lib/notifications.ts",
@@ -92,12 +93,15 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-and-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
-      "featureTitle": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone, and remove any accidental mixed styling that stands out from the rest of the app.",
+      "featureId": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
+      "featureTitle": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
       "files": [
-        "frontend/src/components/PremiumBadge.tsx",
+        "frontend/src/components/AppDrawer.tsx",
+        "frontend/src/components/DailyStoryNotificationBanner.tsx",
         "frontend/src/components/ShareSheetPlaceholder.tsx",
+        "frontend/src/lib/uiPolish.ts",
         "frontend/src/pages/GoPremium.tsx",
+        "frontend/src/pages/PremiumSuccess.tsx",
         "frontend/src/pages/ProfileTab.tsx"
       ],
       "components": [

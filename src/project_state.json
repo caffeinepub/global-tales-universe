@@ -1,22 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "App with premium, sharing, and notifications deployed; user requests enhancing/polishing all three features.",
+  "summary": "Polish and refine the live app iteratively, improving visuals and related UX areas one-by-one.",
   "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-polish-the-premium-experience-end-to-end-go-premium-premium-success-profile-and-drawer-to-feel-more-complete-and-consistent-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-fake-subscription-behavior-no-real-payments",
-      "title": "Polish the Premium experience end-to-end (Go Premium, Premium Success, Profile, and Drawer) to feel more complete and consistent: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing fake subscription behavior (no real payments).",
+      "id": "feature-polish-the-premium-experience-end-to-end-across-go-premium-premium-success-profile-and-the-app-drawer-improve-copy-layout-hierarchy-add-clearer-plan-comparison-and-selection-feedback-prevent-accidental-double-taps-on-subscribe-and-make-premium-status-cancellation-ux-clearer-while-preserving-the-existing-placeholder-fake-subscription-behavior-no-real-payments",
+      "title": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-in-the-ui-is-consistently-hidden-for-premium-users-and-make-any-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
-      "title": "Enhance ad-removal and premium gating polish: ensure every ad placement in the UI is consistently hidden for premium users, and make any premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+      "id": "feature-enhance-ad-removal-and-premium-gating-polish-ensure-every-ad-placement-is-consistently-hidden-for-premium-users-and-make-premium-only-story-ui-states-feel-intentional-and-user-friendly-no-awkward-placeholders",
+      "title": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
       "reqIds": [
         "REQ-2"
       ],
@@ -31,16 +31,16 @@
       "version": 1
     },
     {
-      "id": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-improve-the-in-app-new-story-today-simulation-banner-styling-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
-      "title": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and improve the in-app “New story today!” simulation banner styling to match the app’s overall theme (avoid clashing gradients).",
+      "id": "feature-polish-notifications-ux-and-behavior-make-permission-state-and-outcomes-clearer-keep-the-toggle-state-consistent-with-browser-permission-and-restyle-the-in-app-new-story-today-simulation-banner-to-match-the-app-s-overall-theme-avoid-clashing-gradients",
+      "title": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-and-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
-      "title": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone, and remove any accidental mixed styling that stands out from the rest of the app.",
+      "id": "feature-apply-a-consistent-ui-polish-pass-across-premium-share-and-notifications-surfaces-to-reduce-visual-inconsistency-align-button-variants-icon-sizing-card-padding-separators-and-microcopy-tone-remove-any-accidental-mixed-styling-that-stands-out-from-the-rest-of-the-app",
+      "title": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
       "reqIds": [
         "REQ-5"
       ],
@@ -50,24 +50,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Enhance/polish Premium feature (UI refinements, more perks, improved flow)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Enhance/polish Sharing feature (improve invite/share flow and UX)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Enhance/polish Notifications feature (polish UX and behavior/settings)",
+      "summary": "Iteratively polish the live app one area at a time (visuals, animations, premium flow, share flow, notifications).",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Enhance and polish Premium, Sharing, and Notifications UX across the app",
+  "projectName": "Iterative polish pass across Premium, Sharing, and Notifications (one-by-one)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

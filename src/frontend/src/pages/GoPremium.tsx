@@ -6,6 +6,7 @@ import { t } from '../lib/i18n';
 import { Button } from '../components/ui/button';
 import { ArrowLeft, Check, Crown } from 'lucide-react';
 import { Separator } from '../components/ui/separator';
+import { iconSizes, cardPadding, rowSpacing, separatorMargin } from '../lib/uiPolish';
 
 export default function GoPremium() {
   const navigate = useNavigate();
@@ -28,10 +29,10 @@ export default function GoPremium() {
   };
 
   const benefits = [
-    { text: 'No ads', description: 'Ad-free reading experience' },
+    { text: 'Ad-free reading', description: 'Enjoy stories without interruptions' },
     { text: 'Unlimited premium stories', description: 'Access all exclusive content' },
     { text: 'Exclusive content', description: 'Early access to new stories' },
-    { text: 'Daily exclusive story', description: 'Fresh content every day' },
+    { text: 'Daily exclusive story', description: 'Fresh premium content every day' },
   ];
 
   return (
@@ -43,7 +44,7 @@ export default function GoPremium() {
           onClick={() => navigate({ to: '/profile' })}
           disabled={isSubscribing}
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className={iconSizes.md} />
         </Button>
         <h1 className="text-2xl font-bold flex-1">{t('goPremium', language)}</h1>
       </div>
@@ -54,13 +55,13 @@ export default function GoPremium() {
         <p className="text-white/90 text-lg">Get unlimited access to all stories and features</p>
       </div>
 
-      <div className="bg-card rounded-xl p-6 mb-8 border shadow-sm">
+      <div className={`bg-card rounded-xl ${cardPadding.default} mb-8 border shadow-sm`}>
         <h3 className="font-semibold text-lg mb-5">Premium Benefits</h3>
-        <div className="space-y-4">
+        <div className={rowSpacing.default}>
           {benefits.map((benefit) => (
             <div key={benefit.text} className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5">
-                <Check className="w-4 h-4 text-white" />
+              <div className={`${iconSizes.lg} rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5`}>
+                <Check className={iconSizes.sm} style={{ color: 'white' }} />
               </div>
               <div className="flex-1">
                 <p className="font-medium">{benefit.text}</p>
@@ -71,11 +72,13 @@ export default function GoPremium() {
         </div>
       </div>
 
-      <Separator className="my-8" />
+      <Separator className={separatorMargin.default} />
 
       <div className="space-y-4">
         <div 
-          className={`bg-card rounded-xl p-6 border-2 transition-all cursor-pointer ${
+          className={`bg-card rounded-xl ${cardPadding.default} border-2 transition-all ${
+            isSubscribing ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+          } ${
             selectedPlan === 'yearly' 
               ? 'border-primary shadow-lg scale-[1.02]' 
               : 'border-border hover:border-primary/50'
@@ -111,7 +114,9 @@ export default function GoPremium() {
         </div>
 
         <div 
-          className={`bg-card rounded-xl p-6 border-2 transition-all cursor-pointer ${
+          className={`bg-card rounded-xl ${cardPadding.default} border-2 transition-all ${
+            isSubscribing ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+          } ${
             selectedPlan === 'monthly' 
               ? 'border-primary shadow-lg scale-[1.02]' 
               : 'border-border hover:border-primary/50'

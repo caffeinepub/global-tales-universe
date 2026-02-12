@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Enhance and visually unify the Premium, Sharing, and Notifications user experience across the app while preserving existing placeholder behaviors (no real subscriptions/payments, no real push scheduling).
+**Goal:** Apply an iterative UI/UX polish pass across Premium, Sharing, and Notifications to improve clarity, consistency, and feedback while preserving the existing placeholder (fake) subscription behavior.
 
 **Planned changes:**
-- Polish the Premium flow end-to-end (Go Premium, Premium Success, Profile, Drawer): improve layout hierarchy and copy, add clearer Monthly vs Yearly plan comparison/selection feedback, prevent rapid double-tap on Subscribe with a temporary loading/disabled state, and clarify Premium status + cancellation UX (still toggles isPremium immediately with existing fake subscription behavior).
-- Ensure premium gating polish: hide all ad UI consistently when isPremium=true and make premium-only story indicators/states feel intentional and consistent (no confusing placeholder/lock states); switching Free/Premium updates UI immediately.
-- Improve sharing UX for “Share App” and “Share Story”: provide clear feedback for success/cancel/failure, add an explicit copy-link action when Web Share API is unavailable (with toast confirmation), include readable shared text (title + optional preview) and a stable story URL when possible, and ensure share buttons reliably re-enable after completion.
-- Polish Notifications UX: clearly communicate permission states (unsupported/denied/granted/not decided), keep toggle behavior consistent with browser permission (denied stays off/disabled with actionable guidance), request permission when enabling as needed, and restyle the in-app “New story today!” simulation banner to match existing Tailwind design tokens without clashing gradients; preserve existing /sw.js registration/offline behavior.
-- Apply a consistent UI polish pass across these surfaces: align button variants, icon sizing, card padding, separators, and microcopy tone/capitalization using existing UI component patterns.
+- Polish the Premium flow (Go Premium, Premium Success, Profile, App Drawer): improve copy/layout hierarchy, add clearer plan comparison and selected-state feedback, protect Subscribe from accidental double-taps, and clarify Premium status + cancellation wording.
+- Ensure premium gating polish: consistently hide all ad placements for premium users; keep non-premium ad placeholders consistent without layout jumps; make premium-only/locked story states intentional with clear labels/CTAs (no awkward blank spaces).
+- Improve sharing UX for “Share App” and “Share Story”: add success/cancel/failure feedback, handle errors gracefully, provide a clear copy-link fallback when system share is unavailable, and show loading/disabled states during share.
+- Polish Notifications UX: keep toggle state aligned with browser permission state, clearly explain outcomes (granted/denied/dismissed) and how to enable when denied, and restyle the “New story today!” simulation banner to match the app theme.
+- Apply consistent UI styling across these surfaces: align button variants/sizes, icon sizing/spacing, card padding/separators, typography scale, and microcopy tone (English).
 
-**User-visible outcome:** Premium screens feel clearer and harder to mis-tap, Premium status/cancel is understandable, ads disappear everywhere for Premium instantly, sharing provides reliable feedback with an explicit copy-link fallback, and notifications settings clearly reflect permission status with a more consistent in-app notification banner style.
+**User-visible outcome:** Premium, sharing, and notifications screens feel more consistent and understandable, provide clearer feedback for actions and permission states, avoid accidental repeat actions, and present premium/ad/locked states more intentionally—without adding real payments.

@@ -11,13 +11,13 @@ import { Label } from '../components/ui/label';
 import { useNavigate } from '@tanstack/react-router';
 import { getEngagementData } from '../lib/engagement';
 import { Badge } from '../components/ui/badge';
-import { Flame, Award, Target, Upload, Link as LinkIcon, Crown, Share2, Bell, BellOff, AlertCircle, Copy } from 'lucide-react';
+import { Flame, Award, Target, Upload, Crown, Share2, Bell, BellOff, AlertCircle, Copy, ExternalLink } from 'lucide-react';
 import { Separator } from '../components/ui/separator';
 import { Switch } from '../components/ui/switch';
 import { useState, useEffect, useRef } from 'react';
 import { validateUsername, validateImageFile, validateImageUrl } from '../lib/profileValidation';
 import { toast } from 'sonner';
-import { shareApp, getAppUrl } from '../lib/share';
+import { shareApp, getAppUrl, copyToClipboard, ShareResult } from '../lib/share';
 import { recordShare } from '../lib/engagement';
 import { 
   isNotificationSupported, 
@@ -37,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
+import { iconSizes, cardPadding, rowSpacing, separatorMargin } from '../lib/uiPolish';
 
 export default function ProfileTab() {
   const { language } = usePreferences();
@@ -67,9 +68,14 @@ export default function ProfileTab() {
     });
   }, [getProfile, isFetched]);
 
-  // Sync notifications state
+  // Sync notifications state with permission
   useEffect(() => {
-    setNotificationsEnabled(dailyNotificationsEnabled);
+    const permission = getNotificationPermission();
+    if (permission === 'denied') {
+      setNotificationsEnabled(false);
+    } else {
+      setNotificationsEnabled(dailyNotificationsEnabled && permission === 'granted');
+    }
   }, [dailyNotificationsEnabled]);
 
   const handleNameChange = (value: string) => {
@@ -125,7 +131,7 @@ export default function ProfileTab() {
         image: editedImage,
       });
       
-      toast.success('Profile updated!');
+      toast.success('Profile updated successfully!');
       
       const updated = await getProfile();
       setCurrentProfile(updated);
@@ -142,19 +148,27 @@ export default function ProfileTab() {
   };
 
   const handleShareApp = async () => {
+    if (isSharing) return;
+    
     setIsSharing(true);
     try {
-      const success = await shareApp();
-      if (success) {
+      const result: ShareResult = await shareApp();
+      
+      if (result === 'success') {
         const data = recordShare();
         if (data.bonusStoriesUnlocked > 0) {
-          toast.success('Bonus story unlocked! 🎉');
+          toast.success('Thanks for sharing! Bonus story unlocked 🎉');
         } else {
           toast.success('Thanks for sharing!');
         }
+      } else if (result === 'cancelled') {
+        // User cancelled, no message needed
+      } else {
+        toast.error('Failed to share. Please try again.');
       }
     } catch (error) {
       console.error('Share error:', error);
+      toast.error('Failed to share. Please try again.');
     } finally {
       setIsSharing(false);
     }
@@ -162,11 +176,11 @@ export default function ProfileTab() {
 
   const handleCopyLink = async () => {
     const url = getAppUrl();
-    try {
-      await navigator.clipboard.writeText(url);
+    const success = await copyToClipboard(url);
+    if (success) {
       toast.success('Link copied to clipboard!');
-    } catch (error) {
-      toast.error('Failed to copy link');
+    } else {
+      toast.error('Failed to copy link. Please try again.');
     }
   };
 
@@ -180,7 +194,7 @@ export default function ProfileTab() {
       const currentPermission = getNotificationPermission();
       
       if (currentPermission === 'denied') {
-        toast.error('Notification permission denied. Please enable it in your browser settings.');
+        toast.error('Notification permission denied. Please enable notifications in your browser settings.');
         return;
       }
 
@@ -197,7 +211,7 @@ export default function ProfileTab() {
             toast.error('Failed to show notification.');
           }
         } else if (permission === 'denied') {
-          toast.error('Notification permission denied. Please enable it in your browser settings.');
+          toast.error('Notification permission denied. Please enable notifications in your browser settings.');
         } else {
           toast.info('Notification permission not granted.');
         }
@@ -236,7 +250,7 @@ export default function ProfileTab() {
       </div>
 
       {/* Profile Edit Section */}
-      <div className="bg-card rounded-xl p-6 space-y-6 border shadow-sm">
+      <div className={`bg-card rounded-xl ${cardPadding.default} space-y-6 border shadow-sm`}>
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <UserAvatar 
@@ -275,52 +289,47 @@ export default function ProfileTab() {
             <div className="space-y-2">
               <Label>Profile Picture</Label>
               
-              <div className="space-y-3">
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Image (JPG/PNG, max 2MB)
-                  </Button>
-                </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1"
+                  disabled={isSaving}
+                >
+                  <Upload className={`${iconSizes.sm} mr-2`} />
+                  Upload Image
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-xs text-muted-foreground">OR</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
-
-                <div className="flex gap-2">
-                  <Input
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="Enter image URL"
-                    onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleUrlSubmit}
-                  >
-                    <LinkIcon className="w-4 h-4" />
-                  </Button>
-                </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Or paste image URL"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  disabled={isSaving}
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleUrlSubmit}
+                  disabled={!imageUrl.trim() || isSaving}
+                >
+                  Add
+                </Button>
               </div>
 
               {imageError && (
                 <p className="text-sm text-destructive">{imageError}</p>
               )}
+              <p className="text-xs text-muted-foreground">
+                JPG or PNG, max 2MB
+              </p>
             </div>
 
             <Button
@@ -328,189 +337,204 @@ export default function ProfileTab() {
               disabled={!canSave}
               className="w-full"
             >
-              {isSaving ? 'Saving...' : 'Save Profile'}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>
       </div>
-
-      {/* Premium Status Section */}
-      {isPremium && (
-        <div className="bg-card rounded-xl p-6 border shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Crown className="w-6 h-6 text-yellow-500" />
-              <div>
-                <h3 className="font-semibold">Premium Active</h3>
-                <p className="text-sm text-muted-foreground">Enjoying all premium benefits</p>
-              </div>
-            </div>
-            <PremiumBadge variant="compact" />
-          </div>
-          
-          <Separator />
-          
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span>No ads • Ad-free experience</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span>Unlimited premium stories</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span>Exclusive content access</span>
-            </div>
-          </div>
-
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full"
-            onClick={() => setShowCancelDialog(true)}
-          >
-            Cancel Subscription
-          </Button>
-        </div>
-      )}
 
       {/* Engagement Stats */}
-      <div className="bg-card rounded-xl p-6 space-y-4 border shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Flame className="w-8 h-8 text-orange-500" />
-            <div>
-              <p className="text-2xl font-bold">{engagement.streak}</p>
-              <p className="text-sm text-muted-foreground">Day Streak</p>
+      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
+        <h3 className="font-semibold text-lg mb-4">Your Stats</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Flame className={`${iconSizes.lg} text-orange-500`} />
             </div>
+            <p className="text-2xl font-bold">{engagement.streak}</p>
+            <p className="text-xs text-muted-foreground">Day Streak</p>
           </div>
-          {!isPremium && (
-            <Button variant="outline" onClick={() => navigate({ to: '/premium' })}>
-              <Crown className="w-4 h-4 mr-2" />
-              {t('goPremium', language)}
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Award className={`${iconSizes.lg} text-yellow-500`} />
+            </div>
+            <p className="text-2xl font-bold">{engagement.badges.length}</p>
+            <p className="text-xs text-muted-foreground">Badges</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Target className={`${iconSizes.lg} text-blue-500`} />
+            </div>
+            <p className="text-2xl font-bold">{engagement.challengeProgress}%</p>
+            <p className="text-xs text-muted-foreground">Challenge</p>
+          </div>
+        </div>
+      </div>
+
+      <Separator className={separatorMargin.default} />
+
+      {/* Premium Section */}
+      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-lg">Premium Status</h3>
+          {isPremium && <PremiumBadge variant="compact" />}
+        </div>
+        
+        {isPremium ? (
+          <div className={rowSpacing.default}>
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5`} />
+              <div className="flex-1">
+                <p className="font-medium text-yellow-900 dark:text-yellow-100">Premium Active</p>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">Enjoy ad-free reading and unlimited premium stories</p>
+              </div>
+            </div>
+            
+            <div className={`${rowSpacing.default} text-sm`}>
+              <div className="flex items-center gap-2">
+                <div className={`${iconSizes.sm} rounded-full bg-green-500 flex items-center justify-center shrink-0`}>
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Ad-free reading experience</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`${iconSizes.sm} rounded-full bg-green-500 flex items-center justify-center shrink-0`}>
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Unlimited premium stories</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`${iconSizes.sm} rounded-full bg-green-500 flex items-center justify-center shrink-0`}>
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span>Exclusive content access</span>
+              </div>
+            </div>
+
+            <Button
+              variant="destructive"
+              onClick={() => setShowCancelDialog(true)}
+              className="w-full"
+            >
+              Cancel Subscription
             </Button>
-          )}
-        </div>
-
-        {engagement.badges.length > 0 && (
-          <>
-            <Separator />
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Award className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold">Achievements</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {engagement.badges.map((badge) => (
-                  <Badge key={badge} variant="secondary">
-                    {badge}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        <Separator />
-
-        <div className="flex items-center gap-3">
-          <Target className="w-5 h-5 text-primary" />
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium">Reading Challenge</span>
-              <span className="text-sm text-muted-foreground">
-                {engagement.challengeProgress}/10
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${(engagement.challengeProgress / 10) * 100}%` }}
-              />
-            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Notifications Section */}
-      <div className="bg-card rounded-xl p-6 border shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {notificationsEnabled ? (
-              <Bell className="w-5 h-5 text-primary" />
-            ) : (
-              <BellOff className="w-5 h-5 text-muted-foreground" />
-            )}
-            <div>
-              <h3 className="font-semibold">Daily Story Notifications</h3>
-              <p className="text-sm text-muted-foreground">
-                {!notificationSupported 
-                  ? 'Not supported in your browser'
-                  : notificationDenied
-                  ? 'Permission denied'
-                  : notificationPermission === 'granted'
-                  ? 'Get notified about new stories'
-                  : 'Enable to receive daily updates'}
-              </p>
-            </div>
-          </div>
-          <Switch
-            checked={notificationsEnabled}
-            onCheckedChange={handleNotificationToggle}
-            disabled={!notificationSupported || notificationDenied}
-          />
-        </div>
-
-        {notificationDenied && (
-          <div className="flex items-start gap-2 p-3 bg-muted rounded-lg">
-            <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground">
-              Notification permission was denied. To enable notifications, please update your browser settings and allow notifications for this site.
+        ) : (
+          <div className={rowSpacing.default}>
+            <p className="text-sm text-muted-foreground">
+              Upgrade to Premium for ad-free reading and unlimited access to exclusive stories.
             </p>
+            <Button
+              onClick={() => navigate({ to: '/premium' })}
+              className="w-full"
+            >
+              <Crown className={`${iconSizes.sm} mr-2`} />
+              Go Premium
+            </Button>
           </div>
         )}
       </div>
 
-      {/* Share Section */}
-      <div className="bg-card rounded-xl p-6 border shadow-sm space-y-4">
-        <div className="flex items-center gap-3 mb-2">
-          <Share2 className="w-5 h-5 text-primary" />
-          <div>
-            <h3 className="font-semibold">Invite Friends</h3>
-            <p className="text-sm text-muted-foreground">Share the app and unlock bonus stories</p>
-          </div>
-        </div>
+      <Separator className={separatorMargin.default} />
 
+      {/* Share App Section */}
+      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
+        <div className="flex items-center gap-3 mb-4">
+          <Share2 className={iconSizes.md} />
+          <h3 className="font-semibold text-lg">Share GTU</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Share GTU with friends and unlock bonus stories!
+        </p>
         <div className="flex gap-2">
           {hasWebShareApi ? (
-            <Button 
-              variant="outline" 
-              className="flex-1"
+            <Button
               onClick={handleShareApp}
               disabled={isSharing}
+              className="flex-1"
             >
-              <Share2 className="w-4 h-4 mr-2" />
+              <Share2 className={`${iconSizes.sm} mr-2`} />
               {isSharing ? 'Sharing...' : 'Share App'}
             </Button>
           ) : (
-            <Button 
-              variant="outline" 
-              className="flex-1"
+            <Button
               onClick={handleCopyLink}
+              className="flex-1"
             >
-              <Copy className="w-4 h-4 mr-2" />
+              <Copy className={`${iconSizes.sm} mr-2`} />
               Copy Link
             </Button>
           )}
         </div>
-
-        {engagement.sharesCount > 0 && (
-          <p className="text-xs text-center text-muted-foreground">
-            You've shared {engagement.sharesCount} time{engagement.sharesCount !== 1 ? 's' : ''} • 
-            {engagement.bonusStoriesUnlocked > 0 && ` ${engagement.bonusStoriesUnlocked} bonus ${engagement.bonusStoriesUnlocked === 1 ? 'story' : 'stories'} unlocked!`}
+        {!hasWebShareApi && (
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Web Share API not available. Use copy link instead.
           </p>
+        )}
+      </div>
+
+      <Separator className={separatorMargin.default} />
+
+      {/* Notifications Section */}
+      <div className={`bg-card rounded-xl ${cardPadding.default} border shadow-sm`}>
+        <div className="flex items-center gap-3 mb-4">
+          {notificationsEnabled ? (
+            <Bell className={iconSizes.md} />
+          ) : (
+            <BellOff className={iconSizes.md} />
+          )}
+          <h3 className="font-semibold text-lg">Daily Notifications</h3>
+        </div>
+        
+        {!notificationSupported ? (
+          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+            <AlertCircle className={`${iconSizes.md} text-muted-foreground shrink-0 mt-0.5`} />
+            <p className="text-sm text-muted-foreground">
+              Notifications are not supported in your browser.
+            </p>
+          </div>
+        ) : notificationDenied ? (
+          <div className={rowSpacing.default}>
+            <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+              <AlertCircle className={`${iconSizes.md} text-destructive shrink-0 mt-0.5`} />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive mb-1">Permission Denied</p>
+                <p className="text-sm text-muted-foreground">
+                  Notifications are blocked. To enable them, please allow notifications in your browser settings.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                toast.info('Please enable notifications in your browser settings, then refresh the page.');
+              }}
+              className="w-full"
+            >
+              <ExternalLink className={`${iconSizes.sm} mr-2`} />
+              How to Enable
+            </Button>
+          </div>
+        ) : (
+          <div className={rowSpacing.default}>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium mb-1">Get notified about new stories</p>
+                <p className="text-sm text-muted-foreground">
+                  Receive a daily notification when new stories are available
+                </p>
+              </div>
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={handleNotificationToggle}
+              />
+            </div>
+            {notificationPermission === 'default' && (
+              <p className="text-xs text-muted-foreground">
+                You will be asked for permission when enabling notifications.
+              </p>
+            )}
+          </div>
         )}
       </div>
 
@@ -520,12 +544,12 @@ export default function ProfileTab() {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Premium Subscription?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will lose access to all premium features including ad-free experience, unlimited premium stories, and exclusive content. You can resubscribe anytime.
+              You will lose access to premium features including ad-free reading and exclusive stories. You can resubscribe anytime.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Premium</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCancelSubscription}>
+            <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Cancel Subscription
             </AlertDialogAction>
           </AlertDialogFooter>

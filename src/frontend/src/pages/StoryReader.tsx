@@ -7,7 +7,7 @@ import { useReadingHistory } from '../hooks/useReadingHistory';
 import { useOfflineDownloads } from '../hooks/useOfflineDownloads';
 import { Story, Language } from '../backend';
 import { Button } from '../components/ui/button';
-import { ArrowLeft, Heart, Download, Play, Pause, Type, Palette, Languages } from 'lucide-react';
+import { ArrowLeft, Heart, Download, Play, Pause, Type, Palette, Languages, Crown, Lock } from 'lucide-react';
 import ShareSheetPlaceholder from '../components/ShareSheetPlaceholder';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Separator } from '../components/ui/separator';
+import { iconSizes } from '../lib/uiPolish';
 
 export default function StoryReader() {
   const { storyId } = useParams({ from: '/story/$storyId' });
@@ -35,6 +36,7 @@ export default function StoryReader() {
   const [autoScroll, setAutoScroll] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [readingLanguage, setReadingLanguage] = useState<Language>(Language.english);
+  const [isSharing, setIsSharing] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -139,20 +141,22 @@ export default function StoryReader() {
     ? content.summary.slice(0, 100) 
     : content.body.slice(0, 100);
 
+  const isPremiumLocked = story.isPremium && !isPremium;
+
   return (
     <div className={`min-h-screen ${backgroundClass} transition-colors`}>
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/' })}>
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className={iconSizes.md} />
           </Button>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={handleToggleFavorite}>
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`${iconSizes.md} ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
             </Button>
             <Button variant="ghost" size="icon" onClick={handleDownload}>
-              <Download className={`w-5 h-5 ${downloaded ? 'fill-primary text-primary' : ''}`} />
+              <Download className={`${iconSizes.md} ${downloaded ? 'fill-primary text-primary' : ''}`} />
             </Button>
             <ShareSheetPlaceholder 
               storyTitle={content.title} 
@@ -168,7 +172,7 @@ export default function StoryReader() {
         <div className="flex flex-wrap gap-3">
           <Select value={fontSize} onValueChange={(v) => setFontSize(v as any)}>
             <SelectTrigger className="w-[140px]">
-              <Type className="w-4 h-4 mr-2" />
+              <Type className={`${iconSizes.sm} mr-2`} />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -180,7 +184,7 @@ export default function StoryReader() {
 
           <Select value={background} onValueChange={(v) => setBackground(v as any)}>
             <SelectTrigger className="w-[140px]">
-              <Palette className="w-4 h-4 mr-2" />
+              <Palette className={`${iconSizes.sm} mr-2`} />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -192,7 +196,7 @@ export default function StoryReader() {
 
           <Select value={readingLanguage} onValueChange={handleLanguageChange}>
             <SelectTrigger className="w-[140px]">
-              <Languages className="w-4 h-4 mr-2" />
+              <Languages className={`${iconSizes.sm} mr-2`} />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -207,7 +211,7 @@ export default function StoryReader() {
             size="sm"
             onClick={() => setAutoScroll(!autoScroll)}
           >
-            {autoScroll ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+            {autoScroll ? <Pause className={`${iconSizes.sm} mr-2`} /> : <Play className={`${iconSizes.sm} mr-2`} />}
             Auto Scroll
           </Button>
         </div>
@@ -218,11 +222,26 @@ export default function StoryReader() {
       {/* Story Content */}
       <div ref={contentRef} className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
-          {story.isPremium && !isPremium && (
-            <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-              <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                Premium unlocked
-              </p>
+          {isPremiumLocked && (
+            <div className="mb-6 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center shrink-0">
+                  <Lock className={`${iconSizes.md} text-white`} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg mb-2 text-yellow-900 dark:text-yellow-100">Premium Story</h3>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+                    This is a premium story. Upgrade to Premium to unlock unlimited access to exclusive content.
+                  </p>
+                  <Button
+                    onClick={() => navigate({ to: '/premium' })}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                  >
+                    <Crown className={`${iconSizes.sm} mr-2`} />
+                    Go Premium
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
           <h1 className={`font-bold mb-2 ${fontSize === 'small' ? 'text-2xl' : fontSize === 'medium' ? 'text-3xl' : 'text-4xl'}`}>
@@ -235,7 +254,10 @@ export default function StoryReader() {
             {story.isPremium && (
               <>
                 <span>•</span>
-                <span className="text-yellow-600 dark:text-yellow-400">Premium</span>
+                <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                  <Crown className={iconSizes.xs} />
+                  Premium
+                </span>
               </>
             )}
           </div>

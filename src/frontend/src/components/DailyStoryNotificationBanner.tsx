@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { X, Sparkles } from 'lucide-react';
+import { iconSizes } from '../lib/uiPolish';
 
 interface DailyStoryNotificationBannerProps {
   show: boolean;
@@ -33,11 +34,11 @@ export default function DailyStoryNotificationBanner({ show }: DailyStoryNotific
   }
 
   return (
-    <div className="bg-gradient-to-r from-primary/90 to-accent/90 text-primary-foreground px-4 py-3 border-b border-primary/20">
+    <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-3 border-b border-primary/20 shadow-sm">
       <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1">
-          <Sparkles className="w-5 h-5 shrink-0" />
-          <p className="text-sm font-medium">New story today!</p>
+          <Sparkles className={`${iconSizes.md} shrink-0`} />
+          <p className="text-sm font-medium">New story today! Check out the latest featured story.</p>
         </div>
         <Button
           variant="ghost"
@@ -45,7 +46,7 @@ export default function DailyStoryNotificationBanner({ show }: DailyStoryNotific
           onClick={handleDismiss}
           className="shrink-0 hover:bg-primary-foreground/20 text-primary-foreground"
         >
-          <X className="w-4 h-4" />
+          <X className={iconSizes.sm} />
         </Button>
       </div>
     </div>

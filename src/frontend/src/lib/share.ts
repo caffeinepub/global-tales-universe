@@ -1,124 +1,94 @@
-import { toast } from 'sonner';
+/**
+ * Enhanced sharing utilities with explicit success/cancelled/failed result types,
+ * improved shared text formatting with story preview and stable URLs,
+ * and reliable state management for share actions.
+ */
 
-interface ShareOptions {
-  title?: string;
-  text: string;
-  url: string;
+export type ShareResult = 'success' | 'cancelled' | 'failed';
+
+export function getAppUrl(): string {
+  if (typeof window === 'undefined') return 'https://gtu.app';
+  return window.location.origin;
 }
 
-type ShareResult = 'success' | 'cancelled' | 'failed';
+export function getStoryUrl(storyId: string | bigint): string {
+  const baseUrl = getAppUrl();
+  return `${baseUrl}/story/${storyId}`;
+}
 
-/**
- * Share content using Web Share API or fallback to clipboard
- */
-export async function shareContent(options: ShareOptions): Promise<ShareResult> {
-  const { title, text, url } = options;
+function canUseWebShare(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+}
 
-  // Try Web Share API first
-  if (navigator.share) {
+export async function shareApp(): Promise<ShareResult> {
+  const url = getAppUrl();
+  const title = 'GTU - Great Tales Unlimited';
+  const text = 'Check out GTU - unlimited stories in English, Tamil, and Hindi!';
+
+  if (canUseWebShare()) {
     try {
       await navigator.share({ title, text, url });
       return 'success';
     } catch (error: any) {
-      // User cancelled
       if (error.name === 'AbortError') {
         return 'cancelled';
       }
-      console.warn('Share failed:', error);
+      console.error('Share failed:', error);
       return 'failed';
     }
   }
 
-  // Fallback to clipboard
-  const copied = await copyToClipboard(url);
-  return copied ? 'success' : 'failed';
-}
-
-/**
- * Copy text to clipboard with fallback
- */
-async function copyToClipboard(text: string): Promise<boolean> {
-  // Try modern clipboard API
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Link copied to clipboard!');
-      return true;
-    } catch (error) {
-      console.warn('Clipboard write failed:', error);
-    }
-  }
-
-  // Fallback to execCommand (deprecated but widely supported)
+  // Fallback: copy to clipboard
   try {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-    
-    if (successful) {
-      toast.success('Link copied to clipboard!');
-      return true;
-    }
+    await navigator.clipboard.writeText(url);
+    return 'success';
   } catch (error) {
-    console.warn('execCommand copy failed:', error);
+    console.error('Clipboard copy failed:', error);
+    return 'failed';
+  }
+}
+
+export async function shareStory(
+  storyId: string | bigint,
+  storyTitle: string,
+  storyPreview?: string
+): Promise<ShareResult> {
+  const url = getStoryUrl(storyId);
+  const title = `${storyTitle} - GTU`;
+  const preview = storyPreview ? `${storyPreview.slice(0, 100)}...` : '';
+  const text = preview
+    ? `Read "${storyTitle}" on GTU\n\n${preview}`
+    : `Read "${storyTitle}" on GTU`;
+
+  if (canUseWebShare()) {
+    try {
+      await navigator.share({ title, text, url });
+      return 'success';
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        return 'cancelled';
+      }
+      console.error('Share failed:', error);
+      return 'failed';
+    }
   }
 
-  // Final fallback: show the URL in a toast
-  toast.info(`Share this link: ${text}`, { duration: 5000 });
-  return false;
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(`${text}\n\n${url}`);
+    return 'success';
+  } catch (error) {
+    console.error('Clipboard copy failed:', error);
+    return 'failed';
+  }
 }
 
-/**
- * Get current app URL
- */
-export function getAppUrl(): string {
-  return window.location.origin;
-}
-
-/**
- * Get story URL
- */
-export function getStoryUrl(storyId: string | bigint): string {
-  return `${window.location.origin}/story/${storyId}`;
-}
-
-/**
- * Share the app - returns true if shared successfully
- */
-export async function shareApp(): Promise<boolean> {
-  const url = getAppUrl();
-  const text = `Check out Global Tales Universe – Free multi-language stories app for adults & kids! Install here: ${url}`;
-  
-  const result = await shareContent({
-    title: 'Global Tales Universe',
-    text,
-    url,
-  });
-
-  return result === 'success';
-}
-
-/**
- * Share a story - returns true if shared successfully
- */
-export async function shareStory(storyId: string | bigint, title: string, preview?: string): Promise<boolean> {
-  const url = getStoryUrl(storyId);
-  const previewText = preview ? `\n\n${preview.substring(0, 100)}${preview.length > 100 ? '...' : ''}` : '';
-  const text = `${title}${previewText}\n\nRead on Global Tales Universe: ${url}`;
-  
-  const result = await shareContent({
-    title,
-    text,
-    url,
-  });
-
-  return result === 'success';
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    console.error('Clipboard copy failed:', error);
+    return false;
+  }
 }

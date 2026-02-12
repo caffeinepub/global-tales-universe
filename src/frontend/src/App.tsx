@@ -84,7 +84,7 @@ function RootLayout() {
   return (
     <div className="flex flex-col h-screen bg-background">
       <AppHeader onMenuClick={() => setDrawerOpen(true)} />
-      <AppDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <AppDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ReminderBanner />
       <InstallPromptBanner />
       <main className="flex-1 overflow-auto pb-16">

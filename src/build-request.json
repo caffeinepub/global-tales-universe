@@ -1,44 +1,43 @@
 {
   "kind": "build_request",
-  "title": "Enhance and polish Premium, Sharing, and Notifications UX across the app",
+  "title": "Iterative polish pass across Premium, Sharing, and Notifications (one-by-one)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Polish the Premium experience end-to-end (Go Premium, Premium Success, Profile, and Drawer) to feel more complete and consistent: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing fake subscription behavior (no real payments).",
+      "text": "Polish the Premium experience end-to-end across Go Premium, Premium Success, Profile, and the App Drawer: improve copy/layout hierarchy, add clearer plan comparison and selection feedback, prevent accidental double-taps on Subscribe, and make Premium status + cancellation UX clearer while preserving the existing placeholder (fake) subscription behavior (no real payments).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "All enhance"
+          "All want one by one you polished"
         ]
       },
       "acceptanceCriteria": [
-        "Go Premium page has clearer plan presentation (Monthly vs Yearly) with consistent spacing/typography and improved visual hierarchy while keeping the same prices (₹99 monthly, ₹799 yearly) and placeholder disclaimer.",
-        "Tapping Subscribe Now cannot trigger multiple navigations/updates from rapid repeated clicks (button shows a temporary loading/disabled state).",
-        "Premium Success page provides clear next actions and keeps messaging consistent with existing success text intent.",
-        "Profile shows an explicit Premium status section when isPremium=true (e.g., current plan label + benefits recap) and a clearer cancel flow (e.g., confirmation step) that still sets isPremium=false and updates UI immediately.",
-        "Drawer and Profile Premium badge/crown styling remains consistent and legible in both light/dark themes."
+        "Go Premium page has clearer plan selection state and comparison (e.g., visual emphasis, selected indicator) before/while subscribing, without changing the placeholder subscription behavior.",
+        "Subscribe actions are protected against accidental repeated taps (no duplicate navigations / repeated state changes when tapped quickly).",
+        "Premium status surfaces in Profile and Drawer use consistent wording and hierarchy (e.g., “Premium Active”, “Premium Member”) and cancellation action is clearly labeled.",
+        "All user-facing text introduced/updated for this polish is in English."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Enhance ad-removal and premium gating polish: ensure every ad placement in the UI is consistently hidden for premium users, and make any premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
+      "text": "Enhance ad-removal and premium gating polish: ensure every ad placement is consistently hidden for premium users, and make premium-only story UI states feel intentional and user-friendly (no awkward placeholders).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "All enhance"
+          "All want one by one you polished"
         ]
       },
       "acceptanceCriteria": [
-        "When isPremium=true, no AdPlaceholder renders anywhere it is used (banner or inline).",
-        "Premium-related story indicators (e.g., StoryCard premium UI) are visually consistent with the Premium theme and do not show confusing lock/placeholder states.",
-        "Switching between Free and Premium updates the UI immediately without requiring a refresh (ads, badges, premium indicators update instantly)."
+        "When the user is premium, ad UI elements do not render in any known placements (including banner/inline/interstitial placeholder surfaces).",
+        "When the user is not premium, ad placeholders render consistently and do not cause layout jumps when toggling premium state.",
+        "Any premium-only story indicators or locked states have a consistent, intentional presentation (clear label/CTA), without blank or broken-looking spaces."
       ]
     },
     {
@@ -47,70 +46,68 @@
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "All enhance"
+          "All want one by one you polished"
         ]
       },
       "acceptanceCriteria": [
-        "Profile “Invite Friends – Share App” provides clear user feedback for success vs. cancel vs. failure (no silent failures).",
-        "If Web Share API is unavailable, the UI offers an explicit copy-link action (not just an implicit fallback) and confirms success with a toast.",
-        "Story share (ShareSheetPlaceholder/shareStory) includes: title, optional preview text when available, and a stable story URL when possible; the shared text formatting is readable in common share targets.",
-        "Share actions do not block the UI indefinitely (button returns to enabled state reliably after completion)."
+        "If system share succeeds, the user gets a clear success toast/message; if the user cancels or sharing fails, the UI responds gracefully (no silent failure, no console-only errors).",
+        "When Web Share API is unavailable, the UI explicitly offers a visible copy-link action and communicates the result (copied/failed).",
+        "Share buttons show a clear loading/disabled state while share is in progress and return to normal after completion."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and improve the in-app “New story today!” simulation banner styling to match the app’s overall theme (avoid clashing gradients).",
+      "text": "Polish Notifications UX and behavior: make permission state and outcomes clearer, keep the toggle state consistent with browser permission, and restyle the in-app “New story today!” simulation banner to match the app’s overall theme (avoid clashing gradients).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "All enhance"
+          "All want one by one you polished"
         ]
       },
       "acceptanceCriteria": [
-        "Profile notifications section clearly communicates each state: unsupported browser, permission denied, permission granted, and permission not yet decided.",
-        "If permission is denied, the toggle remains off/disabled and the inline explanation is actionable and easy to understand.",
-        "Enabling notifications requests permission when needed and (when granted) shows the existing test notification content; disabling notifications updates UI immediately and persists via the existing user state mechanism.",
-        "DailyStoryNotificationBanner styling is updated to match the app’s design system (Tailwind tokens/colors) and does not introduce a new conflicting color scheme.",
-        "Service worker registration behavior remains intact; no changes break existing /sw.js registration and offline behavior."
+        "The notifications toggle cannot appear enabled when browser permission is denied; the UI clearly explains how to enable notifications in browser settings when denied.",
+        "When permission is granted, enabling notifications provides clear confirmation; when permission is not granted, the UI clearly communicates the outcome (granted/denied/dismissed).",
+        "The “New story today!” banner styling matches the app theme and no longer uses a clashing gradient; spacing/typography aligns with other top-of-screen banners.",
+        "All notification-related user-facing text introduced/updated for this polish is in English."
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone, and remove any accidental mixed styling that stands out from the rest of the app.",
+      "text": "Apply a consistent UI polish pass across Premium, Share, and Notifications surfaces to reduce visual inconsistency: align button variants, icon sizing, card padding, separators, and microcopy tone; remove any accidental mixed styling that stands out from the rest of the app.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "All enhance"
+          "All want one by one you polished"
         ]
       },
       "acceptanceCriteria": [
-        "Premium, Share, and Notifications sections use consistent shadcn Button/Badge/Switch/Separator patterns and spacing scale.",
-        "User-facing microcopy across these surfaces is consistent in tone and capitalization.",
-        "No new user-facing strings are introduced in non-English."
+        "Across Go Premium, Premium Success, Profile, Drawer premium upsell, sharing UI, and notifications UI: button variants and sizes are consistent for similar actions (primary vs secondary vs destructive).",
+        "Icon sizes and spacing are consistent within cards/rows (no mismatched icon sizing between adjacent actions).",
+        "Card padding, separators, and typography scale look consistent across the polished screens.",
+        "Microcopy tone is consistent and professional in English (no mixed tone like playful in one place and formal elsewhere unless intentionally applied consistently)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (compose existing UI components instead).",
-    "Do not edit frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts (immutable paths).",
-    "Keep the Premium flow as a placeholder (no real payment processing).",
-    "Do not add real push notification scheduling; remain within the browser Notifications API and existing in-app simulation approach.",
-    "Preserve existing PWA service worker registration and /sw.js behavior."
+    "Do not edit any files under frontend/src/components/ui (compose existing Shadcn components instead).",
+    "Do not edit immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx.",
+    "Preserve the existing placeholder subscription behavior (no real payments / no external payment integrations).",
+    "Backend remains single-actor in backend/main.mo; only introduce backend changes if strictly required for the UI polish (otherwise keep scope frontend-only)."
   ],
   "nonGoals": [
-    "Implementing Stripe or any real payment provider.",
-    "Adding third-party authentication providers beyond Internet Identity.",
-    "Building real-time messaging, push notification delivery, or server-driven notification scheduling.",
-    "Adding new backend services or external databases."
+    "Implementing real payments or integrating payment providers.",
+    "Adding third-party authentication methods beyond Internet Identity.",
+    "Adding real-time chat, push notifications, or server-side scheduled notifications.",
+    "Redesigning unrelated areas outside Premium, Sharing, and Notifications surfaces."
   ],
   "imageRequirements": {
     "required": [],

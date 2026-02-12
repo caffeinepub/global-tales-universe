@@ -7,24 +7,16 @@ interface AdPlaceholderProps {
 export default function AdPlaceholder({ variant = 'banner' }: AdPlaceholderProps) {
   const { isPremium } = useAppUser();
 
-  // Premium users never see ads
+  // Premium users never see ads - return null immediately
   if (isPremium) {
     return null;
   }
 
-  if (variant === 'banner') {
-    return (
-      <div className="w-full bg-muted border border-border rounded-lg p-4 text-center">
-        <p className="text-sm text-muted-foreground">Advertisement</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Go Premium to remove ads
-        </p>
-      </div>
-    );
-  }
+  const baseClasses = 'w-full bg-muted border border-border rounded-lg text-center';
+  const variantClasses = variant === 'banner' ? 'p-4' : 'p-6 my-4';
 
   return (
-    <div className="w-full bg-muted border border-border rounded-lg p-6 text-center my-4">
+    <div className={`${baseClasses} ${variantClasses}`}>
       <p className="text-sm text-muted-foreground">Advertisement</p>
       <p className="text-xs text-muted-foreground mt-1">
         Go Premium to remove ads

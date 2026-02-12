@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
+import { useAppUser } from '../hooks/useAppUser';
 
 interface InterstitialAdModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface InterstitialAdModalProps {
 }
 
 export default function InterstitialAdModal({ isOpen, onClose }: InterstitialAdModalProps) {
+  const { isPremium } = useAppUser();
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
@@ -22,6 +24,11 @@ export default function InterstitialAdModal({ isOpen, onClose }: InterstitialAdM
       setCountdown(3);
     }
   }, [isOpen]);
+
+  // Premium users never see interstitial ads
+  if (isPremium) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

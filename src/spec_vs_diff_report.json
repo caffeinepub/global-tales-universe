@@ -1,61 +1,49 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T07:22:08.083Z",
-  "summary": "Diff implements substantial Premium polish (plan selection + loading guard, success screen, consistent Premium badge), ad hiding for premium (AdPlaceholder returns null + guarded placements), and adds notifications/share helper libs. However, Share UX requirements around explicit copy-link action and distinct cancel/failure feedback are not clearly implemented. There are also unrequested changes to PWA/service worker/manifest/styles that may violate the constraint to preserve existing /sw.js behavior.",
-  "missing_requirements": [
-    {
-      "id": "REQ-3",
-      "requirement": "Profile “Invite Friends – Share App” provides clear user feedback for success vs. cancel vs. failure (no silent failures).",
-      "reason": "The new share helper returns a detailed result ('success' | 'cancelled' | 'failed'), but shareApp/shareStory collapse that to a boolean, and ShareSheetPlaceholder only shows a toast on success and logs errors without user-facing failure/cancel feedback.",
-      "evidence": [
-        "frontend/src/lib/share.ts",
-        "frontend/src/components/ShareSheetPlaceholder.tsx"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "If Web Share API is unavailable, the UI offers an explicit copy-link action (not just an implicit fallback) and confirms success with a toast.",
-      "reason": "shareContent falls back to copying automatically when navigator.share is unavailable; the diff does not show any explicit UI control/button offering 'Copy link' as a discoverable action.",
-      "evidence": [
-        "frontend/src/lib/share.ts",
-        "frontend/src/components/ShareSheetPlaceholder.tsx",
-        "frontend/src/pages/ProfileTab.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-12T07:38:11.055Z",
+  "summary": "The diff appears to implement most of the requested polish for Premium, ads/premium gating, sharing, notifications permission handling, and cross-surface UI consistency. However, it also includes several changes unrelated to the stated Premium/Sharing/Notifications scope (e.g., PWA manifest/service worker updates and a drawer preview URL param).",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "PWA/service worker and manifest updates (e.g., sw.js cache version bump, manifest changes, service worker registration logic mentioned).",
-      "reason": "BuildRequest explicitly says to preserve existing PWA service worker registration and /sw.js behavior; these changes are not requested as part of Premium/Share/Notifications UX polish and may violate the constraint.",
+      "description": "PWA manifest updates (installable app metadata/icons/theme/orientation) not requested as part of Premium/Sharing/Notifications polish.",
+      "reason": "BuildRequest scope is Premium, Sharing, Notifications UX polish; manifest changes are not mentioned in requirements/non-goals.",
       "evidence": [
-        "frontend-file-summaries.txt (mentions frontend/public/sw.js, frontend/public/manifest.webmanifest, frontend/src/pwa/registerServiceWorker.ts)"
+        "frontend-file-summaries.txt (frontend/public/manifest.webmanifest)"
       ]
     },
     {
-      "description": "Broad global styling system changes (index.css OKLCH color system, splash screen animations, onboarding animations).",
-      "reason": "Not requested by any REQ; scope was Premium/Sharing/Notifications surfaces polish rather than app-wide animation/color system changes.",
+      "description": "Service worker changes for offline functionality not requested as part of Premium/Sharing/Notifications polish.",
+      "reason": "BuildRequest does not ask for offline/PWA/service worker behavior changes; this is outside the described polish surfaces.",
       "evidence": [
-        "frontend-file-summaries.txt (mentions frontend/src/index.css)"
+        "frontend-file-summaries.txt (frontend/public/sw.js)"
+      ]
+    },
+    {
+      "description": "App Drawer auto-open 'preview=drawer' URL parameter behavior not requested.",
+      "reason": "BuildRequest does not mention adding preview/debug URL parameters or altering navigation behavior beyond the polish items.",
+      "evidence": [
+        "frontend/src/App.tsx"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.64,
   "changed_files": [
     "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
     "frontend/src/components/AdPlaceholder.tsx",
     "frontend/src/components/AppDrawer.tsx",
     "frontend/src/components/DailyStoryNotificationBanner.tsx",
-    "frontend/src/components/PremiumBadge.tsx",
+    "frontend/src/components/InterstitialAdModal.tsx",
     "frontend/src/components/ShareSheetPlaceholder.tsx",
     "frontend/src/components/StoryCard.tsx",
-    "frontend/src/hooks/useAppUser.ts",
     "frontend/src/lib/notifications.ts",
     "frontend/src/lib/share.ts",
+    "frontend/src/lib/uiPolish.ts",
     "frontend/src/pages/GoPremium.tsx",
-    "frontend/src/pages/HomeTab.tsx",
     "frontend/src/pages/PremiumSuccess.tsx",
     "frontend/src/pages/ProfileTab.tsx",
+    "frontend/src/pages/StoryReader.tsx",
     "project_state.json"
   ]
 }
