@@ -1,252 +1,136 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix mode persistence/filtering, restore stories feed, add social actions, correct profile name/username, and wire generated fallbacks",
+  "title": "Stabilize TanStack Router navigation and draft-preview not-found failures",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Persist Adults/Kids mode reliably and apply it consistently across Home, Categories, Category Detail, and Story Reader filtering.",
+      "summary": "Audit and fix all in-app navigation entry points to use only valid TanStack Router routes and prefer route-template navigation for dynamic paths.",
       "acceptanceCriteria": [
-        "Switching between Adults and Kids updates visible categories and story lists immediately without requiring a refresh.",
-        "Kids mode shows only kid-safe categories/stories; Adults mode shows the full catalog.",
-        "The selected mode persists across reloads for both guest and authenticated users."
+        "Tapping each BottomNav tab (Home/Categories/Search/Favorites/Profile) never renders the \"Page Not Found\" screen.",
+        "Tapping Categories (from Home category scroller and Categories tab grid) always opens the Category Detail screen for that category.",
+        "Tapping any story card (Featured, Latest, Category Detail, Search results, Favorites, Continue Reading) always opens the Story Reader screen."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/context/PreferencesContext.tsx",
+          "path": "frontend/src/components/BottomNav.tsx",
           "operation": "modify",
-          "description": "Fix mode persistence and hydration so Adults/Kids is stored and restored consistently (guest + authenticated), avoiding preference resets during state sync; ensure mode changes propagate immediately to consumers. Verify the component's usage instructions before implementing."
+          "description": "Ensure BottomNav navigation uses only valid routeTree paths and enhance its navigation handler to avoid string-built/dynamic mismatches; include current location in any failure logging."
         },
         {
-          "path": "frontend/src/lib/kidsMode.ts",
+          "path": "frontend/src/components/AppDrawer.tsx",
           "operation": "modify",
-          "description": "Align kids-mode safety/category filtering utilities with app-wide expectations (kid-safe categories only in Kids mode; full catalog in Adults mode) and ensure shared helpers are used consistently. Verify the component's usage instructions before implementing."
+          "description": "Audit drawer menu link paths against App.tsx routeTree and update navigation handling so failures are logged once with both attempted path and current location."
         },
         {
-          "path": "frontend/src/hooks/useStories.ts",
+          "path": "frontend/src/pages/ProfileTab.tsx",
           "operation": "modify",
-          "description": "Update story fetching hooks to accept and apply UI preferences (language + Adults/Kids mode) including kid-friendly filtering and consistent query keys so lists update immediately when mode changes. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/HomeTab.tsx",
-          "operation": "modify",
-          "description": "Wire mode-aware story lists on Home (featured + latest) so switching Adults/Kids instantly refilters results without refresh. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/CategoriesTab.tsx",
-          "operation": "modify",
-          "description": "Ensure Categories grid always derives from persisted Adults/Kids mode and updates immediately on toggle. Verify the component's usage instructions before implementing."
+          "description": "Audit all profile-related links (premium CTA, settings links, story editor navigation) to confirm they align with App.tsx routeTree and update navigation error handling to include attempted path and current location."
         },
         {
           "path": "frontend/src/components/CategoryScroller.tsx",
           "operation": "modify",
-          "description": "Ensure CategoryScroller derives categories from persisted Adults/Kids mode and updates immediately on toggle. Verify the component's usage instructions before implementing."
+          "description": "Harden category chip navigation to always use route-template navigation to '/categories/$categoryId' with encoded params, and add safe error handling/logOnce for navigation failures."
         },
         {
-          "path": "frontend/src/pages/CategoryDetail.tsx",
+          "path": "frontend/src/pages/CategoriesTab.tsx",
           "operation": "modify",
-          "description": "Apply Adults/Kids mode filtering to category story lists (including seeded fallbacks) and ensure ModeToggle changes instantly update the rendered list. Verify the component's usage instructions before implementing."
+          "description": "Ensure category grid navigation always uses route-template navigation to '/categories/$categoryId' with encoded params, and add safe error handling/logOnce for navigation failures."
         },
         {
-          "path": "frontend/src/pages/StoryReader.tsx",
+          "path": "frontend/src/components/StoryCard.tsx",
           "operation": "modify",
-          "description": "Ensure Story Reader respects Adults/Kids mode constraints for navigation and fallback rendering (e.g., correct covers and consistent content availability) while preserving direct-open behavior for seeded stories. Verify the component's usage instructions before implementing."
+          "description": "Ensure all story-card navigation uses route-template navigation to '/story/$storyId' and add guarded navigation with logOnce so clicks cannot silently route to not-found on errors."
+        },
+        {
+          "path": "frontend/src/components/ContinueReadingCard.tsx",
+          "operation": "modify",
+          "description": "Ensure continue-reading navigation uses route-template navigation to '/story/$storyId' and add guarded navigation with logOnce to prevent not-found due to navigation exceptions."
+        },
+        {
+          "path": "frontend/src/components/MyStoryCard.tsx",
+          "operation": "modify",
+          "description": "Guard read/edit navigation with logOnce (attempted path + current location) and ensure route-template navigation is consistently used for '/story/$storyId' and '/story/editor/$storyId'."
+        },
+        {
+          "path": "frontend/src/components/AdPlaceholder.tsx",
+          "operation": "modify",
+          "description": "Guard premium CTA navigation to '/premium' with logOnce diagnostics so any preview-only navigation failures are captured without spamming logs."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Make stories feed reliable by fetching with current language+mode preferences and falling back to seeded stories when backend calls fail or return empty.",
+      "summary": "Make Story Reader and Category Detail route param parsing resilient to invalid/malformed params and show friendly in-app fallback UI instead of router error/not-found.",
       "acceptanceCriteria": [
-        "Home shows a featured story and a latest stories list when data exists (backend or seeded fallback).",
-        "If the backend fetch fails, the UI still renders seeded stories (and they still respect the selected Adults/Kids mode).",
-        "Story Reader can open a story from the list without showing 'Story not found' for seeded stories."
+        "Navigating to an invalid story route (e.g., `/story/not-a-number`) shows a friendly in-app error state (in English) with a working button to return to Home, and does not render a blank page.",
+        "Navigating to an invalid category route (e.g., `/categories/%` or an undecodable value) shows a friendly in-app error state (in English) with a working button to return to Categories/Home, and does not render a blank page."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useStories.ts",
+          "path": "frontend/src/pages/StoryReader.tsx",
           "operation": "modify",
-          "description": "Align featured/latest/category story queries to use the selected UI language and Adults/Kids mode; add robust fallbacks so errors or empty backend results resolve to seeded stories filtered by mode and compatible with Story Reader lookups. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/lib/seededStories.ts",
-          "operation": "modify",
-          "description": "Ensure seeded stories utilities support mode-aware filtering and consistent cover selection so seeded fallback content respects Adults/Kids mode everywhere it is shown. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/HomeTab.tsx",
-          "operation": "modify",
-          "description": "Use the updated preference-aware story hooks so Home reliably renders featured/latest stories; ensure English empty-state text remains consistent when no data exists after fallbacks. Verify the component's usage instructions before implementing."
+          "description": "Replace direct BigInt(storyId) usage with safe parsing/validation of the route param; when invalid, render a friendly in-app error state with a working 'Go Home' action and avoid throwing into the router fallback."
         },
         {
           "path": "frontend/src/pages/CategoryDetail.tsx",
           "operation": "modify",
-          "description": "Use updated preference-aware fetching + fallbacks so Category Detail never shows an empty list when seeded stories exist for that category and mode. Verify the component's usage instructions before implementing."
+          "description": "Wrap categoryId decoding in a safe try/catch (or equivalent) so malformed/undecodable values render a friendly in-app error state with a working action to return to Categories/Home, rather than throwing into the router fallback."
         },
         {
-          "path": "frontend/src/pages/StoryReader.tsx",
+          "path": "frontend/src/lib/urlParams.ts",
           "operation": "modify",
-          "description": "Ensure Story Reader can open seeded stories reliably by keeping seeded ID resolution stable and aligning language selection with UI preferences. Verify the component's usage instructions before implementing."
+          "description": "Harden decodeCategoryId to avoid throwing on malformed input (e.g., return a safe sentinel or expose a safeDecode helper) so callers can render controlled fallback UI instead of crashing the route."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add Like, Share, and Comment controls in Story Reader with persistence (backend when available for likes; local persistence for guests and as fallback) and immediate UI updates.",
+      "summary": "Add lightweight runtime diagnostics for navigation failures and RouteErrorFallback renders using the existing logOnce pattern.",
       "acceptanceCriteria": [
-        "Story Reader shows distinct controls for Like, Share, and Comments.",
-        "Like toggling updates the UI immediately and remains consistent after reload (for authenticated users via backend persistence; for guests via local persistence).",
-        "Share action uses the existing share utility and reports success/failure with English user-facing text.",
-        "Users can add a comment to a story and see the list of comments for that story after adding (for authenticated users via backend persistence; for guests via local persistence)."
+        "If a navigation attempt fails (exception), the app logs a single `logOnce` entry including the target path.",
+        "If the RouteErrorFallback is rendered, the app logs a single `logOnce` entry including the current pathname/search that led to it."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useFavorites.ts",
+          "path": "frontend/src/components/RouteErrorFallback.tsx",
           "operation": "modify",
-          "description": "Extend favorites/like behavior to support guest local persistence when no authenticated actor is available, while keeping authenticated like toggling backed by the existing backend capability; add optimistic UI updates for instant feedback. Verify the component's usage instructions before implementing."
+          "description": "When the fallback screen renders, log a single concise logOnce entry including the current pathname and search so broken links can be identified quickly without spamming."
         },
         {
-          "path": "frontend/src/hooks/useStorySocial.ts",
-          "operation": "create",
-          "description": "Create a dedicated hook to manage per-story social state (optimistic like count overlay, guest/local persistence, and comments list/add) with stable storage keys and reload consistency. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/components/BottomNav.tsx",
+          "operation": "modify",
+          "description": "Augment existing navigation try/catch diagnostics to logOnce exactly once per target path and include both attempted path and current pathname/search."
         },
         {
-          "path": "frontend/src/lib/storySocialStorage.ts",
-          "operation": "create",
-          "description": "Add localStorage helpers for per-story like overlays and per-story comments persistence (guest and authenticated-local fallback) with safe parsing and forward-compatible structure. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/StoryReader.tsx",
+          "path": "frontend/src/components/AppDrawer.tsx",
           "operation": "modify",
-          "description": "Add distinct Like, Share, and Comments controls to Story Reader: Like toggles immediately and survives reload; Share uses existing sharing utilities (and/or the existing ShareSheetPlaceholder component) with English success/failure toasts; Comments panel supports add + list with persistence. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/ShareSheetPlaceholder.tsx",
-          "operation": "modify",
-          "description": "Ensure share feedback remains clear English text for success/failure and can be reused by Story Reader to satisfy the Share requirement consistently. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/StoryCard.tsx",
-          "operation": "modify",
-          "description": "Update StoryCard like display to reflect the effective like count (base story.likes plus any locally persisted overlay where applicable) while keeping English UI text unchanged. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Correct profile data model mapping and UI so name (displayName) and username are editable, saved, and displayed consistently without unstable re-render loops.",
-      "acceptanceCriteria": [
-        "UserProfile supports both name and username and can be saved and retrieved for authenticated users.",
-        "Profile page displays name and username (or a clear fallback when unset) in English.",
-        "Guest users can set and persist name/username locally; authenticated users persist to the backend.",
-        "No repeated re-render loop occurs while loading profile data; profile text and avatar are stable."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useUserProfile.ts",
-          "operation": "modify",
-          "description": "Fix profile field mapping to backend UserProfile (username + displayName) and add guest persistence for both fields; keep derived profile data stable to prevent re-render loops; reference the existing authorization-based authenticated flow and verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/lib/userProfileStorage.ts",
-          "operation": "modify",
-          "description": "Extend guest profile storage to persist both username and displayName (name) with safe defaults and migration from older stored shapes. Verify the component's usage instructions before implementing."
+          "description": "Augment existing navigation try/catch diagnostics to logOnce exactly once per target path and include both attempted path and current pathname/search."
         },
         {
           "path": "frontend/src/pages/ProfileTab.tsx",
           "operation": "modify",
-          "description": "Add/adjust Profile UI to display and edit both display name and username with an English fallback when unset; wire save action to useUserProfile; keep header/avatar display stable while loading. Verify the component's usage instructions before implementing."
+          "description": "Augment existing navigation try/catch diagnostics to logOnce exactly once per target path and include both attempted path and current pathname/search."
         },
         {
-          "path": "frontend/src/components/AppHeader.tsx",
+          "path": "frontend/src/components/StoryCard.tsx",
           "operation": "modify",
-          "description": "Ensure header/avatar areas use the corrected displayName/username-derived profile data from useUserProfile and show stable fallback text/avatar while loading. Verify the component's usage instructions before implementing."
+          "description": "Add logOnce diagnostics for any navigation exceptions from story-card clicks, including attempted path and current pathname/search."
         },
         {
-          "path": "frontend/src/components/UserAvatar.tsx",
+          "path": "frontend/src/components/ContinueReadingCard.tsx",
           "operation": "modify",
-          "description": "Ensure avatar fallback behavior remains stable when profile image is missing/invalid and initials derive from displayName consistently; continue using the generated placeholder avatar fallback. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Place required generated images under frontend/public/assets/generated and use them as local fallbacks for covers/avatars/icons throughout the app.",
-      "acceptanceCriteria": [
-        "All required generated images exist in frontend/public/assets/generated and are referenced by the frontend without going through the backend.",
-        "When a story has no coverImage, a local generated category/kids fallback cover is shown.",
-        "When a user has no profile image, a local generated placeholder avatar is shown."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/gtu-app-icon.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/gtu-app-icon.dim_512x512.png and ensure it is used as a local fallback app icon in the UI. Verify the component's usage instructions before implementing."
+          "description": "Add logOnce diagnostics for any navigation exceptions from continue-reading interactions, including attempted path and current pathname/search."
         },
         {
-          "path": "frontend/public/assets/generated/cover-default.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-default.dim_1200x1600.png for reliable local default story cover fallbacks. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-kids-default.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-kids-default.dim_1200x1600.png for reliable local Kids-mode cover fallbacks. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-educational.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-educational.dim_1200x1600.png and wire it into category-based cover fallback selection. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-superhero.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-superhero.dim_1200x1600.png and wire it into category-based cover fallback selection. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-romance.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-romance.dim_1200x1600.png and wire it into category-based cover fallback selection. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-horror.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-horror.dim_1200x1600.png and wire it into category-based cover fallback selection. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-comedy.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-comedy.dim_1200x1600.png and wire it into category-based cover fallback selection. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/cover-mythology.dim_1200x1600.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/cover-mythology.dim_1200x1600.png and wire it into category-based cover fallback selection. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/assets/generated/gtu-placeholder-avatar.dim_256x256.png",
-          "operation": "create",
-          "description": "Add the generated asset at frontend/public/assets/generated/gtu-placeholder-avatar.dim_256x256.png and ensure it is the reliable local fallback wherever a user avatar would otherwise fail. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/lib/covers.ts",
+          "path": "frontend/src/components/CategoryScroller.tsx",
           "operation": "modify",
-          "description": "Ensure all cover fallback paths reference the required generated assets under frontend/public/assets/generated (including Kids-mode and category-specific covers) and are used consistently across cards, readers, and category tiles. Verify the component's usage instructions before implementing."
+          "description": "Add logOnce diagnostics for any navigation exceptions from category chips, including attempted path and current pathname/search."
         },
         {
-          "path": "frontend/src/lib/seededStories.ts",
+          "path": "frontend/src/pages/CategoriesTab.tsx",
           "operation": "modify",
-          "description": "Ensure seeded cover derivation uses the generated assets under frontend/public/assets/generated so seeded stories always have reliable local cover fallbacks. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/public/manifest.webmanifest",
-          "operation": "modify",
-          "description": "Update PWA manifest icons to reference the local generated icon asset(s) under frontend/public/assets/generated (including the required gtu-app-icon.dim_512x512.png) for consistent install icon behavior. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Ensure favicon/app icon references use local generated assets under frontend/public/assets/generated so icons do not depend on backend availability. Verify the component's usage instructions before implementing."
+          "description": "Add logOnce diagnostics for any navigation exceptions from category grid items, including attempted path and current pathname/search."
         }
       ]
     }

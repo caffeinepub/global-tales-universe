@@ -4,57 +4,37 @@
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Adults/Kids settings not being applied or set correctly.",
-    "Stories feature missing or not working (no story).",
-    "Social actions missing or not working: like, share, comment.",
-    "Profile-related fields not displaying or incorrect: profile, username, name."
+    "Some pages in the draft preview still show \"Page Not Found\" / \"This page currently not available\" indicating remaining broken routes or navigation links."
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Required Images\n- App icon, simple flat mark (gtu-app-icon.dim_512x512.png)\n- Default story cover illustration (cover-default.dim_1200x1600.png)\n- Kids default story cover illustration (cover-kids-default.dim_1200x1600.png)\n- Educational story cover illustration (cover-educational.dim_1200x1600.png)\n- Superhero story cover illustration (cover-superhero.dim_1200x1600.png)\n- Romance story cover illustration (cover-romance.dim_1200x1600.png)\n- Horror story cover illustration (cover-horror.dim_1200x1600.png)\n- Comedy story cover illustration (cover-comedy.dim_1200x1600.png)\n- Mythology story cover illustration (cover-mythology.dim_1200x1600.png)\n- Placeholder user avatar illustration (gtu-placeholder-avatar.dim_256x256.png)",
   "existing_features": [
     {
-      "id": "feature-fix-adults-kids-mode-so-it-is-correctly-persisted-and-consistently-applied-across-the-app-home-categories-category-detail-story-reader-to-filter-kid-friendly-vs-adult-stories-and-categories",
-      "title": "Fix Adults/Kids mode so it is correctly persisted and consistently applied across the app (Home, Categories, Category Detail, Story Reader) to filter kid-friendly vs adult stories and categories.",
+      "id": "feature-audit-all-in-app-navigation-entry-points-bottom-navigation-side-drawer-menu-category-chips-buttons-story-cards-continue-reading-profile-related-links-and-ensure-every-navigation-target-uses-a-valid-tanstack-router-route-path-that-exists-in-frontend-src-app-tsx-routetree-no-stale-typo-paths-replace-any-string-built-paths-with-route-template-navigation-e-g-navigate-to-story-storyid-params-storyid-where-applicable-to-prevent-mismatches",
+      "title": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation (e.g., `navigate({ to: '/story/$storyId', params: { storyId } })`) where applicable to prevent mismatches.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-stories-are-reliably-available-and-rendered-no-empty-feed-by-aligning-frontend-story-fetching-with-current-ui-preferences-language-mode-and-providing-robust-fallbacks-when-backend-calls-fail",
-      "title": "Ensure stories are reliably available and rendered (no empty feed) by aligning frontend story fetching with current UI preferences (language + mode) and providing robust fallbacks when backend calls fail.",
+      "id": "feature-make-route-param-parsing-resilient-so-invalid-malformed-params-do-not-crash-the-route-into-the-router-error-not-found-fallback-in-particular-harden-story-reader-param-handling-so-a-non-numeric-storyid-cannot-throw-e-g-safe-parsing-with-a-controlled-fallback-ui-that-offers-a-go-home-action-apply-similar-safety-for-categoryid-decoding-in-category-detail-if-decode-fails",
+      "title": "Make route param parsing resilient so invalid/malformed params do not crash the route into the router error/not-found fallback. In particular, harden Story Reader param handling so a non-numeric `storyId` cannot throw (e.g., safe parsing with a controlled fallback UI that offers a \"Go Home\" action). Apply similar safety for categoryId decoding in Category Detail if decode fails.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-story-social-actions-like-share-and-comment-including-ui-controls-on-story-reader-and-persistence-behavior-like-state-like-count-and-comments-per-story",
-      "title": "Implement story social actions: Like, Share, and Comment, including UI controls on Story Reader and persistence behavior (like state, like count, and comments per story).",
+      "id": "feature-add-lightweight-runtime-diagnostics-for-navigation-failures-when-navigation-throws-or-a-not-found-route-is-shown-log-a-single-concise-error-using-the-existing-logonce-pattern-that-includes-the-attempted-path-and-current-location-so-broken-links-can-be-identified-quickly-in-preview-without-spamming-logs",
+      "title": "Add lightweight runtime diagnostics for navigation failures: when navigation throws or a not-found route is shown, log a single concise error (using the existing `logOnce` pattern) that includes the attempted path and current location, so broken links can be identified quickly in preview without spamming logs.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-profile-fields-so-the-app-correctly-supports-and-displays-profile-name-and-username-including-editing-saving-and-consistent-display-in-profile-and-header-avatar-areas",
-      "title": "Fix profile fields so the app correctly supports and displays profile name and username, including editing/saving and consistent display in Profile and header/avatar areas.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-ensure-generated-static-image-assets-app-icon-default-covers-placeholder-avatar-are-placed-under-frontend-public-assets-generated-and-are-used-as-reliable-fallbacks-anywhere-covers-avatars-icons-would-otherwise-fail-to-load",
-      "title": "Add/ensure generated static image assets (app icon, default covers, placeholder avatar) are placed under frontend/public/assets/generated and are used as reliable fallbacks anywhere covers/avatars/icons would otherwise fail to load.",
-      "reqIds": [
-        "REQ-5"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [],
-  "projectName": "Fix Adults/Kids mode filtering, restore stories feed, add like/share/comment, and correct profile name/username",
+  "projectName": "Fix remaining \"Page Not Found / Page currently not available\" navigation failures in draft preview",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

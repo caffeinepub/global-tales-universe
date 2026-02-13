@@ -1,11 +1,26 @@
-import { useNavigate } from '@tanstack/react-router';
-import { AppButton } from './AppButton';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { Button } from './ui/button';
 import { Home, AlertCircle } from 'lucide-react';
 import { cardRadius, cardPadding, cardElevation, iconSizes } from '../lib/uiPolish';
 import ButtonStyleRegressionCheck from './ButtonStyleRegressionCheck';
+import { logOnce } from '../lib/logOnce';
 
 export default function RouteErrorFallback() {
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
+
+  // Log when this fallback renders
+  useEffect(() => {
+    const logKey = `route-error-${currentPath}`;
+    logOnce(
+      logKey,
+      `RouteErrorFallback rendered: path="${currentPath}" search="${currentSearch}"`,
+      'error'
+    );
+  }, [currentPath, currentSearch]);
 
   const handleGoHome = () => {
     navigate({ to: '/' });
@@ -27,14 +42,14 @@ export default function RouteErrorFallback() {
           Sorry, we couldn't find the page you're looking for. It may have been moved or doesn't exist.
         </p>
         
-        <AppButton 
+        <Button 
           onClick={handleGoHome}
           className="w-full"
           size="lg"
         >
           <Home className={`${iconSizes.sm} mr-2`} />
           Go to Home
-        </AppButton>
+        </Button>
       </div>
     </div>
   );

@@ -1,18 +1,22 @@
 import { useReadingHistory } from '../hooks/useReadingHistory';
 import { useGetStoryById } from '../hooks/useStories';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { t } from '../lib/i18n';
 import { getStoryContent } from '../lib/storyLanguage';
 import { getStoryCoverUrl } from '../hooks/useStories';
 import { Progress } from './ui/progress';
 import { cardRadius, transitions, focusRing } from '../lib/uiPolish';
+import { logOnce } from '../lib/logOnce';
 
 export default function ContinueReadingCard() {
   const { getLastRead } = useReadingHistory();
   const lastRead = getLastRead();
   const { data: story } = useGetStoryById(lastRead?.storyId || null);
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { language } = usePreferences();
 
   if (!lastRead || !story) return null;
@@ -20,18 +24,31 @@ export default function ContinueReadingCard() {
   const content = getStoryContent(story, language);
   const coverUrl = getStoryCoverUrl(story);
 
+  const handleNavigate = () => {
+    try {
+      navigate({ to: '/story/$storyId', params: { storyId: story.id.toString() } });
+    } catch (error) {
+      const logKey = `continue-reading-${story.id}-${currentPath}`;
+      logOnce(
+        logKey,
+        `ContinueReadingCard navigation failed: attempted="/story/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
+    }
+  };
+
   return (
     <div className="mb-6">
       <h2 className="text-lg font-semibold mb-3">{t('continueReading', language)}</h2>
       <div
-        onClick={() => navigate({ to: '/story/$storyId', params: { storyId: story.id.toString() } })}
+        onClick={handleNavigate}
         className={`flex gap-3 p-4 ${cardRadius.medium} bg-accent/30 hover:bg-accent/50 cursor-pointer ${transitions.colors} border shadow-sm ${focusRing}`}
         tabIndex={0}
         role="button"
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            navigate({ to: '/story/$storyId', params: { storyId: story.id.toString() } });
+            handleNavigate();
           }
         }}
       >

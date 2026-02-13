@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Story } from '../backend';
 import { Heart, Clock } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
@@ -6,6 +6,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { getStoryCoverUrl } from '../hooks/useStories';
 import { getStorySocialData } from '../lib/storySocialStorage';
 import { cardRadius, cardElevation, transitions, iconSizes } from '../lib/uiPolish';
+import { logOnce } from '../lib/logOnce';
 
 interface StoryCardProps {
   story: Story;
@@ -13,6 +14,9 @@ interface StoryCardProps {
 
 export default function StoryCard({ story }: StoryCardProps) {
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { isFavorite, toggleFavorite } = useFavorites();
   const { language } = usePreferences();
   const content = story.languages[language];
@@ -24,7 +28,16 @@ export default function StoryCard({ story }: StoryCardProps) {
   const effectiveLikes = Number(story.likes) + socialData.likeOverlay;
 
   const handleCardClick = () => {
-    navigate({ to: '/story/$storyId', params: { storyId: story.id.toString() } });
+    try {
+      navigate({ to: '/story/$storyId', params: { storyId: story.id.toString() } });
+    } catch (error) {
+      const logKey = `story-card-${story.id}-${currentPath}`;
+      logOnce(
+        logKey,
+        `StoryCard navigation failed: attempted="/story/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
+    }
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {

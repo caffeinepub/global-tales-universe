@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix Adults/Kids mode filtering and story feed reliability, add Like/Share/Comment actions, and correct profile name/username handling with stable local image fallbacks.
+**Goal:** Eliminate remaining in-app navigation paths that land on “Page Not Found / Page currently not available” in draft preview, and make route param handling more robust.
 
 **Planned changes:**
-- Persist and consistently apply Adults/Kids mode across Home, Categories, Category Detail, and Story Reader, updating lists immediately when toggled.
-- Align story fetching with current UI preferences (language + mode) and ensure seeded fallback stories render when backend fetches fail.
-- Add Like, Share, and Comment controls in the Story Reader, with persistence for authenticated users via backend and for guests via local storage.
-- Fix profile data model and UI to support editing/saving/displaying both name and username, with stable rendering and clear English fallbacks when unset.
-- Ensure generated static assets are present under `frontend/public/assets/generated` and used as cover/avatar/icon fallbacks without relying on backend asset loading.
+- Audit all navigation entry points (bottom navigation, side drawer, category chips/buttons, story cards, continue-reading, profile links) and update them to use only valid TanStack Router route paths defined in `frontend/src/App.tsx` routeTree.
+- Replace any string-built/hand-assembled paths with route-template navigation using params (e.g., navigating to story/category routes via `{ to: ..., params: ... }`) to prevent typos/mismatches.
+- Harden Story Reader and Category Detail route param parsing so malformed/invalid params don’t crash into router error/not-found; show a friendly in-app error state (English) with a working “Go Home” (and/or Categories/Home) action.
+- Add lightweight runtime diagnostics using the existing `logOnce` pattern for: (1) navigation exceptions (log attempted target), and (2) when the route error/not-found fallback renders (log current location).
 
-**User-visible outcome:** Users can switch between Adults and Kids and see correctly filtered categories/stories without refreshing, reliably see stories in Home and open them in the reader, like/share/comment on stories with state retained after reload, and view/edit a profile with correct name/username and dependable local fallback images.
+**User-visible outcome:** Tapping any tab, category, or story reliably opens the correct screen instead of “Page Not Found,” and invalid story/category URLs show a friendly error with a button to return to a safe screen.

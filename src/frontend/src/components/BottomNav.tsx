@@ -7,12 +7,18 @@ export default function BottomNav() {
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
 
   const handleNavigate = (path: string) => {
     try {
       navigate({ to: path as any });
     } catch (error) {
-      logOnce(`bottom-nav-${path}`, `Bottom nav error to ${path}: ${error}`, 'error');
+      const logKey = `bottom-nav-${path}-${currentPath}`;
+      logOnce(
+        logKey,
+        `BottomNav navigation failed: attempted="${path}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
       // Double fallback: try home, then do nothing
       try {
         navigate({ to: '/' });

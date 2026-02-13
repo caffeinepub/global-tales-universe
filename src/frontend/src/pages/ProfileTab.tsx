@@ -2,7 +2,7 @@ import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAppUser } from '../hooks/useAppUser';
 import { usePreferences } from '../context/PreferencesContext';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
 import { t } from '../lib/i18n';
 import { Button } from '../components/ui/button';
@@ -27,6 +27,9 @@ export default function ProfileTab() {
   const { userState, isPremium, isAuthenticated } = useAppUser();
   const { language } = usePreferences();
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { data: myStories = [], isLoading: storiesLoading, isError: storiesError } = useMyStories();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -56,7 +59,12 @@ export default function ProfileTab() {
     try {
       navigate({ to: path as any });
     } catch (error) {
-      logOnce(`profile-nav-${path}`, `Navigation error to ${path}: ${error}`);
+      const logKey = `profile-nav-${path}-${currentPath}`;
+      logOnce(
+        logKey,
+        `ProfileTab navigation failed: attempted="${path}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
       navigate({ to: '/' });
     }
   };
@@ -259,13 +267,9 @@ export default function ProfileTab() {
               {storiesLoading ? (
                 <div className="space-y-3">
                   {[1, 2].map((i) => (
-                    <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                    <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
                   ))}
                 </div>
-              ) : storiesError ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Unable to load your stories.
-                </p>
               ) : myStories.length > 0 ? (
                 <div className="space-y-3">
                   {myStories.map((story) => (
@@ -273,9 +277,16 @@ export default function ProfileTab() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  You haven't created any stories yet.
-                </p>
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="mb-4">You haven't created any stories yet.</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleNavigate('/story/editor/new')}
+                  >
+                    <Plus className={`${iconSizes.sm} mr-2`} />
+                    Create Your First Story
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -284,39 +295,30 @@ export default function ProfileTab() {
         {/* Settings */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className={iconSizes.md} />
-              Settings
-            </CardTitle>
+            <CardTitle>Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <button
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
               onClick={() => handleNavigate('/privacy-policy')}
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-accent transition-colors"
             >
               Privacy Policy
-            </button>
-            <Separator />
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
               onClick={() => handleNavigate('/terms-and-conditions')}
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-accent transition-colors"
             >
               Terms & Conditions
-            </button>
-            <Separator />
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
               onClick={() => handleNavigate('/help-and-support')}
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-accent transition-colors"
             >
               Help & Support
-            </button>
-            <Separator />
-            <button
-              onClick={() => handleNavigate('/about-us')}
-              className="w-full text-left px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-            >
-              About Us
-            </button>
+            </Button>
           </CardContent>
         </Card>
       </div>

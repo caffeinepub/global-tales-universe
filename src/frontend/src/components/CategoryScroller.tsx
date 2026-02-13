@@ -1,23 +1,33 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { translateCategory } from '../lib/i18n';
 import { getFilteredCategories } from '../lib/kidsMode';
 import { encodeCategoryId } from '../lib/urlParams';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
+import { logOnce } from '../lib/logOnce';
 
 export default function CategoryScroller() {
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { language, mode } = usePreferences();
   const categories = getFilteredCategories(mode === 'kids');
 
   const handleCategoryClick = (category: string) => {
     try {
+      const encodedId = encodeCategoryId(category);
       navigate({ 
         to: '/categories/$categoryId', 
-        params: { categoryId: encodeCategoryId(category) } 
+        params: { categoryId: encodedId } 
       });
     } catch (error) {
-      console.error('Category navigation error:', error);
+      const logKey = `category-scroller-${category}-${currentPath}`;
+      logOnce(
+        logKey,
+        `CategoryScroller navigation failed: attempted="/categories/${encodeCategoryId(category)}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
     }
   };
 

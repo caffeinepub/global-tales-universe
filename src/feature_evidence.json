@@ -2,12 +2,18 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-adults-kids-mode-so-it-is-correctly-persisted-and-consistently-applied-across-the-app-home-categories-category-detail-story-reader-to-filter-kid-friendly-vs-adult-stories-and-categories",
-      "featureTitle": "Fix Adults/Kids mode so it is correctly persisted and consistently applied across the app (Home, Categories, Category Detail, Story Reader) to filter kid-friendly vs adult stories and categories.",
+      "featureId": "feature-audit-all-in-app-navigation-entry-points-bottom-navigation-side-drawer-menu-category-chips-buttons-story-cards-continue-reading-profile-related-links-and-ensure-every-navigation-target-uses-a-valid-tanstack-router-route-path-that-exists-in-frontend-src-app-tsx-routetree-no-stale-typo-paths-replace-any-string-built-paths-with-route-template-navigation-e-g-navigate-to-story-storyid-params-storyid-where-applicable-to-prevent-mismatches",
+      "featureTitle": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation (e.g., `navigate({ to: '/story/$storyId', params: { storyId } })`) where applicable to prevent mismatches.",
       "files": [
-        "frontend/src/context/PreferencesContext.tsx",
-        "frontend/src/hooks/useStories.ts",
-        "frontend/src/pages/StoryReader.tsx"
+        "frontend/src/components/AdPlaceholder.tsx",
+        "frontend/src/components/AppDrawer.tsx",
+        "frontend/src/components/BottomNav.tsx",
+        "frontend/src/components/CategoryScroller.tsx",
+        "frontend/src/components/ContinueReadingCard.tsx",
+        "frontend/src/components/MyStoryCard.tsx",
+        "frontend/src/components/StoryCard.tsx",
+        "frontend/src/pages/CategoriesTab.tsx",
+        "frontend/src/pages/ProfileTab.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,11 +30,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-stories-are-reliably-available-and-rendered-no-empty-feed-by-aligning-frontend-story-fetching-with-current-ui-preferences-language-mode-and-providing-robust-fallbacks-when-backend-calls-fail",
-      "featureTitle": "Ensure stories are reliably available and rendered (no empty feed) by aligning frontend story fetching with current UI preferences (language + mode) and providing robust fallbacks when backend calls fail.",
+      "featureId": "feature-make-route-param-parsing-resilient-so-invalid-malformed-params-do-not-crash-the-route-into-the-router-error-not-found-fallback-in-particular-harden-story-reader-param-handling-so-a-non-numeric-storyid-cannot-throw-e-g-safe-parsing-with-a-controlled-fallback-ui-that-offers-a-go-home-action-apply-similar-safety-for-categoryid-decoding-in-category-detail-if-decode-fails",
+      "featureTitle": "Make route param parsing resilient so invalid/malformed params do not crash the route into the router error/not-found fallback. In particular, harden Story Reader param handling so a non-numeric `storyId` cannot throw (e.g., safe parsing with a controlled fallback UI that offers a \"Go Home\" action). Apply similar safety for categoryId decoding in Category Detail if decode fails.",
       "files": [
-        "frontend/src/hooks/useStories.ts",
-        "frontend/src/lib/seededStories.ts",
+        "frontend/src/lib/urlParams.ts",
+        "frontend/src/pages/CategoryDetail.tsx",
         "frontend/src/pages/StoryReader.tsx"
       ],
       "components": [
@@ -46,37 +52,16 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-story-social-actions-like-share-and-comment-including-ui-controls-on-story-reader-and-persistence-behavior-like-state-like-count-and-comments-per-story",
-      "featureTitle": "Implement story social actions: Like, Share, and Comment, including UI controls on Story Reader and persistence behavior (like state, like count, and comments per story).",
+      "featureId": "feature-add-lightweight-runtime-diagnostics-for-navigation-failures-when-navigation-throws-or-a-not-found-route-is-shown-log-a-single-concise-error-using-the-existing-logonce-pattern-that-includes-the-attempted-path-and-current-location-so-broken-links-can-be-identified-quickly-in-preview-without-spamming-logs",
+      "featureTitle": "Add lightweight runtime diagnostics for navigation failures: when navigation throws or a not-found route is shown, log a single concise error (using the existing `logOnce` pattern) that includes the attempted path and current location, so broken links can be identified quickly in preview without spamming logs.",
       "files": [
+        "frontend/src/components/AppDrawer.tsx",
+        "frontend/src/components/BottomNav.tsx",
+        "frontend/src/components/CategoryScroller.tsx",
+        "frontend/src/components/ContinueReadingCard.tsx",
+        "frontend/src/components/RouteErrorFallback.tsx",
         "frontend/src/components/StoryCard.tsx",
-        "frontend/src/hooks/useFavorites.ts",
-        "frontend/src/hooks/useStorySocial.ts",
-        "frontend/src/lib/storySocialStorage.ts",
-        "frontend/src/pages/StoryReader.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-fix-profile-fields-so-the-app-correctly-supports-and-displays-profile-name-and-username-including-editing-saving-and-consistent-display-in-profile-and-header-avatar-areas",
-      "featureTitle": "Fix profile fields so the app correctly supports and displays profile name and username, including editing/saving and consistent display in Profile and header/avatar areas.",
-      "files": [
-        "frontend/src/components/AppHeader.tsx",
-        "frontend/src/components/UserAvatar.tsx",
-        "frontend/src/hooks/useUserProfile.ts",
-        "frontend/src/lib/userProfileStorage.ts",
+        "frontend/src/pages/CategoriesTab.tsx",
         "frontend/src/pages/ProfileTab.tsx"
       ],
       "components": [
@@ -89,27 +74,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-ensure-generated-static-image-assets-app-icon-default-covers-placeholder-avatar-are-placed-under-frontend-public-assets-generated-and-are-used-as-reliable-fallbacks-anywhere-covers-avatars-icons-would-otherwise-fail-to-load",
-      "featureTitle": "Add/ensure generated static image assets (app icon, default covers, placeholder avatar) are placed under frontend/public/assets/generated and are used as reliable fallbacks anywhere covers/avatars/icons would otherwise fail to load.",
-      "files": [
-        "frontend/src/lib/seededStories.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
+        "REQ-3"
       ],
       "confidence": "high"
     }

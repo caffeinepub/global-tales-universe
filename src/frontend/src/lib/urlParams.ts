@@ -17,7 +17,12 @@ export function encodeCategoryId(category: string): string {
 
 /**
  * Decode category ID back to original string
+ * Throws on malformed input - callers should handle errors
  */
 export function decodeCategoryId(categoryId: string): string {
-  return decodeURIComponent(categoryId);
+  try {
+    return decodeURIComponent(categoryId);
+  } catch (error) {
+    throw new Error(`Failed to decode category ID: ${categoryId}`);
+  }
 }

@@ -1,5 +1,5 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useAppUser } from '../hooks/useAppUser';
 import { Home, Search, Heart, User, Crown, BookOpen, HelpCircle, Info } from 'lucide-react';
 import PremiumBadge from './PremiumBadge';
@@ -14,6 +14,9 @@ interface AppDrawerProps {
 
 export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { isPremium, isAuthenticated } = useAppUser();
 
   const handleNavigate = (path: string) => {
@@ -21,7 +24,12 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
       navigate({ to: path as any });
       onClose();
     } catch (error) {
-      logOnce(`drawer-nav-${path}`, `Drawer navigation error to ${path}: ${error}`, 'error');
+      const logKey = `drawer-nav-${path}-${currentPath}`;
+      logOnce(
+        logKey,
+        `AppDrawer navigation failed: attempted="${path}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
       // Fallback to home if navigation fails
       try {
         navigate({ to: '/' });

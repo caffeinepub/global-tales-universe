@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { getFilteredCategories } from '../lib/kidsMode';
 import { translateCategory, t } from '../lib/i18n';
@@ -6,20 +6,30 @@ import { getCoverUrl } from '../lib/covers';
 import { encodeCategoryId } from '../lib/urlParams';
 import PageLayout from '../components/PageLayout';
 import { cardRadius, cardElevation, transitions, focusRing } from '../lib/uiPolish';
+import { logOnce } from '../lib/logOnce';
 
 export default function CategoriesTab() {
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { language, mode } = usePreferences();
   const categories = getFilteredCategories(mode === 'kids');
 
   const handleCategoryClick = (category: string) => {
     try {
+      const encodedId = encodeCategoryId(category);
       navigate({ 
         to: '/categories/$categoryId', 
-        params: { categoryId: encodeCategoryId(category) } 
+        params: { categoryId: encodedId } 
       });
     } catch (error) {
-      console.error('Category navigation error:', error);
+      const logKey = `categories-tab-${category}-${currentPath}`;
+      logOnce(
+        logKey,
+        `CategoriesTab navigation failed: attempted="/categories/${encodeCategoryId(category)}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
     }
   };
 

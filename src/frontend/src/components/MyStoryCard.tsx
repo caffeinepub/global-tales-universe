@@ -1,10 +1,11 @@
 import { Story } from '../backend';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { usePreferences } from '../context/PreferencesContext';
 import { Clock, Edit } from 'lucide-react';
 import { Button } from './ui/button';
 import { iconSizes, cardRadius, cardElevation, transitions, focusRing } from '../lib/uiPolish';
 import { getStoryCoverUrl } from '../hooks/useStories';
+import { logOnce } from '../lib/logOnce';
 
 interface MyStoryCardProps {
   story: Story;
@@ -12,6 +13,9 @@ interface MyStoryCardProps {
 
 export default function MyStoryCard({ story }: MyStoryCardProps) {
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const currentSearch = routerState.location.search;
   const { language } = usePreferences();
   
   const content = story.languages[language as keyof typeof story.languages];
@@ -19,11 +23,29 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate({ to: '/story/editor/$storyId', params: { storyId: String(story.id) } });
+    try {
+      navigate({ to: '/story/editor/$storyId', params: { storyId: String(story.id) } });
+    } catch (error) {
+      const logKey = `my-story-edit-${story.id}-${currentPath}`;
+      logOnce(
+        logKey,
+        `MyStoryCard edit navigation failed: attempted="/story/editor/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
+    }
   };
 
   const handleRead = () => {
-    navigate({ to: '/story/$storyId', params: { storyId: String(story.id) } });
+    try {
+      navigate({ to: '/story/$storyId', params: { storyId: String(story.id) } });
+    } catch (error) {
+      const logKey = `my-story-read-${story.id}-${currentPath}`;
+      logOnce(
+        logKey,
+        `MyStoryCard read navigation failed: attempted="/story/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        'error'
+      );
+    }
   };
 
   // Get cover image URL (handles both ExternalBlob and fallback)
