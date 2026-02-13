@@ -26,6 +26,14 @@ export interface AppUser {
     premiumSubscriptionActive: boolean;
     badgeAchievements: Array<string>;
 }
+export interface StoryDraft {
+    id: bigint;
+    createdAt: bigint;
+    text: string;
+    authorRole: string;
+    isPrivate: boolean;
+    image?: ExternalBlob;
+}
 export interface Story {
     id: bigint;
     isPremium: boolean;
@@ -64,6 +72,7 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    addStoryDraft(text: string, image: ExternalBlob | null): Promise<bigint>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createAppUser(): Promise<void>;
     getAppUser(): Promise<AppUser>;
@@ -71,7 +80,9 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getDailyFeaturedStoryByLanguage(_language: Language): Promise<Story>;
     getFilteredSortedStories(_language: Language, sortByPopularity: boolean | null, filterByCategory: string | null, filterByKidFriendly: boolean | null): Promise<Array<Story>>;
+    getMyStoryDrafts(): Promise<Array<StoryDraft>>;
     getStory(storyId: bigint): Promise<Story>;
+    getStoryDraft(draftId: bigint): Promise<StoryDraft | null>;
     getUserFavoriteStories(): Promise<Array<Story>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;

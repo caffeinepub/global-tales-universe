@@ -2,23 +2,28 @@ import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Home, Search, Heart, User, BookOpen } from 'lucide-react';
 import { iconSizes } from '../lib/uiPolish';
 import { logOnce } from '../lib/logOnce';
+import { recordNavFailure } from '../lib/navFailures';
+import { getFullPath } from '../lib/routerSearch';
 
 export default function BottomNav() {
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const fullPath = getFullPath(currentPath, currentSearch);
 
   const handleNavigate = (path: string) => {
     try {
       navigate({ to: path as any });
     } catch (error) {
       const logKey = `bottom-nav-${path}-${currentPath}`;
-      logOnce(
-        logKey,
-        `BottomNav navigation failed: attempted="${path}" current="${currentPath}${currentSearch}" error="${error}"`,
-        'error'
-      );
+      const errorMessage = `BottomNav navigation failed: attempted="${path}" current="${fullPath}" error="${error}"`;
+      
+      logOnce(logKey, errorMessage, 'error');
+      
+      // Record navigation failure
+      recordNavFailure(path, fullPath, String(error));
+      
       // Double fallback: try home, then do nothing
       try {
         navigate({ to: '/' });

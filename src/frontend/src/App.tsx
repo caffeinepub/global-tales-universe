@@ -14,6 +14,7 @@ import FavoritesTab from './pages/FavoritesTab';
 import ProfileTab from './pages/ProfileTab';
 import StoryReader from './pages/StoryReader';
 import StoryEditor from './pages/StoryEditor';
+import MyStories from './pages/MyStories';
 import GoPremium from './pages/GoPremium';
 import PremiumSuccess from './pages/PremiumSuccess';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -21,6 +22,7 @@ import TermsAndConditions from './pages/TermsAndConditions';
 import HelpAndSupport from './pages/HelpAndSupport';
 import AboutUs from './pages/AboutUs';
 import RouteErrorFallback from './components/RouteErrorFallback';
+import NavDebugOverlay from './components/NavDebugOverlay';
 import { PreferencesProvider } from './context/PreferencesContext';
 import { Toaster } from './components/ui/sonner';
 import ReminderBanner from './components/ReminderBanner';
@@ -28,6 +30,7 @@ import InstallPromptBanner from './components/InstallPromptBanner';
 import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { isOnboardingCompleted } from './lib/onboarding';
+import { getSearchString } from './lib/routerSearch';
 
 function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
@@ -35,10 +38,11 @@ function RootLayout() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const searchString = getSearchString(currentSearch);
 
   // Check if current route is StoryReader or StoryEditor (full-screen experience)
   const isStoryReader = currentPath.startsWith('/story/') && !currentPath.includes('/editor');
-  const isStoryEditor = currentPath.startsWith('/story/editor');
+  const isStoryEditor = currentPath === '/story-editor';
   const isPremiumSuccess = currentPath === '/premium/success';
 
   useEffect(() => {
@@ -50,6 +54,7 @@ function RootLayout() {
 
   useEffect(() => {
     // Register service worker for PWA functionality
+    // The helper now handles preview mode detection and unregistration
     registerServiceWorker();
   }, []);
 
@@ -79,7 +84,7 @@ function RootLayout() {
   // Scroll to top on route change to ensure fresh page view
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [currentPath, currentSearch]);
+  }, [currentPath, searchString]);
 
   if (showSplash) {
     return <SplashScreen />;
@@ -88,7 +93,8 @@ function RootLayout() {
   // StoryReader, StoryEditor, and PremiumSuccess have their own layouts
   if (isStoryReader || isStoryEditor || isPremiumSuccess) {
     return (
-      <div key={`${currentPath}-${currentSearch}`}>
+      <div key={`${currentPath}-${searchString}`}>
+        <NavDebugOverlay />
         <Outlet />
       </div>
     );
@@ -96,11 +102,12 @@ function RootLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
+      <NavDebugOverlay />
       <AppHeader onMenuClick={() => setDrawerOpen(true)} />
       <AppDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ReminderBanner />
       <InstallPromptBanner />
-      <main className="flex-1 overflow-auto pb-16" key={`${currentPath}-${currentSearch}`}>
+      <main className="flex-1 overflow-auto pb-16" key={`${currentPath}-${searchString}`}>
         <Outlet />
       </main>
       <BottomNav />
@@ -150,6 +157,12 @@ const profileRoute = createRoute({
   component: ProfileTab,
 });
 
+const myStoriesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-stories',
+  component: MyStories,
+});
+
 const storyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/story/$storyId',
@@ -158,7 +171,7 @@ const storyRoute = createRoute({
 
 const storyEditorRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/story/editor/$storyId',
+  path: '/story-editor',
   component: StoryEditor,
 });
 
@@ -236,6 +249,7 @@ const routeTree = rootRoute.addChildren([
   searchRoute,
   favoritesRoute,
   profileRoute,
+  myStoriesRoute,
   storyRoute,
   storyEditorRoute,
   premiumRoute,
@@ -294,7 +308,7 @@ function AppWithOnboarding() {
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <PreferencesProvider>
           <AppWithOnboarding />

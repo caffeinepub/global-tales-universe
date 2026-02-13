@@ -44,6 +44,14 @@ export interface Story {
   'isKidFriendly' : boolean,
   'readTimeMinutes' : bigint,
 }
+export interface StoryDraft {
+  'id' : bigint,
+  'createdAt' : bigint,
+  'text' : string,
+  'authorRole' : string,
+  'isPrivate' : boolean,
+  'image' : [] | [ExternalBlob],
+}
 export interface UserProfile {
   'username' : string,
   'displayName' : string,
@@ -80,6 +88,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addStoryDraft' : ActorMethod<[string, [] | [ExternalBlob]], bigint>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createAppUser' : ActorMethod<[], undefined>,
   'getAppUser' : ActorMethod<[], AppUser>,
@@ -90,7 +99,9 @@ export interface _SERVICE {
     [Language, [] | [boolean], [] | [string], [] | [boolean]],
     Array<Story>
   >,
+  'getMyStoryDrafts' : ActorMethod<[], Array<StoryDraft>>,
   'getStory' : ActorMethod<[bigint], Story>,
+  'getStoryDraft' : ActorMethod<[bigint], [] | [StoryDraft]>,
   'getUserFavoriteStories' : ActorMethod<[], Array<Story>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,

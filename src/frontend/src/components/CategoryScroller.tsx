@@ -5,12 +5,14 @@ import { getFilteredCategories } from '../lib/kidsMode';
 import { encodeCategoryId } from '../lib/urlParams';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import { logOnce } from '../lib/logOnce';
+import { getFullPath } from '../lib/routerSearch';
 
 export default function CategoryScroller() {
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const fullPath = getFullPath(currentPath, currentSearch);
   const { language, mode } = usePreferences();
   const categories = getFilteredCategories(mode === 'kids');
 
@@ -25,7 +27,7 @@ export default function CategoryScroller() {
       const logKey = `category-scroller-${category}-${currentPath}`;
       logOnce(
         logKey,
-        `CategoryScroller navigation failed: attempted="/categories/${encodeCategoryId(category)}" current="${currentPath}${currentSearch}" error="${error}"`,
+        `CategoryScroller navigation failed: attempted="/categories/${encodeCategoryId(category)}" current="${fullPath}" error="${error}"`,
         'error'
       );
     }

@@ -19,6 +19,7 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -41,7 +42,6 @@ export const AppUser = IDL.Record({
   'premiumSubscriptionActive' : IDL.Bool,
   'badgeAchievements' : IDL.Vec(IDL.Text),
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const UserProfile = IDL.Record({
   'username' : IDL.Text,
   'displayName' : IDL.Text,
@@ -68,6 +68,14 @@ export const Story = IDL.Record({
   'rating' : IDL.Nat,
   'isKidFriendly' : IDL.Bool,
   'readTimeMinutes' : IDL.Nat,
+});
+export const StoryDraft = IDL.Record({
+  'id' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'text' : IDL.Text,
+  'authorRole' : IDL.Text,
+  'isPrivate' : IDL.Bool,
+  'image' : IDL.Opt(ExternalBlob),
 });
 
 export const idlService = IDL.Service({
@@ -98,6 +106,7 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addStoryDraft' : IDL.Func([IDL.Text, IDL.Opt(ExternalBlob)], [IDL.Nat], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createAppUser' : IDL.Func([], [], []),
   'getAppUser' : IDL.Func([], [AppUser], ['query']),
@@ -109,7 +118,9 @@ export const idlService = IDL.Service({
       [IDL.Vec(Story)],
       ['query'],
     ),
+  'getMyStoryDrafts' : IDL.Func([], [IDL.Vec(StoryDraft)], ['query']),
   'getStory' : IDL.Func([IDL.Nat], [Story], ['query']),
+  'getStoryDraft' : IDL.Func([IDL.Nat], [IDL.Opt(StoryDraft)], ['query']),
   'getUserFavoriteStories' : IDL.Func([], [IDL.Vec(Story)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -151,6 +162,7 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -173,7 +185,6 @@ export const idlFactory = ({ IDL }) => {
     'premiumSubscriptionActive' : IDL.Bool,
     'badgeAchievements' : IDL.Vec(IDL.Text),
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const UserProfile = IDL.Record({
     'username' : IDL.Text,
     'displayName' : IDL.Text,
@@ -200,6 +211,14 @@ export const idlFactory = ({ IDL }) => {
     'rating' : IDL.Nat,
     'isKidFriendly' : IDL.Bool,
     'readTimeMinutes' : IDL.Nat,
+  });
+  const StoryDraft = IDL.Record({
+    'id' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'text' : IDL.Text,
+    'authorRole' : IDL.Text,
+    'isPrivate' : IDL.Bool,
+    'image' : IDL.Opt(ExternalBlob),
   });
   
   return IDL.Service({
@@ -230,6 +249,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addStoryDraft' : IDL.Func(
+        [IDL.Text, IDL.Opt(ExternalBlob)],
+        [IDL.Nat],
+        [],
+      ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createAppUser' : IDL.Func([], [], []),
     'getAppUser' : IDL.Func([], [AppUser], ['query']),
@@ -245,7 +269,9 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Story)],
         ['query'],
       ),
+    'getMyStoryDrafts' : IDL.Func([], [IDL.Vec(StoryDraft)], ['query']),
     'getStory' : IDL.Func([IDL.Nat], [Story], ['query']),
+    'getStoryDraft' : IDL.Func([IDL.Nat], [IDL.Opt(StoryDraft)], ['query']),
     'getUserFavoriteStories' : IDL.Func([], [IDL.Vec(Story)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],

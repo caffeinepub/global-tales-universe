@@ -8,6 +8,7 @@ import { getStoryCoverUrl } from '../hooks/useStories';
 import { Progress } from './ui/progress';
 import { cardRadius, transitions, focusRing } from '../lib/uiPolish';
 import { logOnce } from '../lib/logOnce';
+import { getFullPath } from '../lib/routerSearch';
 
 export default function ContinueReadingCard() {
   const { getLastRead } = useReadingHistory();
@@ -17,6 +18,7 @@ export default function ContinueReadingCard() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const fullPath = getFullPath(currentPath, currentSearch);
   const { language } = usePreferences();
 
   if (!lastRead || !story) return null;
@@ -31,7 +33,7 @@ export default function ContinueReadingCard() {
       const logKey = `continue-reading-${story.id}-${currentPath}`;
       logOnce(
         logKey,
-        `ContinueReadingCard navigation failed: attempted="/story/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        `ContinueReadingCard navigation failed: attempted="/story/${story.id}" current="${fullPath}" error="${error}"`,
         'error'
       );
     }

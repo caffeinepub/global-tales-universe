@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { iconSizes, cardRadius, cardElevation, transitions, focusRing } from '../lib/uiPolish';
 import { getStoryCoverUrl } from '../hooks/useStories';
 import { logOnce } from '../lib/logOnce';
+import { getFullPath } from '../lib/routerSearch';
 
 interface MyStoryCardProps {
   story: Story;
@@ -16,6 +17,7 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const fullPath = getFullPath(currentPath, currentSearch);
   const { language } = usePreferences();
   
   const content = story.languages[language as keyof typeof story.languages];
@@ -29,7 +31,7 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
       const logKey = `my-story-edit-${story.id}-${currentPath}`;
       logOnce(
         logKey,
-        `MyStoryCard edit navigation failed: attempted="/story/editor/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        `MyStoryCard edit navigation failed: attempted="/story/editor/${story.id}" current="${fullPath}" error="${error}"`,
         'error'
       );
     }
@@ -42,7 +44,7 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
       const logKey = `my-story-read-${story.id}-${currentPath}`;
       logOnce(
         logKey,
-        `MyStoryCard read navigation failed: attempted="/story/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        `MyStoryCard read navigation failed: attempted="/story/${story.id}" current="${fullPath}" error="${error}"`,
         'error'
       );
     }

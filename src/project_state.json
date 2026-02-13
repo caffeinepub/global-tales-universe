@@ -1,40 +1,176 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Build a simple social-media-style Stories web app with bilingual (Tamil/English) UI, allowing users to create and view short text stories (optional image), manage \"My Stories\", and optionally auto-expire stories after 24 hours; also address reported UI issues (profile stories update, favourites/likes visibility, login logo clarity, impression page).",
+  "architectural_notes": [
+    "Plan for story expiration logic (timestamp + scheduled cleanup or query filtering) if 24-hour auto-disappear is enabled.",
+    "Design localization/i18n approach for Tamil & English UI (strings dictionary + language toggle)."
+  ],
   "known_issues": [
-    "Some pages in the draft preview still show \"Page Not Found\" / \"This page currently not available\" indicating remaining broken routes or navigation links."
+    "Build/deployment previously failed due to an internal configuration issue (reported by system)."
   ],
   "isFixRequest": true,
+  "imageRequirements": "## Required Images\n- Clean minimal wordmark logo on transparent background (app-logo-transparent.dim_512x512.png)",
   "existing_features": [
     {
-      "id": "feature-audit-all-in-app-navigation-entry-points-bottom-navigation-side-drawer-menu-category-chips-buttons-story-cards-continue-reading-profile-related-links-and-ensure-every-navigation-target-uses-a-valid-tanstack-router-route-path-that-exists-in-frontend-src-app-tsx-routetree-no-stale-typo-paths-replace-any-string-built-paths-with-route-template-navigation-e-g-navigate-to-story-storyid-params-storyid-where-applicable-to-prevent-mismatches",
-      "title": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation (e.g., `navigate({ to: '/story/$storyId', params: { storyId } })`) where applicable to prevent mismatches.",
+      "id": "feature-implement-a-basic-stories-feature-that-lets-a-user-create-a-short-story-consisting-of-required-text-and-an-optional-single-image-with-a-simple-editor-ui-text-input-and-an-emoji-insert-option",
+      "title": "Implement a basic “Stories” feature that lets a user create a short story consisting of required text and an optional single image, with a simple editor UI (text input and an emoji insert option).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-make-route-param-parsing-resilient-so-invalid-malformed-params-do-not-crash-the-route-into-the-router-error-not-found-fallback-in-particular-harden-story-reader-param-handling-so-a-non-numeric-storyid-cannot-throw-e-g-safe-parsing-with-a-controlled-fallback-ui-that-offers-a-go-home-action-apply-similar-safety-for-categoryid-decoding-in-category-detail-if-decode-fails",
-      "title": "Make route param parsing resilient so invalid/malformed params do not crash the route into the router error/not-found fallback. In particular, harden Story Reader param handling so a non-numeric `storyId` cannot throw (e.g., safe parsing with a controlled fallback UI that offers a \"Go Home\" action). Apply similar safety for categoryId decoding in Category Detail if decode fails.",
+      "id": "feature-add-a-my-stories-page-that-lists-stories-created-by-the-current-user-and-include-a-prominent-create-button-that-navigates-to-the-story-editor",
+      "title": "Add a “My Stories” page that lists stories created by the current user, and include a prominent “+ Create” button that navigates to the story editor.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-lightweight-runtime-diagnostics-for-navigation-failures-when-navigation-throws-or-a-not-found-route-is-shown-log-a-single-concise-error-using-the-existing-logonce-pattern-that-includes-the-attempted-path-and-current-location-so-broken-links-can-be-identified-quickly-in-preview-without-spamming-logs",
-      "title": "Add lightweight runtime diagnostics for navigation failures: when navigation throws or a not-found route is shown, log a single concise error (using the existing `logOnce` pattern) that includes the attempted path and current location, so broken links can be identified quickly in preview without spamming logs.",
+      "id": "feature-support-two-identity-modes-for-stories-1-guest-anonymous-mode-using-local-only-storage-without-requiring-internet-identity-login-and-2-authenticated-mode-using-internet-identity-where-stories-are-persisted-in-the-motoko-backend-under-the-caller-principal",
+      "title": "Support two identity modes for Stories: (1) guest/anonymous mode using local-only storage without requiring Internet Identity login, and (2) authenticated mode using Internet Identity where stories are persisted in the Motoko backend under the caller principal.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-implement-optional-24-hour-auto-expiration-for-stories-instagram-style-such-that-expired-stories-no-longer-appear-in-my-stories-implement-this-consistently-for-both-guest-local-stories-and-authenticated-backend-stories",
+      "title": "Implement optional 24-hour auto-expiration for Stories (Instagram-style) such that expired stories no longer appear in My Stories; implement this consistently for both guest/local stories and authenticated/backend stories.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-existing-story-creation-flow-so-it-is-functional-remove-replace-the-current-placeholder-error-in-the-story-editor-save-path-and-ensure-the-my-stories-list-refreshes-after-creating-a-story",
+      "title": "Update the existing Story creation flow so it is functional (remove/replace the current placeholder error in the story editor save path) and ensure the My Stories list refreshes after creating a story.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-bilingual-ui-support-for-the-stories-feature-at-minimum-english-tamil-by-adding-translation-keys-for-all-new-stories-my-stories-create-editor-strings-and-wiring-them-through-the-existing-i18n-translation-helper",
+      "title": "Ensure bilingual UI support for the Stories feature (at minimum English + Tamil) by adding translation keys for all new Stories/My Stories/Create/Editor strings and wiring them through the existing i18n translation helper.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-reported-issue-where-profile-page-story-update-is-not-showing-correctly-by-ensuring-the-profile-page-s-my-stories-section-is-wired-to-the-functional-my-stories-data-source-and-updates-reliably-after-edits-creates",
+      "title": "Fix the reported issue where “profile page story update” is not showing correctly by ensuring the Profile page’s “My Stories” section is wired to the functional My Stories data source and updates reliably after edits/creates.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-the-login-experience-visuals-by-updating-the-login-logo-presentation-to-be-clear-and-professional-sharp-rendering-correct-sizing-no-broken-image-fallback",
+      "title": "Improve the login experience visuals by updating the login/logo presentation to be clear and professional (sharp rendering, correct sizing, no broken image fallback).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Fix remaining \"Page Not Found / Page currently not available\" navigation failures in draft preview",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement Stories creation flow: create short story with text and optional image upload",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add My Stories page to list stories created by the current user",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add + Create button to start new story creation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Provide a simple story editor (text input, emoji support, optional image upload)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Optional: Auto-expire/disappear stories after 24 hours (Instagram-like)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "User identity mode: fully anonymous or simple username-based usage",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Bilingual UI support: Tamil & English toggle/localization",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Fix: Profile page story updates not showing correctly",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Fix: Favourites/likes not showing inside like/favourite section",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Fix: Login page logo clarity/appearance (make it clear and professional)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Fix: Impression page layout/appearance issues reported by user",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Extend the Motoko backend API to support authenticated user story creation and retrieval, including storing an optional image using the existing blob-storage mixin.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Fix the reported issue where favorites/likes visibility is incorrect in the Favorites section by ensuring each favorite card shows the correct favorite state and a visible like count consistently across pages.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Identify and fix the “impression page” layout/appearance issue reported by the user, ensuring the page renders without obvious spacing, overlap, or readability problems on common mobile widths.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Add simple Stories creation + My Stories page with Tamil/English UI, plus reported UI fixes",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

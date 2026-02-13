@@ -1,71 +1,232 @@
 {
   "kind": "build_request",
-  "title": "Fix remaining \"Page Not Found / Page currently not available\" navigation failures in draft preview",
-  "priority": "high",
+  "title": "Add simple Stories creation + My Stories page with Tamil/English UI, plus reported UI fixes",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation (e.g., `navigate({ to: '/story/$storyId', params: { storyId } })`) where applicable to prevent mismatches.",
-      "target": "frontend",
+      "text": "Implement a basic “Stories” feature that lets a user create a short story consisting of required text and an optional single image, with a simple editor UI (text input and an emoji insert option).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "This page currently not available and this page currently show \"Page Not Found\" please check fix this problem"
+          "Users can create short stories (text + image optional)",
+          "ஒவ்வொரு story-க்கும் simple editor (text, maybe emoji, image upload if possible)"
         ]
       },
       "acceptanceCriteria": [
-        "Tapping each BottomNav tab (Home/Categories/Search/Favorites/Profile) never renders the \"Page Not Found\" screen.",
-        "Tapping Categories (from Home category scroller and Categories tab grid) always opens the Category Detail screen for that category.",
-        "Tapping any story card (Featured, Latest, Category Detail, Search results, Favorites, Continue Reading) always opens the Story Reader screen."
+        "From the UI, a user can open a Create Story screen and submit a story with text only.",
+        "From the UI, a user can attach a single JPG/PNG image (optional) and submit the story.",
+        "The editor includes an emoji insert affordance (e.g., emoji picker or quick emoji buttons) that inserts into the text field.",
+        "On successful creation, the user sees confirmation feedback and is redirected to their My Stories view."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Make route param parsing resilient so invalid/malformed params do not crash the route into the router error/not-found fallback. In particular, harden Story Reader param handling so a non-numeric `storyId` cannot throw (e.g., safe parsing with a controlled fallback UI that offers a \"Go Home\" action). Apply similar safety for categoryId decoding in Category Detail if decode fails.",
+      "text": "Add a “My Stories” page that lists stories created by the current user, and include a prominent “+ Create” button that navigates to the story editor.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "This page currently not available and this page currently show \"Page Not Found\""
+          "My Stories page-ல அவங்க create பண்ண stories list ஆகணும்",
+          "+ Create button இருந்து new story உருவாக்கலாம்"
         ]
       },
       "acceptanceCriteria": [
-        "Navigating to an invalid story route (e.g., `/story/not-a-number`) shows a friendly in-app error state (in English) with a working button to return to Home, and does not render a blank page.",
-        "Navigating to an invalid category route (e.g., `/categories/%` or an undecodable value) shows a friendly in-app error state (in English) with a working button to return to Categories/Home, and does not render a blank page."
+        "A dedicated My Stories page exists and is reachable from the app navigation (or Profile).",
+        "The My Stories page shows an empty state when there are no stories.",
+        "The My Stories page lists the user’s created stories newest-first, showing at minimum: text preview and created time; if an image exists, show a thumbnail.",
+        "A “+ Create” button is visible and opens the Create Story screen."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add lightweight runtime diagnostics for navigation failures: when navigation throws or a not-found route is shown, log a single concise error (using the existing `logOnce` pattern) that includes the attempted path and current location, so broken links can be identified quickly in preview without spamming logs.",
-      "target": "frontend",
+      "text": "Support two identity modes for Stories: (1) guest/anonymous mode using local-only storage without requiring Internet Identity login, and (2) authenticated mode using Internet Identity where stories are persisted in the Motoko backend under the caller principal.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "please check fix this problem"
+          "Full anonymous or simple username based"
         ]
       },
       "acceptanceCriteria": [
-        "If a navigation attempt fails (exception), the app logs a single `logOnce` entry including the target path.",
-        "If the RouteErrorFallback is rendered, the app logs a single `logOnce` entry including the current pathname/search that led to it."
+        "If the user is not authenticated, they can still create and view their own stories (stored locally in the browser) and see them in My Stories.",
+        "If the user is authenticated, creating a story persists it in the backend and it appears in My Stories after refresh.",
+        "Guest stories remain available after page refresh on the same device/browser.",
+        "Authenticated stories are scoped per principal; a different authenticated user does not see someone else’s My Stories."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement optional 24-hour auto-expiration for Stories (Instagram-style) such that expired stories no longer appear in My Stories; implement this consistently for both guest/local stories and authenticated/backend stories.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Stories 24 மணி நேரத்துக்கு அப்புறம் auto disappear ஆகணும் (Instagram stories மாதிரி) optional ஆ இருந்தா சரி"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each story has a created timestamp and an expiration timestamp (created + 24h) or equivalent expiration logic.",
+        "Expired stories do not render in My Stories.",
+        "Backend: expired stories are filtered out in listing queries; optionally provide a cleanup pass during list/create calls to keep state small.",
+        "Frontend (guest mode): expired stories are filtered out when reading from localStorage."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Extend the Motoko backend API to support authenticated user story creation and retrieval, including storing an optional image using the existing blob-storage mixin.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Users can create short stories (text + image optional)",
+          "image upload if possible"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes an authenticated method to create a user story with required text and optional image blob reference.",
+        "Backend exposes an authenticated query to list the caller’s active (non-expired) user stories newest-first.",
+        "Backend returns enough fields for UI rendering (id, text, optional image reference/URL or blob handle, createdAt, expiresAt).",
+        "If image upload is provided, the backend stores and can serve the image via the existing blob-storage behaviors already included in backend/main.mo."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Update the existing Story creation flow so it is functional (remove/replace the current placeholder error in the story editor save path) and ensure the My Stories list refreshes after creating a story.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "முதல்ல ஒரு basic version create பண்ணி, preview URL கொடு. பிறகு step by step improve பண்ணலாம்."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Creating a story no longer throws a “coming soon” placeholder error.",
+        "After creation, the My Stories query data refreshes automatically and shows the new story.",
+        "If the user is a guest, creation writes to localStorage and My Stories reads from that same localStorage store.",
+        "If the user is authenticated, creation calls the backend and My Stories reads from backend."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Ensure bilingual UI support for the Stories feature (at minimum English + Tamil) by adding translation keys for all new Stories/My Stories/Create/Editor strings and wiring them through the existing i18n translation helper.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "தமிழ் & English ரெண்டிலும் support பண்ணணும் UI-ல."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All new user-facing strings added for Stories are sourced from the i18n translation system (not hardcoded).",
+        "English and Tamil translations are present for all new Stories-related keys.",
+        "Switching UI language updates the Stories/My Stories/Create Story screens accordingly."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Fix the reported issue where “profile page story update” is not showing correctly by ensuring the Profile page’s “My Stories” section is wired to the functional My Stories data source and updates reliably after edits/creates.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Ok but like, profile page story update, and favourite inside like are not show, login page fix logo clear and proper good impression page set this problems I noticed please check and fix"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Profile page consistently shows the latest My Stories list for the current user mode (guest vs authenticated).",
+        "After creating a story, navigating to Profile shows the newly created story without requiring a hard reload.",
+        "If story editing is supported in the UI, saving an edit updates the list item preview accordingly."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Fix the reported issue where favorites/likes visibility is incorrect in the Favorites section by ensuring each favorite card shows the correct favorite state and a visible like count consistently across pages.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "...favourite inside like are not show..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Favorites page story cards clearly display a like count (including any local like overlay behavior if present).",
+        "Favorites page story cards show the heart icon filled/active when the story is favorited.",
+        "Toggling favorite from within Favorites updates the list promptly (removes when unfavorited, if that is the intended behavior)."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Improve the login experience visuals by updating the login/logo presentation to be clear and professional (sharp rendering, correct sizing, no broken image fallback).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "login page fix logo clear and proper good impression page set"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On the login screen (or login entry state), the app logo is crisp (not blurry) and sized consistently across mobile/desktop.",
+        "If an image asset is missing, there is a graceful fallback that still looks intentional (no broken-image icon).",
+        "The logo area does not cause layout shift during load."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Identify and fix the “impression page” layout/appearance issue reported by the user, ensuring the page renders without obvious spacing, overlap, or readability problems on common mobile widths.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "...proper good impression page set this problems..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The page referred to as the “impression page” renders without clipped content, overlapping elements, or unreadable text on a ~360px wide viewport.",
+        "Key sections have consistent padding and typography alignment with the rest of the app.",
+        "No console errors are introduced by the fix."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under `frontend/src/components/ui` (shadcn components) or other paths listed in `frontend.immutablePaths`.",
-    "Keep routing implemented with TanStack Router (do not introduce a different router)."
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Do not edit files under frontend/src/components/ui or any other paths listed as immutable in SYSTEM_CONTEXT.",
+    "Do not introduce third-party authentication providers; Internet Identity is the only supported auth.",
+    "Do not use external databases; persistence must be Motoko stable structures and/or browser localStorage for guest mode."
   ],
   "nonGoals": [
-    "Implementing new app features unrelated to routing stability (e.g., payments, new content types).",
-    "Adding third-party analytics or external logging services."
+    "Implementing a public global stories feed for all users (beyond the current user’s My Stories) unless explicitly requested later.",
+    "Real-time story viewing or WebSocket-based updates.",
+    "Advanced media editing (cropping/filters) for uploaded images.",
+    "Third-party social sharing integrations beyond existing share utilities."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Clean minimal wordmark logo on transparent background (app-logo-transparent.dim_512x512.png)"
+    ],
     "edits": []
   }
 }

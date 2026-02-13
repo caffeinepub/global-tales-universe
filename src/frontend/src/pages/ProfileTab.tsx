@@ -13,9 +13,9 @@ import { Separator } from '../components/ui/separator';
 import PageLayout from '../components/PageLayout';
 import UserAvatar from '../components/UserAvatar';
 import PremiumBadge from '../components/PremiumBadge';
-import { useMyStories } from '../hooks/useMyStories';
-import MyStoryCard from '../components/MyStoryCard';
-import { Plus, Crown, Flame, Award, Settings, LogOut, LogIn, Edit2, Save, X } from 'lucide-react';
+import { useMyStories, isGuestDraft } from '../hooks/useMyStories';
+import MyStoryDraftCard from '../components/MyStoryDraftCard';
+import { Plus, Crown, Flame, Award, Settings, LogOut, LogIn, Edit2, Save, X, BookOpen } from 'lucide-react';
 import { iconSizes } from '../lib/uiPolish';
 import { AppUser } from '../backend';
 import { logOnce } from '../lib/logOnce';
@@ -30,7 +30,7 @@ export default function ProfileTab() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
-  const { data: myStories = [], isLoading: storiesLoading, isError: storiesError } = useMyStories();
+  const { data: myStories = [], isLoading: storiesLoading } = useMyStories();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editDisplayName, setEditDisplayName] = useState('');
@@ -145,179 +145,172 @@ export default function ProfileTab() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-xl font-bold">{profileData.displayName}</h2>
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                      {profileData.displayName}
                       {isPremium && <PremiumBadge variant="compact" />}
-                    </div>
+                    </h2>
                     <p className="text-sm text-muted-foreground">@{profileData.username}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {isAuthenticated ? 'Authenticated User' : 'Guest User'}
-                    </p>
                   </>
                 )}
               </div>
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEditCancel}
+                  >
+                    <X className={iconSizes.sm} />
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="icon"
+                    onClick={handleEditSave}
+                    disabled={isSaving}
+                  >
+                    <Save className={iconSizes.sm} />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleEditStart}
+                >
+                  <Edit2 className={iconSizes.sm} />
+                </Button>
+              )}
             </div>
 
-            {isEditing ? (
-              <div className="flex gap-2">
-                <Button onClick={handleEditSave} disabled={isSaving} className="flex-1">
-                  <Save className={`${iconSizes.sm} mr-2`} />
-                  {isSaving ? 'Saving...' : 'Save'}
-                </Button>
-                <Button onClick={handleEditCancel} variant="outline" className="flex-1">
-                  <X className={`${iconSizes.sm} mr-2`} />
-                  Cancel
-                </Button>
+            {/* Stats */}
+            {isAuthenticated && (
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Flame className={`${iconSizes.sm} text-orange-500`} />
+                    <span className="text-2xl font-bold">{dailyStreak}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Day Streak</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Award className={`${iconSizes.sm} text-yellow-500`} />
+                    <span className="text-2xl font-bold">{badges.length}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Badges</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <BookOpen className={`${iconSizes.sm} text-blue-500`} />
+                    <span className="text-2xl font-bold">{myStories.length}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t('myStories', language)}</p>
+                </div>
               </div>
-            ) : (
-              <>
-                <Button onClick={handleEditStart} variant="outline" className="w-full mb-2">
-                  <Edit2 className={`${iconSizes.sm} mr-2`} />
-                  Edit Profile
-                </Button>
-                <Button
-                  onClick={handleAuth}
-                  variant={isAuthenticated ? 'outline' : 'default'}
-                  className="w-full"
-                  disabled={loginStatus === 'logging-in'}
-                >
-                  {loginStatus === 'logging-in' ? (
-                    'Loading...'
-                  ) : isAuthenticated ? (
-                    <>
-                      <LogOut className={`${iconSizes.sm} mr-2`} />
-                      {t('logout', language)}
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className={`${iconSizes.sm} mr-2`} />
-                      {t('login', language)}
-                    </>
-                  )}
-                </Button>
-              </>
             )}
+
+            <Separator className="my-4" />
+
+            {/* Auth Button */}
+            <Button
+              onClick={handleAuth}
+              disabled={loginStatus === 'logging-in'}
+              variant={identity ? 'outline' : 'default'}
+              className="w-full"
+            >
+              {identity ? (
+                <>
+                  <LogOut className={iconSizes.sm} />
+                  {t('logout', language)}
+                </>
+              ) : (
+                <>
+                  <LogIn className={iconSizes.sm} />
+                  {t('login', language)}
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
-
-        {/* Stats */}
-        {isAuthenticated && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Stats</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <Flame className={`${iconSizes.lg} text-orange-500`} />
-                  <div>
-                    <p className="text-2xl font-bold">{dailyStreak}</p>
-                    <p className="text-xs text-muted-foreground">Day Streak</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Award className={`${iconSizes.lg} text-yellow-500`} />
-                  <div>
-                    <p className="text-2xl font-bold">{badges.length}</p>
-                    <p className="text-xs text-muted-foreground">Badges</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Premium CTA */}
         {!isPremium && (
           <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-800">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Crown className={`${iconSizes.lg} text-yellow-600 dark:text-yellow-500`} />
-                <h3 className="text-lg font-bold">Go Premium</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className={`${iconSizes.md} text-yellow-600 dark:text-yellow-500`} />
+                <h3 className="font-bold">{t('goPremium', language)}</h3>
               </div>
-              <p className="text-sm mb-4 text-muted-foreground">
-                Unlock ad-free reading, exclusive stories, and more!
+              <p className="text-sm text-muted-foreground mb-4">
+                Unlock exclusive features and ad-free experience
               </p>
               <Button
                 onClick={() => handleNavigate('/premium')}
                 className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
               >
-                Upgrade Now
+                {t('goPremium', language)}
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* My Stories */}
-        {isAuthenticated && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>My Stories</CardTitle>
+        {/* My Stories Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>{t('myStories', language)}</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleNavigate('/my-stories')}
+              >
+                {t('viewAll', language)}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {storiesLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
+            ) : myStories.length > 0 ? (
+              <div className="space-y-3">
+                {myStories.slice(0, 3).map((story) => (
+                  <MyStoryDraftCard
+                    key={isGuestDraft(story) ? story.id : story.id.toString()}
+                    story={story}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <BookOpen className={`${iconSizes.lg} text-muted-foreground mx-auto mb-2`} />
+                <p className="text-sm text-muted-foreground mb-3">{t('noStoriesYet', language)}</p>
                 <Button
+                  variant="outline"
                   size="sm"
-                  onClick={() => handleNavigate('/story/editor/new')}
+                  onClick={() => handleNavigate('/story-editor')}
                 >
-                  <Plus className={`${iconSizes.sm} mr-1`} />
-                  Create
+                  <Plus className={iconSizes.sm} />
+                  {t('createStory', language)}
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              {storiesLoading ? (
-                <div className="space-y-3">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-                  ))}
-                </div>
-              ) : myStories.length > 0 ? (
-                <div className="space-y-3">
-                  {myStories.map((story) => (
-                    <MyStoryCard key={story.id.toString()} story={story} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="mb-4">You haven't created any stories yet.</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleNavigate('/story/editor/new')}
-                  >
-                    <Plus className={`${iconSizes.sm} mr-2`} />
-                    Create Your First Story
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
 
         {/* Settings */}
         <Card>
-          <CardHeader>
-            <CardTitle>Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => handleNavigate('/privacy-policy')}
-            >
-              Privacy Policy
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => handleNavigate('/terms-and-conditions')}
-            >
-              Terms & Conditions
-            </Button>
+          <CardContent className="pt-6">
             <Button
               variant="ghost"
               className="w-full justify-start"
               onClick={() => handleNavigate('/help-and-support')}
             >
-              Help & Support
+              <Settings className={iconSizes.md} />
+              {t('settings', language)}
             </Button>
           </CardContent>
         </Card>

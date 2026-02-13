@@ -1,100 +1,95 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T06:29:48.936Z",
-  "summary": "Diff implements several routing-stability fixes: multiple navigation entry points now use TanStack Router `navigate({to, params})` and add try/catch with `logOnce`; Category and Story param decoding/parsing is hardened with friendly in-app error UIs; RouteErrorFallback now logs once with current location. However, the diff also includes multiple unrelated feature/style changes not requested by the BuildRequest, and it’s not verifiable from the provided diff summary that *all* navigation entry points across the app were audited/fixed (e.g., Search results/Favorites pages/components not shown).",
+  "generatedAt": "2026-02-13T08:41:30.762Z",
+  "summary": "Diff adds a My Stories page, guest localStorage persistence with 24h expiration pruning, a story editor flow with emoji quick-insert and optional image upload, and hooks to fetch/create stories for guest vs authenticated users. However, several requested UI fixes and i18n requirements are not fully met, and backend support for the new authenticated story APIs/expiration is not evidenced in the provided backend diff excerpt.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation where applicable.",
-      "reason": "While several key entry points were updated (BottomNav, AppDrawer, CategoryScroller, CategoriesTab grid, StoryCard, ContinueReadingCard, ProfileTab handler), the diff summary does not show updates for all the listed navigation sources (e.g., Search results, Favorites list, Featured/Latest story lists, any other story-card usages/components). With only the provided evidence, completion of a full app-wide audit cannot be confirmed.",
+      "id": "REQ-5",
+      "requirement": "Extend the Motoko backend API to support authenticated user story creation and retrieval (create + list newest-first) with optional image stored/served via existing blob-storage, returning fields needed for UI (id, text, optional image ref, createdAt, expiresAt) and filtering expired stories server-side.",
+      "reason": "Frontend calls actor.addStoryDraft() and actor.getMyStoryDrafts(), but the diff excerpt of backend/main.mo only shows a StoryDraft type without expiresAt and does not show the required public methods or server-side expiration filtering/cleanup. Since the backend diff is truncated and doesn’t evidence these APIs/fields, the requirement cannot be verified as implemented.",
       "evidence": [
-        "frontend/src/components/BottomNav.tsx",
+        "backend/main.mo",
+        "frontend/src/hooks/useStoryEditor.ts",
+        "frontend/src/hooks/useMyStories.ts"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Implement 24-hour auto-expiration consistently, including backend filtering of expired stories in listing queries (and optional cleanup).",
+      "reason": "Guest-mode expiration is implemented via expiresAt in localStorage and pruning, and the authenticated UI filters client-side by createdAt+24h; but backend-side filtering/cleanup is not evidenced in the shown backend diff.",
+      "evidence": [
+        "frontend/src/lib/userStoriesStorage.ts",
+        "frontend/src/hooks/useMyStories.ts",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "requirement": "Ensure bilingual UI support (English + Tamil) for all new Stories UI strings via i18n translation keys; no hardcoded new user-facing strings; include EN+TA translations for all new keys.",
+      "reason": "Multiple new user-facing strings appear hardcoded (e.g., image alt text, time-ago Tamil/English strings, drawer 'My Stories', menu 'Menu', profile toasts/errors). Also no translation files/keys for the new Stories strings are shown in the diff, so presence of EN/TA translations cannot be verified.",
+      "evidence": [
+        "frontend/src/components/MyStoryDraftCard.tsx",
         "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/components/CategoryScroller.tsx",
-        "frontend/src/pages/CategoriesTab.tsx",
-        "frontend/src/components/StoryCard.tsx",
-        "frontend/src/components/ContinueReadingCard.tsx",
-        "frontend/src/pages/ProfileTab.tsx"
+        "frontend/src/pages/ProfileTab.tsx",
+        "frontend/src/pages/MyStories.tsx",
+        "frontend/src/pages/StoryEditor.tsx"
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "requirement": "Fix favorites/likes visibility in Favorites section (correct favorite state + visible like count; toggling updates promptly).",
+      "reason": "No changes are shown to Favorites-related components/pages/cards; nothing in the diff evidences like count rendering or favorite-state fixes.",
+      "evidence": [
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "requirement": "Improve login experience visuals: crisp professional logo, consistent sizing, graceful fallback if missing, no layout shift; add required image asset app-logo-transparent.dim_512x512.png.",
+      "reason": "No login screen changes or new logo asset are shown in the diff summary.",
+      "evidence": [
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "requirement": "Fix the reported 'impression page' layout/appearance issue on ~360px mobile widths (spacing/overlap/readability), aligned padding/typography, no console errors.",
+      "reason": "No file in the diff summary clearly corresponds to an 'impression page' or shows layout fixes for it.",
+      "evidence": [
+        "frontend/src/App.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Global Tailwind/OKLCH color token refactor in index.css.",
-      "reason": "Not part of routing stability/navigation failure fixes; BuildRequest non-goal is unrelated features.",
+      "description": "Added/handled Hindi language in time-ago strings and backend Language type despite requirements only mandating English + Tamil for Stories UI.",
+      "reason": "BuildRequest only requires bilingual EN+TA support for Stories; Hindi support is extra and not requested.",
       "evidence": [
-        "frontend-file-summaries.txt (frontend/src/index.css)"
+        "frontend/src/components/MyStoryDraftCard.tsx",
+        "backend/main.mo"
       ]
     },
     {
-      "description": "Offline downloads storage implementation changes (localStorage fallback, bigint serialization).",
-      "reason": "Not requested by routing/navigation requirements.",
+      "description": "Developer-only console log checklist for button style regression.",
+      "reason": "Not requested by any REQ; adds extra dev logging behavior.",
       "evidence": [
-        "frontend-file-summaries.txt (frontend/src/hooks/useOfflineDownloads.ts)"
-      ]
-    },
-    {
-      "description": "PreferencesContext expanded to manage additional reading preferences/font settings with persistence.",
-      "reason": "Not requested by routing/navigation requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/context/PreferencesContext.tsx)"
-      ]
-    },
-    {
-      "description": "HomeTab changes: renamed hooks, seeded stories when backend unavailable, loading skeleton adjustments.",
-      "reason": "Not requested by routing/navigation requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/pages/HomeTab.tsx)"
-      ]
-    },
-    {
-      "description": "Premium page UI improvements and plan selection behavior; dev ButtonStyleRegressionCheck integration.",
-      "reason": "Not requested by routing/navigation requirements (and adds unrelated UX work).",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/pages/GoPremium.tsx)",
-        "frontend/src/components/AdPlaceholder.tsx"
-      ]
-    },
-    {
-      "description": "useAppUser changes: optimistic premium updates and switching backend method name.",
-      "reason": "Not requested by routing/navigation requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/hooks/useAppUser.ts)"
-      ]
-    },
-    {
-      "description": "Reading history hook adds updateProgress for continuous progress tracking.",
-      "reason": "Not requested by routing/navigation requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/hooks/useReadingHistory.ts)",
-        "frontend/src/pages/StoryReader.tsx"
-      ]
-    },
-    {
-      "description": "PWA manifest additions/changes (name/icons/display/orientation).",
-      "reason": "Not requested by routing/navigation requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/public/manifest.webmanifest)"
+        "frontend/src/App.tsx"
       ]
     }
   ],
-  "confidence": 0.73,
+  "confidence": 0.66,
   "changed_files": [
-    "frontend-file-summaries.txt",
-    "frontend/src/components/AdPlaceholder.tsx",
+    "backend/main.mo",
+    "frontend/src/App.tsx",
     "frontend/src/components/AppDrawer.tsx",
-    "frontend/src/components/BottomNav.tsx",
-    "frontend/src/components/CategoryScroller.tsx",
-    "frontend/src/components/ContinueReadingCard.tsx",
-    "frontend/src/components/MyStoryCard.tsx",
-    "frontend/src/components/RouteErrorFallback.tsx",
-    "frontend/src/components/StoryCard.tsx",
-    "frontend/src/lib/urlParams.ts",
-    "frontend/src/pages/CategoriesTab.tsx",
-    "frontend/src/pages/CategoryDetail.tsx",
+    "frontend/src/components/MyStoryDraftCard.tsx",
+    "frontend/src/hooks/useMyStories.ts",
+    "frontend/src/hooks/useStoryEditor.ts",
+    "frontend/src/lib/userStoriesStorage.ts",
+    "frontend/src/pages/MyStories.tsx",
     "frontend/src/pages/ProfileTab.tsx",
-    "frontend/src/pages/StoryReader.tsx",
+    "frontend/src/pages/StoryEditor.tsx",
     "project_state.json"
   ]
 }

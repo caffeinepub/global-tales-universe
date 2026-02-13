@@ -1,12 +1,19 @@
 # Specification
 
 ## Summary
-**Goal:** Eliminate remaining in-app navigation paths that land on “Page Not Found / Page currently not available” in draft preview, and make route param handling more robust.
+**Goal:** Add a basic Stories creation flow and a My Stories page with Tamil/English UI support, while fixing reported UI issues around Profile story updates, Favorites/likes visibility, login logo presentation, and the “impression page” layout.
 
 **Planned changes:**
-- Audit all navigation entry points (bottom navigation, side drawer, category chips/buttons, story cards, continue-reading, profile links) and update them to use only valid TanStack Router route paths defined in `frontend/src/App.tsx` routeTree.
-- Replace any string-built/hand-assembled paths with route-template navigation using params (e.g., navigating to story/category routes via `{ to: ..., params: ... }`) to prevent typos/mismatches.
-- Harden Story Reader and Category Detail route param parsing so malformed/invalid params don’t crash into router error/not-found; show a friendly in-app error state (English) with a working “Go Home” (and/or Categories/Home) action.
-- Add lightweight runtime diagnostics using the existing `logOnce` pattern for: (1) navigation exceptions (log attempted target), and (2) when the route error/not-found fallback renders (log current location).
+- Add a Create Story screen that allows submitting required text with an optional single JPG/PNG image, plus an emoji insert option in the editor.
+- Add a My Stories page reachable from navigation/Profile, listing the current user’s stories newest-first with empty state, timestamps, text preview, and optional image thumbnail, plus a prominent “+ Create” button.
+- Support two identity modes for Stories: guest (localStorage) and authenticated (Internet Identity + Motoko persistence per principal).
+- Add optional 24-hour auto-expiration so expired stories no longer appear in My Stories (for both guest/local and authenticated/backend stories).
+- Extend the Motoko backend API to create and list authenticated user stories, including optional image storage via the existing blob-storage mixin.
+- Replace any placeholder “coming soon” error in the story save path and ensure My Stories refreshes after creating a story (guest and authenticated).
+- Add bilingual (English + Tamil) i18n keys and wire all new Stories UI strings through the existing translation helper.
+- Fix Profile page “My Stories” section so it uses the correct data source and updates reliably after create/edit.
+- Fix Favorites/likes visibility so favorite cards show correct favorite state and a visible like count consistently, and toggling updates promptly.
+- Improve login visuals so the logo is crisp, correctly sized across mobile/desktop, has a graceful missing-asset fallback, and avoids layout shift.
+- Fix the reported “impression page” layout/appearance issues for common mobile widths (~360px) to prevent overlap/clipping/readability problems.
 
-**User-visible outcome:** Tapping any tab, category, or story reliably opens the correct screen instead of “Page Not Found,” and invalid story/category URLs show a friendly error with a button to return to a safe screen.
+**User-visible outcome:** Users can create short stories (text with optional image and emojis), see them in a dedicated My Stories list (guest or logged-in), and the app’s Profile Stories, Favorites/likes display, login logo, and the “impression page” layout render more reliably and professionally.

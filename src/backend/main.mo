@@ -4,17 +4,16 @@ import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
-import List "mo:core/List";
 import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Order "mo:core/Order";
+import List "mo:core/List";
+import Int "mo:core/Int";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import Set "mo:core/Set";
-
-
 
 actor {
   let accessControlState = AccessControl.initState();
@@ -70,6 +69,15 @@ actor {
     image : ?Storage.ExternalBlob;
   };
 
+  type StoryDraft = {
+    id : Nat;
+    text : Text;
+    image : ?Storage.ExternalBlob;
+    createdAt : Int;
+    isPrivate : Bool;
+    authorRole : Text;
+  };
+
   module Story {
     public func compareByNewest(story1 : Story, story2 : Story) : Order.Order {
       if (story1.timestamp > story2.timestamp) { #less } else if (story1.timestamp < story2.timestamp) {
@@ -79,6 +87,7 @@ actor {
   };
 
   let stories = Map.empty<Nat, Story>();
+  let storyDrafts = Map.empty<Principal, List.List<StoryDraft>>();
   let users = Map.empty<Principal, AppUser>();
   let userProfiles = Map.empty<Principal, UserProfile>();
   var isInitialized = false;
@@ -649,4 +658,61 @@ actor {
     };
     allStories[0];
   };
+
+  public shared ({ caller }) func addStoryDraft(text : Text, image : ?Storage.ExternalBlob) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can create story drafts");
+    };
+
+    if (text == "") { Runtime.trap("Text content cannot be empty"); };
+
+    let draftId = Time.now().toNat();
+    let newDraft : StoryDraft = {
+      id = draftId;
+      text;
+      image;
+      createdAt = Time.now();
+      isPrivate = false;
+      authorRole = "user";
+    };
+
+    let currentDrafts = switch (storyDrafts.get(caller)) {
+      case (?drafts) { drafts };
+      case (null) { List.empty<StoryDraft>() };
+    };
+
+    currentDrafts.add(newDraft);
+    storyDrafts.add(caller, currentDrafts);
+
+    draftId;
+  };
+
+  public query ({ caller }) func getStoryDraft(draftId : Nat) : async ?StoryDraft {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can access story drafts");
+    };
+
+    switch (storyDrafts.get(caller)) {
+      case (?drafts) {
+        let filtered = drafts.filter(func(d) { d.id == draftId });
+        switch (filtered.size()) {
+          case (0) { null };
+          case (_) { ?filtered.values().toArray()[0] };
+        };
+      };
+      case (null) { null };
+    };
+  };
+
+  public query ({ caller }) func getMyStoryDrafts() : async [StoryDraft] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can access story drafts");
+    };
+
+    switch (storyDrafts.get(caller)) {
+      case (?drafts) { drafts.values().toArray() };
+      case (null) { [] };
+    };
+  };
 };
+

@@ -1,55 +1,61 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { useGetStoryById } from './useStories';
-import { Story } from '../backend';
+import { useInternetIdentity } from './useInternetIdentity';
+import { ExternalBlob } from '../backend';
+import { addGuestStory } from '../lib/userStoriesStorage';
 
-interface StoryFormData {
-  title: string;
-  category: string;
-  content: string;
-  summary: string;
-  coverUrl: string;
-  readTime: number;
-  language: string;
+interface CreateStoryData {
+  text: string;
+  image?: File;
 }
 
 export function useStoryEditor() {
   const { actor } = useActor();
+  const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
+  const isAuthenticated = !!identity;
 
-  const saveMutation = useMutation({
-    mutationFn: async (data: StoryFormData) => {
-      if (!actor) throw new Error('Not authenticated');
-      
-      // Check if backend supports story creation
-      if (typeof actor.publishStory !== 'function') {
-        throw new Error('Story creation is not available yet');
+  const createMutation = useMutation({
+    mutationFn: async (data: CreateStoryData) => {
+      if (!data.text.trim()) {
+        throw new Error('Story text cannot be empty');
       }
 
-      // For now, we'll just show a message that this feature is coming soon
-      throw new Error('Story creation feature is coming soon!');
+      if (isAuthenticated && actor) {
+        // Authenticated mode - save to backend
+        let imageBlob: ExternalBlob | null = null;
+        
+        if (data.image) {
+          const bytes = new Uint8Array(await data.image.arrayBuffer());
+          imageBlob = ExternalBlob.fromBytes(bytes);
+        }
+
+        const draftId = await actor.addStoryDraft(data.text, imageBlob);
+        return { id: draftId.toString(), mode: 'authenticated' };
+      } else {
+        // Guest mode - save to localStorage
+        let imageDataUrl: string | undefined;
+        
+        if (data.image) {
+          imageDataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(data.image!);
+          });
+        }
+
+        const id = addGuestStory(data.text, imageDataUrl);
+        return { id, mode: 'guest' };
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stories'] });
       queryClient.invalidateQueries({ queryKey: ['myStories'] });
     },
   });
 
-  const loadStory = async (storyId: bigint): Promise<Story | null> => {
-    if (!actor) return null;
-    try {
-      const story = await actor.getStory(storyId);
-      return story;
-    } catch (error) {
-      console.error('Failed to load story:', error);
-      return null;
-    }
-  };
-
   return {
-    loadStory,
-    saveStory: saveMutation.mutateAsync,
-    isLoading: false,
-    isSaving: saveMutation.isPending,
+    createStory: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
   };
 }

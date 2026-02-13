@@ -3,6 +3,8 @@ import { isPreviewMode } from '../lib/urlParams';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Button } from './ui/button';
 import { logOnce } from '../lib/logOnce';
+import { recordNavFailure } from '../lib/navFailures';
+import { getFullPath } from '../lib/routerSearch';
 
 interface AdPlaceholderProps {
   variant?: 'banner' | 'inline';
@@ -14,6 +16,7 @@ export default function AdPlaceholder({ variant = 'banner' }: AdPlaceholderProps
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const fullPath = getFullPath(currentPath, currentSearch);
 
   // Premium users never see ads - return null immediately
   if (isPremium) {
@@ -33,11 +36,12 @@ export default function AdPlaceholder({ variant = 'banner' }: AdPlaceholderProps
       navigate({ to: '/premium' });
     } catch (error) {
       const logKey = `ad-premium-${currentPath}`;
-      logOnce(
-        logKey,
-        `AdPlaceholder navigation failed: attempted="/premium" current="${currentPath}${currentSearch}" error="${error}"`,
-        'error'
-      );
+      const errorMessage = `AdPlaceholder navigation failed: attempted="/premium" current="${fullPath}" error="${error}"`;
+      
+      logOnce(logKey, errorMessage, 'error');
+      
+      // Record navigation failure
+      recordNavFailure('/premium', fullPath, String(error));
     }
   };
 

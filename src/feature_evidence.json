@@ -2,18 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-audit-all-in-app-navigation-entry-points-bottom-navigation-side-drawer-menu-category-chips-buttons-story-cards-continue-reading-profile-related-links-and-ensure-every-navigation-target-uses-a-valid-tanstack-router-route-path-that-exists-in-frontend-src-app-tsx-routetree-no-stale-typo-paths-replace-any-string-built-paths-with-route-template-navigation-e-g-navigate-to-story-storyid-params-storyid-where-applicable-to-prevent-mismatches",
-      "featureTitle": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation (e.g., `navigate({ to: '/story/$storyId', params: { storyId } })`) where applicable to prevent mismatches.",
+      "featureId": "feature-implement-a-basic-stories-feature-that-lets-a-user-create-a-short-story-consisting-of-required-text-and-an-optional-single-image-with-a-simple-editor-ui-text-input-and-an-emoji-insert-option",
+      "featureTitle": "Implement a basic “Stories” feature that lets a user create a short story consisting of required text and an optional single image, with a simple editor UI (text input and an emoji insert option).",
       "files": [
-        "frontend/src/components/AdPlaceholder.tsx",
-        "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/components/BottomNav.tsx",
-        "frontend/src/components/CategoryScroller.tsx",
-        "frontend/src/components/ContinueReadingCard.tsx",
-        "frontend/src/components/MyStoryCard.tsx",
-        "frontend/src/components/StoryCard.tsx",
-        "frontend/src/pages/CategoriesTab.tsx",
-        "frontend/src/pages/ProfileTab.tsx"
+        "frontend/src/hooks/useStoryEditor.ts",
+        "frontend/src/lib/userStoriesStorage.ts",
+        "frontend/src/pages/StoryEditor.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -30,12 +24,13 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-make-route-param-parsing-resilient-so-invalid-malformed-params-do-not-crash-the-route-into-the-router-error-not-found-fallback-in-particular-harden-story-reader-param-handling-so-a-non-numeric-storyid-cannot-throw-e-g-safe-parsing-with-a-controlled-fallback-ui-that-offers-a-go-home-action-apply-similar-safety-for-categoryid-decoding-in-category-detail-if-decode-fails",
-      "featureTitle": "Make route param parsing resilient so invalid/malformed params do not crash the route into the router error/not-found fallback. In particular, harden Story Reader param handling so a non-numeric `storyId` cannot throw (e.g., safe parsing with a controlled fallback UI that offers a \"Go Home\" action). Apply similar safety for categoryId decoding in Category Detail if decode fails.",
+      "featureId": "feature-add-a-my-stories-page-that-lists-stories-created-by-the-current-user-and-include-a-prominent-create-button-that-navigates-to-the-story-editor",
+      "featureTitle": "Add a “My Stories” page that lists stories created by the current user, and include a prominent “+ Create” button that navigates to the story editor.",
       "files": [
-        "frontend/src/lib/urlParams.ts",
-        "frontend/src/pages/CategoryDetail.tsx",
-        "frontend/src/pages/StoryReader.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/AppDrawer.tsx",
+        "frontend/src/components/MyStoryDraftCard.tsx",
+        "frontend/src/pages/MyStories.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -52,17 +47,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-lightweight-runtime-diagnostics-for-navigation-failures-when-navigation-throws-or-a-not-found-route-is-shown-log-a-single-concise-error-using-the-existing-logonce-pattern-that-includes-the-attempted-path-and-current-location-so-broken-links-can-be-identified-quickly-in-preview-without-spamming-logs",
-      "featureTitle": "Add lightweight runtime diagnostics for navigation failures: when navigation throws or a not-found route is shown, log a single concise error (using the existing `logOnce` pattern) that includes the attempted path and current location, so broken links can be identified quickly in preview without spamming logs.",
+      "featureId": "feature-support-two-identity-modes-for-stories-1-guest-anonymous-mode-using-local-only-storage-without-requiring-internet-identity-login-and-2-authenticated-mode-using-internet-identity-where-stories-are-persisted-in-the-motoko-backend-under-the-caller-principal",
+      "featureTitle": "Support two identity modes for Stories: (1) guest/anonymous mode using local-only storage without requiring Internet Identity login, and (2) authenticated mode using Internet Identity where stories are persisted in the Motoko backend under the caller principal.",
       "files": [
-        "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/components/BottomNav.tsx",
-        "frontend/src/components/CategoryScroller.tsx",
-        "frontend/src/components/ContinueReadingCard.tsx",
-        "frontend/src/components/RouteErrorFallback.tsx",
-        "frontend/src/components/StoryCard.tsx",
-        "frontend/src/pages/CategoriesTab.tsx",
-        "frontend/src/pages/ProfileTab.tsx"
+        "frontend/src/hooks/useMyStories.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -75,6 +63,108 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-optional-24-hour-auto-expiration-for-stories-instagram-style-such-that-expired-stories-no-longer-appear-in-my-stories-implement-this-consistently-for-both-guest-local-stories-and-authenticated-backend-stories",
+      "featureTitle": "Implement optional 24-hour auto-expiration for Stories (Instagram-style) such that expired stories no longer appear in My Stories; implement this consistently for both guest/local stories and authenticated/backend stories.",
+      "files": [
+        "frontend/src/hooks/useMyStories.ts",
+        "frontend/src/lib/userStoriesStorage.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-existing-story-creation-flow-so-it-is-functional-remove-replace-the-current-placeholder-error-in-the-story-editor-save-path-and-ensure-the-my-stories-list-refreshes-after-creating-a-story",
+      "featureTitle": "Update the existing Story creation flow so it is functional (remove/replace the current placeholder error in the story editor save path) and ensure the My Stories list refreshes after creating a story.",
+      "files": [
+        "frontend/src/hooks/useStoryEditor.ts",
+        "frontend/src/pages/MyStories.tsx",
+        "frontend/src/pages/StoryEditor.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-bilingual-ui-support-for-the-stories-feature-at-minimum-english-tamil-by-adding-translation-keys-for-all-new-stories-my-stories-create-editor-strings-and-wiring-them-through-the-existing-i18n-translation-helper",
+      "featureTitle": "Ensure bilingual UI support for the Stories feature (at minimum English + Tamil) by adding translation keys for all new Stories/My Stories/Create/Editor strings and wiring them through the existing i18n translation helper.",
+      "files": [
+        "frontend/src/pages/MyStories.tsx",
+        "frontend/src/pages/StoryEditor.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-the-reported-issue-where-profile-page-story-update-is-not-showing-correctly-by-ensuring-the-profile-page-s-my-stories-section-is-wired-to-the-functional-my-stories-data-source-and-updates-reliably-after-edits-creates",
+      "featureTitle": "Fix the reported issue where “profile page story update” is not showing correctly by ensuring the Profile page’s “My Stories” section is wired to the functional My Stories data source and updates reliably after edits/creates.",
+      "files": [
+        "frontend/src/pages/ProfileTab.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-improve-the-login-experience-visuals-by-updating-the-login-logo-presentation-to-be-clear-and-professional-sharp-rendering-correct-sizing-no-broken-image-fallback",
+      "featureTitle": "Improve the login experience visuals by updating the login/logo presentation to be clear and professional (sharp rendering, correct sizing, no broken image fallback).",
+      "files": [],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
       ],
       "confidence": "high"
     }

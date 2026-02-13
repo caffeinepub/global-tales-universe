@@ -1,11 +1,13 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useAppUser } from '../hooks/useAppUser';
-import { Home, Search, Heart, User, Crown, BookOpen, HelpCircle, Info } from 'lucide-react';
+import { Home, Search, Heart, User, Crown, BookOpen, HelpCircle, Info, FileText } from 'lucide-react';
 import PremiumBadge from './PremiumBadge';
 import { Button } from './ui/button';
 import { iconSizes, cardRadius, cardPadding, cardElevation, focusRing, transitions } from '../lib/uiPolish';
 import { logOnce } from '../lib/logOnce';
+import { recordNavFailure } from '../lib/navFailures';
+import { getFullPath } from '../lib/routerSearch';
 
 interface AppDrawerProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
+  const fullPath = getFullPath(currentPath, currentSearch);
   const { isPremium, isAuthenticated } = useAppUser();
 
   const handleNavigate = (path: string) => {
@@ -25,11 +28,13 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
       onClose();
     } catch (error) {
       const logKey = `drawer-nav-${path}-${currentPath}`;
-      logOnce(
-        logKey,
-        `AppDrawer navigation failed: attempted="${path}" current="${currentPath}${currentSearch}" error="${error}"`,
-        'error'
-      );
+      const errorMessage = `AppDrawer navigation failed: attempted="${path}" current="${fullPath}" error="${error}"`;
+      
+      logOnce(logKey, errorMessage, 'error');
+      
+      // Record navigation failure
+      recordNavFailure(path, fullPath, String(error));
+      
       // Fallback to home if navigation fails
       try {
         navigate({ to: '/' });
@@ -45,6 +50,7 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
     { icon: BookOpen, label: 'Categories', path: '/categories' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Heart, label: 'Favorites', path: '/favorites' },
+    { icon: FileText, label: 'My Stories', path: '/my-stories' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
@@ -106,10 +112,10 @@ export default function AppDrawer({ isOpen, onClose }: AppDrawerProps) {
               <button
                 key={item.path}
                 onClick={() => handleNavigate(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left text-sm ${focusRing}`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left ${focusRing}`}
               >
-                <item.icon className={iconSizes.sm} />
-                <span>{item.label}</span>
+                <item.icon className={iconSizes.md} />
+                <span className="font-medium">{item.label}</span>
               </button>
             ))}
           </nav>

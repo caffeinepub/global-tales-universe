@@ -1,102 +1,176 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T06:29:48.939Z",
+  "generatedAt": "2026-02-13T08:41:30.768Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 11,
+    "implemented": 8,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Audit all in-app navigation entry points (bottom navigation, side drawer menu, category chips/buttons, story cards, continue-reading, profile-related links) and ensure every navigation target uses a valid TanStack Router route path that exists in `frontend/src/App.tsx` routeTree (no stale/typo paths). Replace any string-built paths with route-template navigation (e.g., `navigate({ to: '/story/$storyId', params: { storyId } })`) where applicable to prevent mismatches.",
+        "summary": "Implement a basic “Stories” feature that lets a user create a short story consisting of required text and an optional single image, with a simple editor UI (text input and an emoji insert option).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/components/AppDrawer.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/CategoryScroller.tsx",
-          "frontend/src/pages/CategoriesTab.tsx",
-          "frontend/src/components/StoryCard.tsx",
-          "frontend/src/components/ContinueReadingCard.tsx",
-          "frontend/src/components/MyStoryCard.tsx",
-          "frontend/src/components/AdPlaceholder.tsx"
+          "frontend/src/pages/StoryEditor.tsx",
+          "frontend/src/hooks/useStoryEditor.ts",
+          "frontend/src/lib/userStoriesStorage.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/components/AppDrawer.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/CategoryScroller.tsx",
-          "frontend/src/pages/CategoriesTab.tsx",
-          "frontend/src/components/StoryCard.tsx",
-          "frontend/src/components/ContinueReadingCard.tsx",
-          "frontend/src/components/MyStoryCard.tsx",
-          "frontend/src/components/AdPlaceholder.tsx"
+          "frontend/src/pages/StoryEditor.tsx",
+          "frontend/src/hooks/useStoryEditor.ts",
+          "frontend/src/lib/userStoriesStorage.ts"
         ]
       },
       {
-        "id": "REQ-2",
-        "summary": "Make route param parsing resilient so invalid/malformed params do not crash the route into the router error/not-found fallback. In particular, harden Story Reader param handling so a non-numeric `storyId` cannot throw (e.g., safe parsing with a controlled fallback UI that offers a \"Go Home\" action). Apply similar safety for categoryId decoding in Category Detail if decode fails.",
+        "id": "REQ-10",
+        "summary": "Improve the login experience visuals by updating the login/logo presentation to be clear and professional (sharp rendering, correct sizing, no broken image fallback).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/StoryReader.tsx",
-          "frontend/src/pages/CategoryDetail.tsx",
-          "frontend/src/lib/urlParams.ts"
+          "frontend/public/assets/generated/app-logo-transparent.dim_512x512.png",
+          "frontend/src/components/RequireAuth.tsx",
+          "frontend/src/index.html"
         ],
         "matchedFiles": [
-          "frontend/src/pages/StoryReader.tsx",
-          "frontend/src/pages/CategoryDetail.tsx",
-          "frontend/src/lib/urlParams.ts"
+          "frontend/public/assets/generated/app-logo-transparent.dim_512x512.png"
+        ]
+      },
+      {
+        "id": "REQ-11",
+        "summary": "Identify and fix the “impression page” layout/appearance issue reported by the user, ensuring the page renders without obvious spacing, overlap, or readability problems on common mobile widths.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/src/components/SplashScreen.tsx",
+          "frontend/src/index.css"
+        ],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Add a “My Stories” page that lists stories created by the current user, and include a prominent “+ Create” button that navigates to the story editor.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/MyStories.tsx",
+          "frontend/src/components/MyStoryDraftCard.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/AppDrawer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/MyStories.tsx",
+          "frontend/src/components/MyStoryDraftCard.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/AppDrawer.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add lightweight runtime diagnostics for navigation failures: when navigation throws or a not-found route is shown, log a single concise error (using the existing `logOnce` pattern) that includes the attempted path and current location, so broken links can be identified quickly in preview without spamming logs.",
+        "summary": "Support two identity modes for Stories: (1) guest/anonymous mode using local-only storage without requiring Internet Identity login, and (2) authenticated mode using Internet Identity where stories are persisted in the Motoko backend under the caller principal.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/RouteErrorFallback.tsx",
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/components/AppDrawer.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/StoryCard.tsx",
-          "frontend/src/components/ContinueReadingCard.tsx",
-          "frontend/src/components/CategoryScroller.tsx",
-          "frontend/src/pages/CategoriesTab.tsx"
+          "frontend/src/hooks/useMyStories.ts",
+          "frontend/src/hooks/useActor.ts",
+          "frontend/src/components/LoginButton.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/RouteErrorFallback.tsx",
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/components/AppDrawer.tsx",
-          "frontend/src/pages/ProfileTab.tsx",
-          "frontend/src/components/StoryCard.tsx",
-          "frontend/src/components/ContinueReadingCard.tsx",
-          "frontend/src/components/CategoryScroller.tsx",
-          "frontend/src/pages/CategoriesTab.tsx"
+          "frontend/src/hooks/useMyStories.ts"
         ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Implement optional 24-hour auto-expiration for Stories (Instagram-style) such that expired stories no longer appear in My Stories; implement this consistently for both guest/local stories and authenticated/backend stories.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/lib/userStoriesStorage.ts",
+          "frontend/src/hooks/useMyStories.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/lib/userStoriesStorage.ts",
+          "frontend/src/hooks/useMyStories.ts"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Extend the Motoko backend API to support authenticated user story creation and retrieval, including storing an optional image using the existing blob-storage mixin.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Update the existing Story creation flow so it is functional (remove/replace the current placeholder error in the story editor save path) and ensure the My Stories list refreshes after creating a story.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useStoryEditor.ts",
+          "frontend/src/pages/StoryEditor.tsx",
+          "frontend/src/pages/MyStories.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useStoryEditor.ts",
+          "frontend/src/pages/StoryEditor.tsx",
+          "frontend/src/pages/MyStories.tsx"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Ensure bilingual UI support for the Stories feature (at minimum English + Tamil) by adding translation keys for all new Stories/My Stories/Create/Editor strings and wiring them through the existing i18n translation helper.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/lib/i18n.ts",
+          "frontend/src/pages/StoryEditor.tsx",
+          "frontend/src/pages/MyStories.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/StoryEditor.tsx",
+          "frontend/src/pages/MyStories.tsx"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Fix the reported issue where “profile page story update” is not showing correctly by ensuring the Profile page’s “My Stories” section is wired to the functional My Stories data source and updates reliably after edits/creates.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ProfileTab.tsx",
+          "frontend/src/components/MyStoryCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ProfileTab.tsx"
+        ]
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Fix the reported issue where favorites/likes visibility is incorrect in the Favorites section by ensuring each favorite card shows the correct favorite state and a visible like count consistently across pages.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/src/components/StoryCard.tsx",
+          "frontend/src/hooks/useFavorites.ts",
+          "frontend/src/pages/FavoritesTab.tsx"
+        ],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/AdPlaceholder.tsx",
+    "frontend/public/assets/generated/app-logo-transparent.dim_512x512.png",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
     "frontend/src/components/AppDrawer.tsx",
-    "frontend/src/components/BottomNav.tsx",
-    "frontend/src/components/CategoryScroller.tsx",
-    "frontend/src/components/ContinueReadingCard.tsx",
-    "frontend/src/components/MyStoryCard.tsx",
-    "frontend/src/components/RouteErrorFallback.tsx",
-    "frontend/src/components/StoryCard.tsx",
-    "frontend/src/lib/urlParams.ts",
-    "frontend/src/pages/CategoriesTab.tsx",
-    "frontend/src/pages/CategoryDetail.tsx",
+    "frontend/src/components/MyStoryDraftCard.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useMyStories.ts",
+    "frontend/src/hooks/useStoryEditor.ts",
+    "frontend/src/lib/userStoriesStorage.ts",
+    "frontend/src/pages/MyStories.tsx",
     "frontend/src/pages/ProfileTab.tsx",
-    "frontend/src/pages/StoryReader.tsx",
+    "frontend/src/pages/StoryEditor.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

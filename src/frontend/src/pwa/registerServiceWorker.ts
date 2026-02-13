@@ -1,4 +1,41 @@
+import { isPreviewMode } from '../lib/urlParams';
+
+/**
+ * Unregister all service workers and clear caches (best-effort)
+ */
+async function unregisterServiceWorkers(): Promise<void> {
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.log('Service Worker unregistered (preview mode)');
+      }
+      
+      // Clear all caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map(cacheName => caches.delete(cacheName))
+        );
+        console.log('Service Worker caches cleared (preview mode)');
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to unregister service workers:', error);
+  }
+}
+
 export function registerServiceWorker(): void {
+  // Check if we're in preview mode
+  if (isPreviewMode()) {
+    console.log('Preview mode detected - skipping service worker registration');
+    // Best-effort unregister any existing service workers
+    unregisterServiceWorkers();
+    return;
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker

@@ -1,27 +1,29 @@
 import { usePreferences } from '../context/PreferencesContext';
-import { t } from '../lib/i18n';
 import { Button } from './ui/button';
+import { Users, Baby } from 'lucide-react';
 
 export default function ModeToggle() {
-  const { mode, setMode, language } = usePreferences();
+  const { mode, setMode } = usePreferences();
 
   return (
-    <div className="flex gap-2 bg-muted p-1 rounded-lg">
+    <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
       <Button
         variant={mode === 'adults' ? 'default' : 'ghost'}
         size="sm"
         onClick={() => setMode('adults')}
-        className="flex-1"
+        className="h-7 px-3 gap-1.5"
       >
-        {t('adults', language)}
+        <Users className="h-3.5 w-3.5" />
+        <span className="text-xs">Adults</span>
       </Button>
       <Button
         variant={mode === 'kids' ? 'default' : 'ghost'}
         size="sm"
         onClick={() => setMode('kids')}
-        className="flex-1"
+        className="h-7 px-3 gap-1.5"
       >
-        {t('kids', language)}
+        <Baby className="h-3.5 w-3.5" />
+        <span className="text-xs">Kids</span>
       </Button>
     </div>
   );

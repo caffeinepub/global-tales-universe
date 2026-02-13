@@ -9,8 +9,8 @@ function getStoryCoverUrl(story: Story): string {
   if (story.coverImage) {
     return story.coverImage.getDirectURL();
   }
-  // Fallback to category-based cover
-  return getCoverImageForCategory(story.category, story.isKidFriendly);
+  // Use placeholder URL for seeded stories
+  return 'https://via.placeholder.com/300x200?text=Story';
 }
 
 export function useGetAllStories() {

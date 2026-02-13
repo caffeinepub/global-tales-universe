@@ -1,12 +1,14 @@
-import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
+import { Heart, Clock, Star } from 'lucide-react';
 import { Story } from '../backend';
-import { Heart, Clock } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
+import { useStorySocial } from '../hooks/useStorySocial';
 import { usePreferences } from '../context/PreferencesContext';
-import { getStoryCoverUrl } from '../hooks/useStories';
-import { getStorySocialData } from '../lib/storySocialStorage';
-import { cardRadius, cardElevation, transitions, iconSizes } from '../lib/uiPolish';
+import { Button } from './ui/button';
+import { cardRadius, cardPadding, cardElevation, iconSizes } from '../lib/uiPolish';
 import { logOnce } from '../lib/logOnce';
+import { getFullPath } from '../lib/routerSearch';
+import { useRouterState } from '@tanstack/react-router';
 
 interface StoryCardProps {
   story: Story;
@@ -17,24 +19,25 @@ export default function StoryCard({ story }: StoryCardProps) {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const currentSearch = routerState.location.search;
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const fullPath = getFullPath(currentPath, currentSearch);
   const { language } = usePreferences();
-  const content = story.languages[language];
-  const coverUrl = getStoryCoverUrl(story);
-  const isFav = isFavorite(story.id);
-  
-  // Get effective like count (base + overlay)
-  const socialData = getStorySocialData(story.id.toString());
-  const effectiveLikes = Number(story.likes) + socialData.likeOverlay;
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { likeOverlay } = useStorySocial(story.id.toString());
+
+  const content = story.languages[language] || story.languages.english;
+  const effectiveLikes = Number(story.likes) + likeOverlay;
+
+  // Use placeholder image for all stories
+  const coverUrl = 'https://via.placeholder.com/300x200?text=Story';
 
   const handleCardClick = () => {
     try {
-      navigate({ to: '/story/$storyId', params: { storyId: story.id.toString() } });
+      navigate({ to: '/story/$storyId', params: { storyId: String(story.id) } });
     } catch (error) {
-      const logKey = `story-card-${story.id}-${currentPath}`;
+      const logKey = `story-card-nav-${story.id}-${currentPath}`;
       logOnce(
         logKey,
-        `StoryCard navigation failed: attempted="/story/${story.id}" current="${currentPath}${currentSearch}" error="${error}"`,
+        `StoryCard navigation failed: attempted="/story/${story.id}" current="${fullPath}" error="${error}"`,
         'error'
       );
     }
@@ -48,38 +51,44 @@ export default function StoryCard({ story }: StoryCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className={`flex gap-3 p-3 ${cardRadius.medium} ${cardElevation.low} hover:${cardElevation.medium} ${transitions.all} cursor-pointer bg-card`}
+      className={`${cardRadius.medium} ${cardPadding.default} bg-card ${cardElevation.low} cursor-pointer hover:shadow-lg transition-shadow`}
     >
-      <img
-        src={coverUrl}
-        alt={content.title}
-        className={`w-24 h-32 object-cover ${cardRadius.small} shrink-0`}
-        onError={(e) => {
-          e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
-        }}
-      />
-      <div className="flex-1 min-w-0 flex flex-col">
-        <h3 className="font-semibold text-base line-clamp-2 mb-1">{content.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{content.summary}</p>
-        <div className="mt-auto flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className={iconSizes.xs} />
-            {Number(story.readTimeMinutes)} min
-          </span>
-          <span className="flex items-center gap-1">
-            <Heart className={`${iconSizes.xs} ${isFav ? 'fill-red-500 text-red-500' : ''}`} />
-            {effectiveLikes}
-          </span>
-          <span className="truncate">{story.author}</span>
+      <div className="flex gap-4">
+        <img
+          src={coverUrl}
+          alt={content.title}
+          className={`w-24 h-24 object-cover ${cardRadius.small} shrink-0`}
+        />
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-lg mb-1 line-clamp-2">{content.title}</h3>
+          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{content.summary}</p>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Clock className={iconSizes.xs} />
+              {Number(story.readTimeMinutes)} min
+            </span>
+            <span className="flex items-center gap-1">
+              <Heart className={iconSizes.xs} />
+              {effectiveLikes}
+            </span>
+            <span className="flex items-center gap-1">
+              <Star className={iconSizes.xs} />
+              {Number(story.rating)}/5
+            </span>
+          </div>
         </div>
+        <Button
+          variant={isFavorite(story.id) ? 'default' : 'outline'}
+          size="icon"
+          onClick={handleFavoriteClick}
+          className="shrink-0"
+        >
+          <Heart
+            className={iconSizes.sm}
+            fill={isFavorite(story.id) ? 'currentColor' : 'none'}
+          />
+        </Button>
       </div>
-      <button
-        onClick={handleFavoriteClick}
-        className="shrink-0 self-start p-2 hover:bg-accent rounded-full transition-colors"
-        aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-      >
-        <Heart className={`${iconSizes.md} ${isFav ? 'fill-red-500 text-red-500' : ''}`} />
-      </button>
     </div>
   );
 }
