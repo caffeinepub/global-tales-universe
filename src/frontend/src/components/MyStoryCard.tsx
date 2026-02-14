@@ -26,12 +26,12 @@ export default function MyStoryCard({ story }: MyStoryCardProps) {
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      navigate({ to: '/story/editor/$storyId', params: { storyId: String(story.id) } });
+      navigate({ to: '/story-editor', search: { storyId: String(story.id) } });
     } catch (error) {
       const logKey = `my-story-edit-${story.id}-${currentPath}`;
       logOnce(
         logKey,
-        `MyStoryCard edit navigation failed: attempted="/story/editor/${story.id}" current="${fullPath}" error="${error}"`,
+        `MyStoryCard edit navigation failed: attempted="/story-editor?storyId=${story.id}" current="${fullPath}" error="${error}"`,
         'error'
       );
     }

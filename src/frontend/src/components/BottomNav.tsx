@@ -1,6 +1,5 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
-import { Home, Search, Heart, User, BookOpen } from 'lucide-react';
-import { iconSizes } from '../lib/uiPolish';
+import { Home, Compass, Search, Heart, User } from 'lucide-react';
 import { logOnce } from '../lib/logOnce';
 import { recordNavFailure } from '../lib/navFailures';
 import { getFullPath } from '../lib/routerSearch';
@@ -12,62 +11,51 @@ export default function BottomNav() {
   const currentSearch = routerState.location.search;
   const fullPath = getFullPath(currentPath, currentSearch);
 
-  const handleNavigate = (path: string) => {
-    try {
-      navigate({ to: path as any });
-    } catch (error) {
-      const logKey = `bottom-nav-${path}-${currentPath}`;
-      const errorMessage = `BottomNav navigation failed: attempted="${path}" current="${fullPath}" error="${error}"`;
-      
-      logOnce(logKey, errorMessage, 'error');
-      
-      // Record navigation failure
-      recordNavFailure(path, fullPath, String(error));
-      
-      // Double fallback: try home, then do nothing
-      try {
-        navigate({ to: '/' });
-      } catch (fallbackError) {
-        console.error('Fallback navigation also failed:', fallbackError);
-      }
-    }
-  };
-
-  // Check if we're on a category detail page (nested under /categories)
-  const isCategoryDetailPage = currentPath.startsWith('/categories/') && currentPath !== '/categories';
-
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
-    { icon: BookOpen, label: 'Categories', path: '/categories' },
+    { icon: Compass, label: 'Categories', path: '/categories' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Heart, label: 'Favorites', path: '/favorites' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
-  return (
-    <nav className="bg-card border-t border-border px-2 py-2 flex items-center justify-around shrink-0">
-      {navItems.map((item) => {
-        // Highlight Categories tab when on category detail pages
-        const isActive = item.path === '/categories' 
-          ? (currentPath === '/categories' || isCategoryDetailPage)
-          : currentPath === item.path;
+  const handleNavigation = (path: string) => {
+    try {
+      navigate({ to: path as any });
+    } catch (error) {
+      const logKey = `bottom-nav-${path}-${currentPath}`;
+      logOnce(
+        logKey,
+        `BottomNav navigation failed: attempted="${path}" current="${fullPath}" error="${error}"`,
+        'error'
+      );
+      recordNavFailure(path, fullPath, String(error));
+    }
+  };
 
-        return (
-          <button
-            key={item.path}
-            onClick={() => handleNavigate(item.path)}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
-              isActive
-                ? 'text-primary bg-primary/10'
-                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-            }`}
-            aria-label={item.label}
-          >
-            <item.icon className={iconSizes.md} />
-            <span className="text-xs font-medium">{item.label}</span>
-          </button>
-        );
-      })}
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-safe">
+      <div className="flex justify-around items-center h-16 sm:h-20 px-2 sm:px-4 max-w-screen-xl mx-auto">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentPath === item.path;
+          return (
+            <button
+              key={item.path}
+              onClick={() => handleNavigation(item.path)}
+              className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-0 ${
+                isActive
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+              aria-label={item.label}
+            >
+              <Icon className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+              <span className="text-[10px] sm:text-xs font-medium truncate max-w-full">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }

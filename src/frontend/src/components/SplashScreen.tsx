@@ -56,7 +56,7 @@ export default function SplashScreen() {
         
         {/* Made in text */}
         <p className="text-xs text-purple-400/70 text-center">
-          Made in Tiruchirappalli, Tamil Nadu
+          Made in Tirunelveli, Tamil Nadu
         </p>
       </div>
     </div>

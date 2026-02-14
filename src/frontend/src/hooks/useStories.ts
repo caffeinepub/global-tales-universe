@@ -9,8 +9,8 @@ function getStoryCoverUrl(story: Story): string {
   if (story.coverImage) {
     return story.coverImage.getDirectURL();
   }
-  // Use placeholder URL for seeded stories
-  return 'https://via.placeholder.com/300x200?text=Story';
+  // Use local generated cover images based on category and kids mode
+  return getCoverImageForCategory(story.category, story.isKidFriendly);
 }
 
 export function useGetAllStories() {

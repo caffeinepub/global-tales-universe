@@ -20,8 +20,8 @@ export default function LanguageSelector() {
 
   return (
     <Select value={language} onValueChange={(value) => setLanguage(value as UILanguage)}>
-      <SelectTrigger className="w-[140px] h-9">
-        <Globe className="h-4 w-4 mr-2" />
+      <SelectTrigger className="w-[90px] sm:w-[140px] h-8 sm:h-9">
+        <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

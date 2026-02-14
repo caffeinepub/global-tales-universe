@@ -51,26 +51,26 @@ export default function HomeTab() {
 
       <PageLayout>
         {/* Home Header with Logo, Language Selector, and Mode Toggle */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-2 mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
             {!logoError ? (
               <img 
                 src="/assets/generated/gt-logo.dim_256x256.png"
                 alt="Global Tales"
-                className="h-10 w-10 object-contain"
+                className="h-8 w-8 sm:h-10 sm:w-10 object-contain flex-shrink-0"
                 onError={() => setLogoError(true)}
               />
             ) : (
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="text-lg font-bold text-primary">GT</span>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-base sm:text-lg font-bold text-primary">GT</span>
               </div>
             )}
-            <div>
-              <h1 className="text-xl font-bold">Global Tales</h1>
-              <p className="text-xs text-muted-foreground">Stories from around the world</p>
+            <div className="min-w-0 overflow-hidden">
+              <h1 className="text-base sm:text-xl font-bold truncate">Global Tales</h1>
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Stories from around the world</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <LanguageSelector />
             <ModeToggle />
           </div>

@@ -1,232 +1,55 @@
 {
   "kind": "build_request",
-  "title": "Add simple Stories creation + My Stories page with Tamil/English UI, plus reported UI fixes",
+  "title": "Redeploy the app to ICP and provide the new live URL",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement a basic “Stories” feature that lets a user create a short story consisting of required text and an optional single image, with a simple editor UI (text input and an emoji insert option).",
-      "target": "both",
+      "text": "Redeploy the current application build to the Internet Computer (ICP) so a fresh live version is available again (to address the user’s request to redeploy).",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "Users can create short stories (text + image optional)",
-          "ஒவ்வொரு story-க்கும் simple editor (text, maybe emoji, image upload if possible)"
+          "Redeploy your app again"
         ]
       },
       "acceptanceCriteria": [
-        "From the UI, a user can open a Create Story screen and submit a story with text only.",
-        "From the UI, a user can attach a single JPG/PNG image (optional) and submit the story.",
-        "The editor includes an emoji insert affordance (e.g., emoji picker or quick emoji buttons) that inserts into the text field.",
-        "On successful creation, the user sees confirmation feedback and is redirected to their My Stories view."
+        "A new live version is successfully deployed (no build/deploy failures).",
+        "The deployed app loads in the browser and reaches the main UI without runtime errors."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a “My Stories” page that lists stories created by the current user, and include a prominent “+ Create” button that navigates to the story editor.",
-      "target": "frontend",
+      "text": "After the redeploy completes, surface the updated live app URL to the user in English.",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "My Stories page-ல அவங்க create பண்ண stories list ஆகணும்",
-          "+ Create button இருந்து new story உருவாக்கலாம்"
+          "Redeploy your app again"
         ]
       },
       "acceptanceCriteria": [
-        "A dedicated My Stories page exists and is reachable from the app navigation (or Profile).",
-        "The My Stories page shows an empty state when there are no stories.",
-        "The My Stories page lists the user’s created stories newest-first, showing at minimum: text preview and created time; if an image exists, show a thumbnail.",
-        "A “+ Create” button is visible and opens the Create Story screen."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Support two identity modes for Stories: (1) guest/anonymous mode using local-only storage without requiring Internet Identity login, and (2) authenticated mode using Internet Identity where stories are persisted in the Motoko backend under the caller principal.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Full anonymous or simple username based"
-        ]
-      },
-      "acceptanceCriteria": [
-        "If the user is not authenticated, they can still create and view their own stories (stored locally in the browser) and see them in My Stories.",
-        "If the user is authenticated, creating a story persists it in the backend and it appears in My Stories after refresh.",
-        "Guest stories remain available after page refresh on the same device/browser.",
-        "Authenticated stories are scoped per principal; a different authenticated user does not see someone else’s My Stories."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Implement optional 24-hour auto-expiration for Stories (Instagram-style) such that expired stories no longer appear in My Stories; implement this consistently for both guest/local stories and authenticated/backend stories.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Stories 24 மணி நேரத்துக்கு அப்புறம் auto disappear ஆகணும் (Instagram stories மாதிரி) optional ஆ இருந்தா சரி"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Each story has a created timestamp and an expiration timestamp (created + 24h) or equivalent expiration logic.",
-        "Expired stories do not render in My Stories.",
-        "Backend: expired stories are filtered out in listing queries; optionally provide a cleanup pass during list/create calls to keep state small.",
-        "Frontend (guest mode): expired stories are filtered out when reading from localStorage."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Extend the Motoko backend API to support authenticated user story creation and retrieval, including storing an optional image using the existing blob-storage mixin.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Users can create short stories (text + image optional)",
-          "image upload if possible"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend exposes an authenticated method to create a user story with required text and optional image blob reference.",
-        "Backend exposes an authenticated query to list the caller’s active (non-expired) user stories newest-first.",
-        "Backend returns enough fields for UI rendering (id, text, optional image reference/URL or blob handle, createdAt, expiresAt).",
-        "If image upload is provided, the backend stores and can serve the image via the existing blob-storage behaviors already included in backend/main.mo."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Update the existing Story creation flow so it is functional (remove/replace the current placeholder error in the story editor save path) and ensure the My Stories list refreshes after creating a story.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "முதல்ல ஒரு basic version create பண்ணி, preview URL கொடு. பிறகு step by step improve பண்ணலாம்."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Creating a story no longer throws a “coming soon” placeholder error.",
-        "After creation, the My Stories query data refreshes automatically and shows the new story.",
-        "If the user is a guest, creation writes to localStorage and My Stories reads from that same localStorage store.",
-        "If the user is authenticated, creation calls the backend and My Stories reads from backend."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Ensure bilingual UI support for the Stories feature (at minimum English + Tamil) by adding translation keys for all new Stories/My Stories/Create/Editor strings and wiring them through the existing i18n translation helper.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "தமிழ் & English ரெண்டிலும் support பண்ணணும் UI-ல."
-        ]
-      },
-      "acceptanceCriteria": [
-        "All new user-facing strings added for Stories are sourced from the i18n translation system (not hardcoded).",
-        "English and Tamil translations are present for all new Stories-related keys.",
-        "Switching UI language updates the Stories/My Stories/Create Story screens accordingly."
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Fix the reported issue where “profile page story update” is not showing correctly by ensuring the Profile page’s “My Stories” section is wired to the functional My Stories data source and updates reliably after edits/creates.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Ok but like, profile page story update, and favourite inside like are not show, login page fix logo clear and proper good impression page set this problems I noticed please check and fix"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Profile page consistently shows the latest My Stories list for the current user mode (guest vs authenticated).",
-        "After creating a story, navigating to Profile shows the newly created story without requiring a hard reload.",
-        "If story editing is supported in the UI, saving an edit updates the list item preview accordingly."
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "text": "Fix the reported issue where favorites/likes visibility is incorrect in the Favorites section by ensuring each favorite card shows the correct favorite state and a visible like count consistently across pages.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "...favourite inside like are not show..."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Favorites page story cards clearly display a like count (including any local like overlay behavior if present).",
-        "Favorites page story cards show the heart icon filled/active when the story is favorited.",
-        "Toggling favorite from within Favorites updates the list promptly (removes when unfavorited, if that is the intended behavior)."
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "text": "Improve the login experience visuals by updating the login/logo presentation to be clear and professional (sharp rendering, correct sizing, no broken image fallback).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "login page fix logo clear and proper good impression page set"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On the login screen (or login entry state), the app logo is crisp (not blurry) and sized consistently across mobile/desktop.",
-        "If an image asset is missing, there is a graceful fallback that still looks intentional (no broken-image icon).",
-        "The logo area does not cause layout shift during load."
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "text": "Identify and fix the “impression page” layout/appearance issue reported by the user, ensuring the page renders without obvious spacing, overlap, or readability problems on common mobile widths.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "...proper good impression page set this problems..."
-        ]
-      },
-      "acceptanceCriteria": [
-        "The page referred to as the “impression page” renders without clipped content, overlapping elements, or unreadable text on a ~360px wide viewport.",
-        "Key sections have consistent padding and typography alignment with the rest of the app.",
-        "No console errors are introduced by the fix."
+        "The response includes the new/active live URL for the redeployed version.",
+        "The URL is clearly labeled as the live/production link."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
-    "Do not edit files under frontend/src/components/ui or any other paths listed as immutable in SYSTEM_CONTEXT.",
-    "Do not introduce third-party authentication providers; Internet Identity is the only supported auth.",
-    "Do not use external databases; persistence must be Motoko stable structures and/or browser localStorage for guest mode."
+    "Use English for any user-facing text in this build request.",
+    "Do not modify files under frontend/immutablePaths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Backend must remain a single Motoko actor in backend/main.mo; only introduce backend/migration.mo if a state migration is required (not expected for redeploy-only)."
   ],
   "nonGoals": [
-    "Implementing a public global stories feed for all users (beyond the current user’s My Stories) unless explicitly requested later.",
-    "Real-time story viewing or WebSocket-based updates.",
-    "Advanced media editing (cropping/filters) for uploaded images.",
-    "Third-party social sharing integrations beyond existing share utilities."
+    "Fixing the Home page header alignment issue (Language selector vs Kids/Adults toggle).",
+    "Fixing the Home page StoryCard Like button behavior.",
+    "Adding new product features unrelated to redeployment."
   ],
   "imageRequirements": {
-    "required": [
-      "Clean minimal wordmark logo on transparent background (app-logo-transparent.dim_512x512.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

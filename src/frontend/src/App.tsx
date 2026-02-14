@@ -101,13 +101,13 @@ function RootLayout() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col min-h-screen max-h-screen bg-background overflow-hidden">
       <NavDebugOverlay />
       <AppHeader onMenuClick={() => setDrawerOpen(true)} />
       <AppDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ReminderBanner />
       <InstallPromptBanner />
-      <main className="flex-1 overflow-auto pb-16" key={`${currentPath}-${searchString}`}>
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 sm:pb-24" key={`${currentPath}-${searchString}`}>
         <Outlet />
       </main>
       <BottomNav />
@@ -262,56 +262,46 @@ const routeTree = rootRoute.addChildren([
   termsAndConditionsRoute,
   helpAndSupportRoute,
   aboutUsRoute,
-  notFoundRoute,
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  notFoundRoute,
+  defaultPreload: 'intent',
+});
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 });
 
-function AppWithOnboarding() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
-
-  useEffect(() => {
-    // Check onboarding status on mount
-    const completed = isOnboardingCompleted();
-    setShowOnboarding(!completed);
-    setIsCheckingOnboarding(false);
-  }, []);
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    // Force page reload to home to ensure clean state
-    // This works because onboarding is rendered outside RouterProvider
-    window.location.href = '/';
-  };
-
-  // Don't render anything until we've checked onboarding status
-  if (isCheckingOnboarding) {
-    return null;
-  }
+export default function App() {
+  const [showOnboarding, setShowOnboarding] = useState(!isOnboardingCompleted());
 
   if (showOnboarding) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+    return (
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <OnboardingFlow onComplete={() => setShowOnboarding(false)} />
+      </ThemeProvider>
+    );
   }
 
-  return <RouterProvider router={router} />;
-}
-
-export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <PreferencesProvider>
-          <AppWithOnboarding />
+          <RouterProvider router={router} />
           <Toaster />
         </PreferencesProvider>
       </QueryClientProvider>

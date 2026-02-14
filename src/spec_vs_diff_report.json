@@ -1,95 +1,55 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T08:41:30.762Z",
-  "summary": "Diff adds a My Stories page, guest localStorage persistence with 24h expiration pruning, a story editor flow with emoji quick-insert and optional image upload, and hooks to fetch/create stories for guest vs authenticated users. However, several requested UI fixes and i18n requirements are not fully met, and backend support for the new authenticated story APIs/expiration is not evidenced in the provided backend diff excerpt.",
+  "generatedAt": "2026-02-14T10:35:44.577Z",
+  "summary": "The diff adds an in-app UI card and helper utilities to display/copy the current app URL, plus a deployment guide stub. However, there is no evidence in the diff summary of an actual ICP redeploy being performed or of providing a new live production URL to the user as part of the build response/output.",
   "missing_requirements": [
     {
-      "id": "REQ-5",
-      "requirement": "Extend the Motoko backend API to support authenticated user story creation and retrieval (create + list newest-first) with optional image stored/served via existing blob-storage, returning fields needed for UI (id, text, optional image ref, createdAt, expiresAt) and filtering expired stories server-side.",
-      "reason": "Frontend calls actor.addStoryDraft() and actor.getMyStoryDrafts(), but the diff excerpt of backend/main.mo only shows a StoryDraft type without expiresAt and does not show the required public methods or server-side expiration filtering/cleanup. Since the backend diff is truncated and doesn’t evidence these APIs/fields, the requirement cannot be verified as implemented.",
+      "id": "REQ-1",
+      "requirement": "Redeploy the current application build to the Internet Computer (ICP) so a fresh live version is available again.",
+      "reason": "The diff summary shows code/UI/documentation changes, but no deployment configuration changes, CI/CD scripts, dfx commands, canister IDs, or any evidence of an actual successful redeploy or that the deployed app was verified to load without runtime errors.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useStoryEditor.ts",
-        "frontend/src/hooks/useMyStories.ts"
+        "frontend/DEPLOYMENT.md",
+        "project_state.json"
       ]
     },
     {
-      "id": "REQ-4",
-      "requirement": "Implement 24-hour auto-expiration consistently, including backend filtering of expired stories in listing queries (and optional cleanup).",
-      "reason": "Guest-mode expiration is implemented via expiresAt in localStorage and pruning, and the authenticated UI filters client-side by createdAt+24h; but backend-side filtering/cleanup is not evidenced in the shown backend diff.",
+      "id": "REQ-2",
+      "requirement": "After the redeploy completes, surface the updated live app URL to the user in English.",
+      "reason": "The changes add an in-app 'Live App URL' card that derives the URL from window.location or an env var, but the requirement specifically asks to provide the updated live URL after redeploy in the response to the user. The diff does not include any actual new/active ICP production URL value, nor any mechanism that outputs the redeployed URL to the user as part of the redeploy completion response.",
       "evidence": [
-        "frontend/src/lib/userStoriesStorage.ts",
-        "frontend/src/hooks/useMyStories.ts",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "requirement": "Ensure bilingual UI support (English + Tamil) for all new Stories UI strings via i18n translation keys; no hardcoded new user-facing strings; include EN+TA translations for all new keys.",
-      "reason": "Multiple new user-facing strings appear hardcoded (e.g., image alt text, time-ago Tamil/English strings, drawer 'My Stories', menu 'Menu', profile toasts/errors). Also no translation files/keys for the new Stories strings are shown in the diff, so presence of EN/TA translations cannot be verified.",
-      "evidence": [
-        "frontend/src/components/MyStoryDraftCard.tsx",
-        "frontend/src/components/AppDrawer.tsx",
-        "frontend/src/pages/ProfileTab.tsx",
-        "frontend/src/pages/MyStories.tsx",
-        "frontend/src/pages/StoryEditor.tsx"
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "requirement": "Fix favorites/likes visibility in Favorites section (correct favorite state + visible like count; toggling updates promptly).",
-      "reason": "No changes are shown to Favorites-related components/pages/cards; nothing in the diff evidences like count rendering or favorite-state fixes.",
-      "evidence": [
-        "frontend/src/App.tsx"
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "requirement": "Improve login experience visuals: crisp professional logo, consistent sizing, graceful fallback if missing, no layout shift; add required image asset app-logo-transparent.dim_512x512.png.",
-      "reason": "No login screen changes or new logo asset are shown in the diff summary.",
-      "evidence": [
-        "frontend/src/App.tsx"
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "requirement": "Fix the reported 'impression page' layout/appearance issue on ~360px mobile widths (spacing/overlap/readability), aligned padding/typography, no console errors.",
-      "reason": "No file in the diff summary clearly corresponds to an 'impression page' or shows layout fixes for it.",
-      "evidence": [
-        "frontend/src/App.tsx"
+        "frontend/src/components/LiveAppUrlCard.tsx",
+        "frontend/src/lib/liveAppUrl.ts",
+        "frontend/src/pages/HelpAndSupport.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/handled Hindi language in time-ago strings and backend Language type despite requirements only mandating English + Tamil for Stories UI.",
-      "reason": "BuildRequest only requires bilingual EN+TA support for Stories; Hindi support is extra and not requested.",
+      "description": "Added an in-app Help & Support section that displays a 'Live App URL' card with copy/open buttons and production-vs-preview messaging.",
+      "reason": "REQ-2 asks to surface the live URL to the user after redeploy (in the response), not to add new UI features/pages within the application to display/copy the URL.",
       "evidence": [
-        "frontend/src/components/MyStoryDraftCard.tsx",
-        "backend/main.mo"
+        "frontend/src/components/LiveAppUrlCard.tsx",
+        "frontend/src/pages/HelpAndSupport.tsx",
+        "frontend/src/lib/liveAppUrl.ts"
       ]
     },
     {
-      "description": "Developer-only console log checklist for button style regression.",
-      "reason": "Not requested by any REQ; adds extra dev logging behavior.",
+      "description": "Added a deployment guide document (frontend/DEPLOYMENT.md).",
+      "reason": "Documentation changes were not explicitly requested; the request was to redeploy and then provide the new live URL.",
       "evidence": [
-        "frontend/src/App.tsx"
+        "frontend/DEPLOYMENT.md"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.74,
   "changed_files": [
     "backend/main.mo",
-    "frontend/src/App.tsx",
-    "frontend/src/components/AppDrawer.tsx",
-    "frontend/src/components/MyStoryDraftCard.tsx",
-    "frontend/src/hooks/useMyStories.ts",
-    "frontend/src/hooks/useStoryEditor.ts",
-    "frontend/src/lib/userStoriesStorage.ts",
-    "frontend/src/pages/MyStories.tsx",
-    "frontend/src/pages/ProfileTab.tsx",
-    "frontend/src/pages/StoryEditor.tsx",
+    "frontend-file-summaries.txt",
+    "frontend/DEPLOYMENT.md",
+    "frontend/src/components/LiveAppUrlCard.tsx",
+    "frontend/src/lib/liveAppUrl.ts",
+    "frontend/src/pages/HelpAndSupport.tsx",
     "project_state.json"
   ]
 }

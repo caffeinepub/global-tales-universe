@@ -9,6 +9,7 @@ import { Progress } from './ui/progress';
 import { cardRadius, transitions, focusRing } from '../lib/uiPolish';
 import { logOnce } from '../lib/logOnce';
 import { getFullPath } from '../lib/routerSearch';
+import { useState } from 'react';
 
 export default function ContinueReadingCard() {
   const { getLastRead } = useReadingHistory();
@@ -20,11 +21,13 @@ export default function ContinueReadingCard() {
   const currentSearch = routerState.location.search;
   const fullPath = getFullPath(currentPath, currentSearch);
   const { language } = usePreferences();
+  const [imgError, setImgError] = useState(false);
 
   if (!lastRead || !story) return null;
 
   const content = getStoryContent(story, language);
   const coverUrl = getStoryCoverUrl(story);
+  const fallbackCover = '/assets/generated/cover-default.dim_1200x1600.png';
 
   const handleNavigate = () => {
     try {
@@ -55,8 +58,9 @@ export default function ContinueReadingCard() {
         }}
       >
         <img
-          src={coverUrl}
+          src={imgError ? fallbackCover : coverUrl}
           alt={content.title}
+          onError={() => setImgError(true)}
           className={`w-16 h-24 object-cover ${cardRadius.small} shrink-0`}
         />
         <div className="flex-1 min-w-0">

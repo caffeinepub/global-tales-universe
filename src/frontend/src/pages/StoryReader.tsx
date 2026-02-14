@@ -55,6 +55,7 @@ export default function StoryReader() {
   const [newComment, setNewComment] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Calculate effective like count and isLiked state
@@ -199,12 +200,13 @@ export default function StoryReader() {
 
   const content = getStoryContent(story, language);
   const coverUrl = getStoryCoverUrl(story);
+  const fallbackCover = '/assets/generated/cover-default.dim_1200x1600.png';
 
   return (
     <div className={`min-h-screen ${bgColorClasses[bgColor]}`}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
             size="icon"
@@ -213,162 +215,181 @@ export default function StoryReader() {
           >
             <ArrowLeft className={iconSizes.md} />
           </Button>
-          
           <div className="flex items-center gap-2">
-            {/* Font Size Control */}
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-              <button
-                onClick={() => setFontSize('small')}
-                className={`px-2 py-1 rounded text-xs ${fontSize === 'small' ? 'bg-primary text-primary-foreground' : ''}`}
-              >
-                A
-              </button>
-              <button
-                onClick={() => setFontSize('medium')}
-                className={`px-2 py-1 rounded text-sm ${fontSize === 'medium' ? 'bg-primary text-primary-foreground' : ''}`}
-              >
-                A
-              </button>
-              <button
-                onClick={() => setFontSize('large')}
-                className={`px-2 py-1 rounded text-base ${fontSize === 'large' ? 'bg-primary text-primary-foreground' : ''}`}
-              >
-                A
-              </button>
-            </div>
-
-            {/* Background Color Control */}
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-              <button
-                onClick={() => setBgColor('white')}
-                className={`w-6 h-6 rounded bg-white border ${bgColor === 'white' ? 'ring-2 ring-primary' : ''}`}
-              />
-              <button
-                onClick={() => setBgColor('sepia')}
-                className={`w-6 h-6 rounded bg-amber-100 border ${bgColor === 'sepia' ? 'ring-2 ring-primary' : ''}`}
-              />
-              <button
-                onClick={() => setBgColor('dark')}
-                className={`w-6 h-6 rounded bg-gray-900 border ${bgColor === 'dark' ? 'ring-2 ring-primary' : ''}`}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <div ref={contentRef} className="overflow-auto h-[calc(100vh-60px)]">
-        <article className="max-w-3xl mx-auto px-4 py-8">
-          {/* Cover Image */}
-          <img
-            src={coverUrl}
-            alt={content.title}
-            className={`w-full max-w-md mx-auto aspect-[3/4] object-cover ${cardRadius.medium} mb-6`}
-            onError={(e) => {
-              e.currentTarget.src = '/assets/generated/cover-default.dim_1200x1600.png';
-            }}
-          />
-
-          {/* Title & Meta */}
-          <h1 className="text-3xl font-bold mb-2">{content.title}</h1>
-          <p className="text-muted-foreground mb-4">
-            By {story.author} • {Number(story.readTimeMinutes)} min read
-          </p>
-
-          {/* Social Actions */}
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={toggleLike}
-              className="flex items-center gap-2 hover:text-red-500 transition-colors"
-            >
-              <Heart className={`${iconSizes.md} ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-              <span className="text-sm font-medium">{likeCount}</span>
-            </button>
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="flex items-center gap-2 hover:text-primary transition-colors"
-            >
-              <MessageCircle className={iconSizes.md} />
-              <span className="text-sm font-medium">{comments.length}</span>
-            </button>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleShare}
               disabled={isSharing}
-              className="flex items-center gap-2 hover:text-primary transition-colors disabled:opacity-50"
+              className={focusRing}
             >
               <Share2 className={iconSizes.md} />
-              <span className="text-sm font-medium">Share</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleDownload}
               disabled={isDownloading}
-              className="flex items-center gap-2 hover:text-primary transition-colors disabled:opacity-50"
+              className={focusRing}
             >
-              <Download className={`${iconSizes.md} ${isDownloaded(storyId) ? 'fill-primary' : ''}`} />
-              <span className="text-sm font-medium">
-                {isDownloaded(storyId) ? 'Downloaded' : 'Download'}
-              </span>
-            </button>
+              <Download className={iconSizes.md} />
+            </Button>
           </div>
+        </div>
+      </div>
 
-          <Separator className="mb-6" />
+      {/* Story Content */}
+      <div
+        ref={contentRef}
+        className="container max-w-4xl mx-auto px-4 py-8 overflow-y-auto"
+        style={{ maxHeight: 'calc(100vh - 140px)' }}
+      >
+        {/* Cover Image */}
+        <img
+          src={imgError ? fallbackCover : coverUrl}
+          alt={content.title}
+          onError={() => setImgError(true)}
+          className={`w-full max-w-md mx-auto h-auto object-cover ${cardRadius.large} mb-6`}
+        />
 
-          {/* Story Body */}
-          <div className={`prose prose-lg max-w-none ${fontSizeClasses[fontSize]}`}>
-            {content.body.split('\n').map((paragraph, index) => (
-              <p key={index} className="mb-4 leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
+        {/* Title and Metadata */}
+        <h1 className="text-3xl font-bold mb-2">{content.title}</h1>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <span>By {story.author}</span>
+          <span>•</span>
+          <span>{Number(story.readTimeMinutes)} min read</span>
+        </div>
+
+        {/* Summary */}
+        <p className="text-lg text-muted-foreground mb-6 italic">{content.summary}</p>
+
+        <Separator className="my-6" />
+
+        {/* Reading Controls */}
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Font:</span>
+            <Button
+              variant={fontSize === 'small' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFontSize('small')}
+            >
+              A
+            </Button>
+            <Button
+              variant={fontSize === 'medium' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFontSize('medium')}
+            >
+              A
+            </Button>
+            <Button
+              variant={fontSize === 'large' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFontSize('large')}
+            >
+              A
+            </Button>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Theme:</span>
+            <Button
+              variant={bgColor === 'white' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setBgColor('white')}
+            >
+              Light
+            </Button>
+            <Button
+              variant={bgColor === 'sepia' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setBgColor('sepia')}
+            >
+              Sepia
+            </Button>
+            <Button
+              variant={bgColor === 'dark' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setBgColor('dark')}
+            >
+              Dark
+            </Button>
+          </div>
+        </div>
 
-          {/* Comments Section */}
-          {showComments && (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold mb-4">Comments ({comments.length})</h2>
+        {/* Story Body */}
+        <div className={`prose prose-lg max-w-none mb-8 ${fontSizeClasses[fontSize]}`}>
+          <p className="whitespace-pre-wrap leading-relaxed">{content.body}</p>
+        </div>
+
+        <Separator className="my-8" />
+
+        {/* Social Actions */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant={isLiked ? 'default' : 'outline'}
+            onClick={toggleLike}
+            className="gap-2"
+          >
+            <Heart
+              className={iconSizes.sm}
+              fill={isLiked ? 'currentColor' : 'none'}
+            />
+            {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowComments(!showComments)}
+            className="gap-2"
+          >
+            <MessageCircle className={iconSizes.sm} />
+            {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+          </Button>
+        </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <Card className="mb-8">
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Comments</h3>
               
               {/* Add Comment */}
               <div className="mb-6">
                 <Textarea
+                  placeholder="Share your thoughts..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Share your thoughts..."
                   className="mb-2"
-                  rows={3}
                 />
-                <Button
-                  onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                  size="sm"
-                >
-                  <Send className={`${iconSizes.sm} mr-2`} />
+                <Button onClick={handleAddComment} disabled={!newComment.trim()} className="gap-2">
+                  <Send className={iconSizes.sm} />
                   Post Comment
                 </Button>
               </div>
 
               {/* Comments List */}
-              <div className="space-y-4">
-                {comments.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    No comments yet. Be the first to share your thoughts!
-                  </p>
-                ) : (
-                  comments.map((comment, index) => (
-                    <Card key={index}>
-                      <CardContent className="pt-4">
-                        <p className="font-semibold text-sm mb-1">{comment.author}</p>
-                        <p className="text-sm text-muted-foreground mb-2">
+              {comments.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">
+                  No comments yet. Be the first to share your thoughts!
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="border-l-2 border-primary pl-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-sm">{comment.author}</span>
+                        <span className="text-xs text-muted-foreground">
                           {new Date(comment.timestamp).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm">{comment.text}</p>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </article>
+                        </span>
+                      </div>
+                      <p className="text-sm">{comment.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

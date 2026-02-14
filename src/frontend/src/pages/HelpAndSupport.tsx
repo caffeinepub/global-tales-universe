@@ -1,4 +1,5 @@
 import LegalSupportPageLayout from '../components/LegalSupportPageLayout';
+import LiveAppUrlCard from '../components/LiveAppUrlCard';
 import { SiInstagram } from 'react-icons/si';
 import { Heart } from 'lucide-react';
 
@@ -7,6 +8,9 @@ export default function HelpAndSupport() {
     <LegalSupportPageLayout>
       <div className="space-y-6">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground">Help & Support</h1>
+
+        {/* Live App URL Card */}
+        <LiveAppUrlCard />
 
         <div className="space-y-6 text-foreground">
           <section>

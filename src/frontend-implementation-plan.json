@@ -1,260 +1,45 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Stories drafts (text+optional image) with guest/local + II mode, My Stories page, bilingual UI, and reported UI fixes",
+  "title": "Redeploy guidance + live URL surfacing in UI",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a basic Stories draft creator (required text, optional single image) with a simple editor UI including emoji insert.",
+      "summary": "Add a redeploy checklist (frontend-local documentation) so a fresh ICP deployment can be performed reliably.",
       "acceptanceCriteria": [
-        "From the UI, a user can open a Create Story screen and submit a story with text only.",
-        "From the UI, a user can attach a single JPG/PNG image (optional) and submit the story.",
-        "The editor includes an emoji insert affordance (e.g., emoji picker or quick emoji buttons) that inserts into the text field.",
-        "On successful creation, the user sees confirmation feedback and is redirected to their My Stories view."
+        "A new live version is successfully deployed (no build/deploy failures).",
+        "The deployed app loads in the browser and reaches the main UI without runtime errors."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/StoryEditor.tsx",
-          "operation": "modify",
-          "description": "Repurpose the existing StoryEditor screen into the Stories Draft editor: required text input, optional single JPG/PNG upload, and quick emoji insert buttons that append/insert into the text. Use existing shadcn-ui primitives already imported (Button/Input/Textarea/etc). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useStoryEditor.ts",
-          "operation": "modify",
-          "description": "Replace the placeholder “coming soon” save path with a real create-story mutation that supports both guest (localStorage) and authenticated (Internet Identity + backend actor) modes, including optional image handling. Use the blob-storage ExternalBlob helper on the frontend to represent uploaded images; store/show images via ExternalBlob.getDirectURL() when available. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/lib/userStoriesStorage.ts",
+          "path": "frontend/DEPLOYMENT.md",
           "operation": "create",
-          "description": "Add guest-mode local-only persistence for Stories drafts in localStorage (serialize createdAt, expiresAt, text, and optional single image as a data URL or similar). Include helpers for add/list and for pruning expired items on read/write."
+          "description": "Document the ICP redeploy workflow for this project (build, deploy, and verification steps), including where to find the resulting production URL after deployment."
+        },
+        {
+          "path": "frontend/src/lib/liveAppUrl.ts",
+          "operation": "create",
+          "description": "Add a small utility that computes the current live app URL from the browser location (with an optional build-time override via env var) so the UI can display/copy a consistent production link after redeploy."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add a dedicated My Stories page listing the current user's Stories drafts with a prominent + Create button to the editor.",
+      "summary": "Surface the active live app URL in the UI in English with an easy copy action.",
       "acceptanceCriteria": [
-        "A dedicated My Stories page exists and is reachable from the app navigation (or Profile).",
-        "The My Stories page shows an empty state when there are no stories.",
-        "The My Stories page lists the user’s created stories newest-first, showing at minimum: text preview and created time; if an image exists, show a thumbnail.",
-        "A “+ Create” button is visible and opens the Create Story screen."
+        "The response includes the new/active live URL for the redeployed version.",
+        "The URL is clearly labeled as the live/production link."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/MyStories.tsx",
+          "path": "frontend/src/components/LiveAppUrlCard.tsx",
           "operation": "create",
-          "description": "Create a dedicated My Stories page that uses the shared Stories data source (guest localStorage vs authenticated backend) to list newest-first, show empty state, render text preview + created time, and show an image thumbnail when present."
+          "description": "Create a small card component that shows a clearly labeled \"Live (production) URL\" in English and provides a copy-to-clipboard action with a simple success/failure message. Use existing shadcn/ui primitives already in the repo (e.g., Button/Card) for consistent styling. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/MyStoryDraftCard.tsx",
-          "operation": "create",
-          "description": "Add a card component to render a single Stories draft (text preview, created time, optional thumbnail from either stored data URL (guest) or ExternalBlob.getDirectURL() (authenticated)). Use existing styling patterns and shadcn-ui primitives. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/HelpAndSupport.tsx",
           "operation": "modify",
-          "description": "Wire the new My Stories page into routing (e.g., add a /my-stories route) and ensure navigation to StoryEditor for creating a new draft remains consistent."
-        },
-        {
-          "path": "frontend/src/components/AppDrawer.tsx",
-          "operation": "modify",
-          "description": "Add a navigation entry that routes to the new /my-stories page so it is reachable from app navigation. Use existing menu item patterns. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Support guest/anonymous local-only Stories and authenticated Internet Identity Stories persisted via backend actor, scoped to the caller principal.",
-      "acceptanceCriteria": [
-        "If the user is not authenticated, they can still create and view their own stories (stored locally in the browser) and see them in My Stories.",
-        "If the user is authenticated, creating a story persists it in the backend and it appears in My Stories after refresh.",
-        "Guest stories remain available after page refresh on the same device/browser.",
-        "Authenticated stories are scoped per principal; a different authenticated user does not see someone else’s My Stories."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useMyStories.ts",
-          "operation": "modify",
-          "description": "Update the My Stories data hook to support both identity modes: when unauthenticated, read/prune from the guest localStorage store; when authenticated, fetch from the backend actor’s existing Stories-draft capabilities (per caller). Keep newest-first sorting and return only active (non-expired) stories."
-        },
-        {
-          "path": "frontend/src/hooks/useActor.ts",
-          "operation": "modify",
-          "description": "Ensure actor/identity transitions (login/logout) reliably trigger query invalidation/refetch for Stories-related queries (e.g., My Stories) so the UI switches between guest and authenticated data cleanly."
-        },
-        {
-          "path": "frontend/src/components/LoginButton.tsx",
-          "operation": "modify",
-          "description": "On logout, ensure Stories-related cached queries are cleared/invalidated consistently (in addition to existing query cache clearing) so guest/auth mode switching does not show stale My Stories results."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Implement optional 24-hour auto-expiration filtering for Stories so expired stories do not appear in My Stories (guest mode handled on the frontend).",
-      "acceptanceCriteria": [
-        "Each story has a created timestamp and an expiration timestamp (created + 24h) or equivalent expiration logic.",
-        "Expired stories do not render in My Stories.",
-        "Backend: expired stories are filtered out in listing queries; optionally provide a cleanup pass during list/create calls to keep state small.",
-        "Frontend (guest mode): expired stories are filtered out when reading from localStorage."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/lib/userStoriesStorage.ts",
-          "operation": "modify",
-          "description": "Add/ensure expiration metadata (createdAt/expiresAt or createdAt + derived 24h) is stored for guest stories and implement pruning/filtering so expired items are removed/ignored on read and after create."
-        },
-        {
-          "path": "frontend/src/hooks/useMyStories.ts",
-          "operation": "modify",
-          "description": "Ensure the hook filters out expired stories consistently for guest mode, and defensively filters in the UI even if authenticated mode returns older items."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Make the Stories creation flow functional (remove placeholder error) and refresh My Stories automatically after creation for both guest and authenticated modes.",
-      "acceptanceCriteria": [
-        "Creating a story no longer throws a “coming soon” placeholder error.",
-        "After creation, the My Stories query data refreshes automatically and shows the new story.",
-        "If the user is a guest, creation writes to localStorage and My Stories reads from that same localStorage store.",
-        "If the user is authenticated, creation calls the backend and My Stories reads from backend."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useStoryEditor.ts",
-          "operation": "modify",
-          "description": "Implement the create-story mutation with mode switching: guest writes to localStorage; authenticated calls the backend actor’s create-draft capability and uses blob-storage ExternalBlob for optional image upload. On success, invalidate/refetch ['myStories'] and redirect to /my-stories with success toast. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/StoryEditor.tsx",
-          "operation": "modify",
-          "description": "Connect the editor UI submit action to the functional create-story mutation, show confirmation feedback via existing toast system, and redirect to the My Stories page on success."
-        },
-        {
-          "path": "frontend/src/pages/MyStories.tsx",
-          "operation": "modify",
-          "description": "Ensure My Stories uses React Query data that updates promptly after creation (e.g., reacts to invalidation/refetch) and displays the newly created item without manual reload."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Add bilingual (English + Tamil) translations for all new Stories UI strings and wire them through the existing i18n helper.",
-      "acceptanceCriteria": [
-        "All new user-facing strings added for Stories are sourced from the i18n translation system (not hardcoded).",
-        "English and Tamil translations are present for all new Stories-related keys.",
-        "Switching UI language updates the Stories/My Stories/Create Story screens accordingly."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/lib/i18n.ts",
-          "operation": "modify",
-          "description": "Add translation keys (EN + TA at minimum) for Stories/My Stories/Create Story/editor labels, emoji insert affordance text, empty states, buttons, validation errors, and timestamps. Ensure all new Stories-related strings are returned via t(...)."
-        },
-        {
-          "path": "frontend/src/pages/StoryEditor.tsx",
-          "operation": "modify",
-          "description": "Replace hardcoded editor strings with i18n keys using the existing t() helper and current UI language from PreferencesContext."
-        },
-        {
-          "path": "frontend/src/pages/MyStories.tsx",
-          "operation": "modify",
-          "description": "Replace hardcoded My Stories UI strings with i18n keys using the existing t() helper and current UI language from PreferencesContext."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Fix Profile page My Stories section so it uses the functional My Stories data source and updates reliably after create.",
-      "acceptanceCriteria": [
-        "Profile page consistently shows the latest My Stories list for the current user mode (guest vs authenticated).",
-        "After creating a story, navigating to Profile shows the newly created story without requiring a hard reload.",
-        "If story editing is supported in the UI, saving an edit updates the list item preview accordingly."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/ProfileTab.tsx",
-          "operation": "modify",
-          "description": "Wire the Profile page’s My Stories section to the updated useMyStories hook (guest + authenticated). Ensure it renders consistently, shows empty/loading states, and includes navigation to /my-stories and to the create editor. Replace any hardcoded strings in this section with i18n keys."
-        },
-        {
-          "path": "frontend/src/components/MyStoryCard.tsx",
-          "operation": "modify",
-          "description": "Update or replace usage so Profile no longer relies on the long-form Story card for My Stories drafts. Prefer using the new MyStoryDraftCard for Stories drafts; keep this component intact for published stories if still used elsewhere."
-        }
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "summary": "Fix favorites/likes visibility so Favorites cards consistently show like count and correct favorited state and update promptly on toggle.",
-      "acceptanceCriteria": [
-        "Favorites page story cards clearly display a like count (including any local like overlay behavior if present).",
-        "Favorites page story cards show the heart icon filled/active when the story is favorited.",
-        "Toggling favorite from within Favorites updates the list promptly (removes when unfavorited, if that is the intended behavior)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/StoryCard.tsx",
-          "operation": "modify",
-          "description": "Ensure the StoryCard always renders a visible like count consistently (including on Favorites page) and that the heart icon reflects the current favorite state derived from the favorites hook/state. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useFavorites.ts",
-          "operation": "modify",
-          "description": "Ensure toggling favorite invalidates/refetches Favorites-related queries and updates local derived state immediately so the Favorites list updates promptly (including removal on unfavorite if that is the current intended UX)."
-        },
-        {
-          "path": "frontend/src/pages/FavoritesTab.tsx",
-          "operation": "modify",
-          "description": "Ensure FavoritesTab renders StoryCard in a way that reflects updated favorite state after toggles (e.g., no stale memoization) and uses i18n for any new/adjusted user-facing strings if added."
-        }
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "summary": "Improve login visuals by using a crisp logo/wordmark with proper sizing and graceful fallback without layout shift.",
-      "acceptanceCriteria": [
-        "On the login screen (or login entry state), the app logo is crisp (not blurry) and sized consistently across mobile/desktop.",
-        "If an image asset is missing, there is a graceful fallback that still looks intentional (no broken-image icon).",
-        "The logo area does not cause layout shift during load."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/app-logo-transparent.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the generated asset required by the build request: frontend/public/assets/generated/app-logo-transparent.dim_512x512.png and use it where appropriate for login/branding UI."
-        },
-        {
-          "path": "frontend/src/components/RequireAuth.tsx",
-          "operation": "modify",
-          "description": "Update the login entry/prompt UI to display the new generated transparent wordmark logo asset with fixed dimensions/aspect ratio to avoid layout shift; add a clean text fallback if the image fails to load (no broken-image icon)."
-        },
-        {
-          "path": "frontend/src/index.html",
-          "operation": "modify",
-          "description": "If applicable to the login/entry experience, ensure the appropriate icon/branding metadata references remain consistent and do not cause broken-image fallbacks (keep changes limited to branding presentation)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "summary": "Fix the reported “impression page” layout/appearance issue for common mobile widths (~360px) with no overlaps/clipping and consistent spacing.",
-      "acceptanceCriteria": [
-        "The page referred to as the “impression page” renders without clipped content, overlapping elements, or unreadable text on a ~360px wide viewport.",
-        "Key sections have consistent padding and typography alignment with the rest of the app.",
-        "No console errors are introduced by the fix."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/SplashScreen.tsx",
-          "operation": "modify",
-          "description": "Treat the splash/first-impression screen as the reported impression page: adjust layout constraints and spacing for ~360px widths to prevent overlap/clipping, keep logo area stable, and ensure text remains readable and aligned with app typography (no new console errors)."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "If needed to support the impression-page fix, apply minimal global style adjustments via existing global entry points (e.g., safe-area, typography defaults) without introducing new global stylesheet paths."
+          "description": "Render the new LiveAppUrlCard on the Help & Support page so users can always find and copy the updated production link after redeploy."
         }
       ]
     }
